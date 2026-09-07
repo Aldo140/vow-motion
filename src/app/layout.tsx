@@ -8,6 +8,7 @@ import "@fontsource/bodoni-moda/400-italic.css";
 import "@fontsource/italiana/400.css";
 import "@fontsource/libre-baskerville/400.css";
 import "./globals.css";
+import "./celebration.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

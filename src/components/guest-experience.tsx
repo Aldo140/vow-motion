@@ -94,6 +94,7 @@ const copy = {
 export default function GuestExperience({ initial }: { initial: GuestData }) {
   const [data, setData] = useState(initial),
     [opened, setOpened] = useState(false),
+    [opening, setOpening] = useState(false),
     [locale, setLocale] = useState<"en" | "es">(
       (initial.guests[0]?.language || initial.wedding.locale) === "es"
         ? "es"
@@ -115,12 +116,39 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       if (localStorage.getItem(openedKey) === "yes") setOpened(true);
     } catch {}
   }, [openedKey]);
-  const openInvitation = () => {
+  const openInvitation = async () => {
+    if (opening) return;
+    setOpening(true);
+    const gate = root.current?.querySelector<HTMLElement>(".gate-suite");
+    if (
+      gate &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      const animation = gate.animate(
+        [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(-24px)" },
+        ],
+        {
+          duration: 280,
+          easing: "cubic-bezier(.22,1,.36,1)",
+          fill: "forwards",
+        },
+      );
+      await animation.finished.catch(() => {});
+      if (!gate.isConnected) return;
+    }
     setOpened(true);
     try {
       localStorage.setItem(openedKey, "yes");
     } catch {}
   };
+  useEffect(() => {
+    if (opened && opening)
+      root.current
+        ?.querySelector<HTMLElement>(".guest-hero h1")
+        ?.focus({ preventScroll: true });
+  }, [opened, opening]);
   useEffect(() => {
     fetch(url).catch(() => {});
   }, [url]);
@@ -143,7 +171,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
   return (
     <div
       ref={root}
-      className={"guest-experience world-" + world.id}
+      className={"guest-experience atelier-invitation world-" + world.id}
       lang={locale}
     >
       {!opened ? (
@@ -155,28 +183,38 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               {locale === "en" ? "ES" : "EN"}
             </button>
           </div>
-          <div className="gate-card">
-            <span>{c.envelope}</span>
-            <p className="gate-to">
-              {data.guests.map((g) => g.name.split(" ")[0]).join(" & ")},
-            </p>
-            <p>{c.personal}</p>
-            <div className="gate-monogram">
-              {data.wedding.names
-                .split(" & ")
-                .map((s) => s[0])
-                .join("")}
+          <div className="gate-suite">
+            <div className="gate-photo-card" aria-hidden="true">
+              <img src={world.image} alt="" />
+              <span>{data.wedding.location}</span>
             </div>
-            <h1>{data.wedding.names}</h1>
-            <p>
-              {formatDate(data.wedding.date, locale)}
-              <br />
-              {data.wedding.location}
-            </p>
-            <button className="gate-open" onClick={openInvitation}>
-              {c.open}
-              <Arrow />
-            </button>
+            <div className="gate-card">
+              <span>{c.envelope}</span>
+              <p className="gate-to">
+                {data.guests.map((g) => g.name.split(" ")[0]).join(" & ")},
+              </p>
+              <p>{c.personal}</p>
+              <div className="gate-monogram" aria-hidden="true">
+                {data.wedding.names
+                  .split(" & ")
+                  .map((s) => s[0])
+                  .join("")}
+              </div>
+              <h1>{data.wedding.names}</h1>
+              <p>
+                {formatDate(data.wedding.date, locale)}
+                <br />
+                {data.wedding.location}
+              </p>
+              <button
+                className="gate-open"
+                onClick={openInvitation}
+                disabled={opening}
+              >
+                {c.open}
+                <Arrow />
+              </button>
+            </div>
           </div>
           <small className="gate-bottom">
             {world.name.toUpperCase()} · AN INVITATION BY VOW MOTION
@@ -216,12 +254,16 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                   : c.celebrate}
               </span>
               <div className="guest-hero-title">
-                <h1>
-                  {data.wedding.names.split(" & ")[0]}
+                <h1 tabIndex={-1}>
+                  <span>{data.wedding.names.split(" & ")[0]}</span>
                   <i>&</i>
-                  {data.wedding.names.split(" & ")[1] || ""}
+                  <span>{data.wedding.names.split(" & ")[1] || ""}</span>
                 </h1>
               </div>
+              <p className="guest-hero-date">
+                {formatDate(data.wedding.date, locale)}
+                <span>{data.wedding.location}</span>
+              </p>
               <div className="guest-hero-photo">
                 <img
                   src={world.image}
@@ -273,20 +315,38 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               </section>
             )}
             <section id="story" className="guest-story">
-              <span className="story-monogram">
-                {data.wedding.names
-                  .split(" & ")
-                  .map((s) => s[0])
-                  .join(" + ")}
-              </span>
-              <h2>{c.story}</h2>
-              <p>
-                {locale === "es" &&
-                typeof data.wedding.settings.story_es === "string"
-                  ? data.wedding.settings.story_es
-                  : data.wedding.story}
-              </p>
-              <span className="story-signature">{data.wedding.names}</span>
+              <div className="story-florals">
+                <img
+                  src="/images/wedding-details.webp"
+                  alt={
+                    locale === "en"
+                      ? "Garden roses, silk ribbon and wedding bands on linen"
+                      : "Rosas, cinta de seda y alianzas sobre lino"
+                  }
+                  loading="lazy"
+                />
+              </div>
+              <div className="story-letter">
+                <span className="story-letter-label">
+                  {locale === "en"
+                    ? "A little love letter"
+                    : "Una pequeña carta de amor"}
+                </span>
+                <span className="story-monogram">
+                  {data.wedding.names
+                    .split(" & ")
+                    .map((s) => s[0])
+                    .join(" + ")}
+                </span>
+                <h2>{c.story}</h2>
+                <p>
+                  {locale === "es" &&
+                  typeof data.wedding.settings.story_es === "string"
+                    ? data.wedding.settings.story_es
+                    : data.wedding.story}
+                </p>
+                <span className="story-signature">{data.wedding.names}</span>
+              </div>
             </section>
             <section className="guest-programme" id="programme">
               <div className="programme-intro">
@@ -311,6 +371,9 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 </a>
               </div>
               <div className="programme-events">
+                <div className="programme-heading">
+                  {locale === "en" ? "The celebration" : "La celebración"}
+                </div>
                 {data.events.map((event, i) => (
                   <article className="programme-event" key={event.id}>
                     <span className="event-order">0{i + 1}</span>
@@ -357,7 +420,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                   loading="lazy"
                 />
                 <span>
-                  Greetings from
+                  {locale === "en" ? "Greetings from" : "Saludos desde"}
                   <br />
                   <em>{data.wedding.location.split(",")[0]}</em>
                 </span>
@@ -398,23 +461,34 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               </div>
             </section>
             <section className="rsvp-scene" id="rsvp">
-              <span>
-                {data.guests.map((g) => g.name.split(" ")[0]).join(" & ")},
-              </span>
-              <h2>{c.rsvp}</h2>
-              <p>
-                {locale === "en" ? "Kindly reply by" : "Confirma antes del"}{" "}
-                {formatDate(data.wedding.rsvp_deadline, locale)}.
-              </p>
-              <button className="guest-button" onClick={() => setModal("rsvp")}>
-                {data.responses.length ? c.update : c.respond}
-                <Arrow diagonal />
-              </button>
-              <small>
-                {locale === "en"
-                  ? "Your invitation is just for your household."
-                  : "Esta invitación es solo para tu familia."}
-              </small>
+              <div className="rsvp-stationery">
+                <span className="rsvp-seal" aria-hidden="true">
+                  {data.wedding.names
+                    .split(" & ")
+                    .map((n) => n[0])
+                    .join(" & ")}
+                </span>
+                <span>
+                  {data.guests.map((g) => g.name.split(" ")[0]).join(" & ")},
+                </span>
+                <h2>{c.rsvp}</h2>
+                <p>
+                  {locale === "en" ? "Kindly reply by" : "Confirma antes del"}{" "}
+                  {formatDate(data.wedding.rsvp_deadline, locale)}.
+                </p>
+                <button
+                  className="guest-button"
+                  onClick={() => setModal("rsvp")}
+                >
+                  {data.responses.length ? c.update : c.respond}
+                  <Arrow diagonal />
+                </button>
+                <small>
+                  {locale === "en"
+                    ? "Your invitation is just for your household."
+                    : "Esta invitación es solo para tu familia."}
+                </small>
+              </div>
             </section>
             <section className="guest-memory">
               <div>

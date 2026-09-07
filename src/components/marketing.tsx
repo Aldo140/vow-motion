@@ -28,7 +28,7 @@ export default function Marketing() {
           stagger: 0.12,
           ease: "power3.out",
         });
-        gsap.from(".hero-art", {
+        gsap.from(".hero-keepsake", {
           y: 30,
           rotation: 1.5,
           duration: 1.1,
@@ -75,11 +75,16 @@ export default function Marketing() {
         </button>
       </header>
       <main id="main">
-        <section className="marketing-hero">
+        <section className="marketing-hero celebration-hero">
+          <img
+            src="/images/wedding-evening.webp"
+            alt="Candlelight, garden roses and linen set for a wedding dinner beside the lake"
+            fetchPriority="high"
+            className="celebration-background"
+          />
           <div className="hero-copy">
-            <p className="eyebrow">
-              <span className="tiny-star">✳</span> THE ART OF BRINGING PEOPLE
-              TOGETHER
+            <p className="hero-dedication">
+              For the day. For your people. Forever.
             </p>
             <h1>
               Your entire wedding.
@@ -87,88 +92,80 @@ export default function Marketing() {
               <em>Beautifully shared.</em>
             </h1>
             <p className="hero-description">
-              From the first invitation to the last dance.
+              The anticipation. The gathering. The happily ever after.
               <br />
-              One beautiful place for everyone you love.
+              It all begins with a beautiful invitation.
             </p>
             <div className="hero-actions">
-              <a href="/start" className="button primary">
+              <a href="/start" className="button light-button">
                 Create your wedding <Arrow diagonal />
               </a>
               <Link href="/demo/riviera" prefetch={false} className="text-link">
                 Experience a wedding <Arrow />
               </Link>
             </div>
-            <p className="hero-note">
-              Designed with intention. Made to feel like you.
-            </p>
           </div>
-          <div className="hero-art">
-            <div className="art-index">
-              <span>A LITTLE PREVIEW OF FOREVER</span>
-              <span>EST. 2026</span>
-            </div>
-            <img
-              src="/images/riviera.webp"
-              alt="An Italian villa overlooking the still waters of Lake Como"
-              fetchPriority="high"
-              className="hero-landscape"
-            />
-            <div className="invitation-specimen">
-              <span>INSIEME, PER SEMPRE</span>
-              <div className="specimen-names">
-                Elena <i>&</i>
-                <br />
-                Matteo
-              </div>
-              <div className="specimen-rule" />
-              <p>
-                19 JUNE 2027
-                <br />
-                LAKE COMO, ITALY
-              </p>
-              <Link
-                href="/demo/riviera"
-                prefetch={false}
-                className="specimen-open"
-              >
-                Open the invitation <Arrow diagonal size={15} />
-              </Link>
-            </div>
-            <div className="art-caption">
-              <span>THE RIVIERA COLLECTION</span>
-              <Link href="/demo/riviera" prefetch={false}>
-                Step inside <Arrow diagonal size={14} />
-              </Link>
-            </div>
+          <Link
+            className="hero-keepsake"
+            href="/demo/riviera"
+            prefetch={false}
+            aria-label="Open Elena and Matteo’s sample invitation"
+          >
+            <span className="keepsake-seal" aria-hidden="true">
+              E<i>&</i>M
+            </span>
+            <span className="keepsake-copy">
+              <small>You are joyfully invited</small>
+              <strong>Elena & Matteo</strong>
+              <span>Lake Como · 19 June 2027</span>
+            </span>
+            <Arrow diagonal size={22} />
+          </Link>
+          <div className="hero-edition">
+            <span>Vow Motion</span>
+            <span>Wedding websites, with a little soul.</span>
           </div>
         </section>
-        <div className="promise-strip">
-          <span>One invitation.</span>
-          <i />
-          <span>Every guest.</span>
-          <i />
-          <span>All the details.</span>
-          <i />
-          <span>Entirely you.</span>
-          <a href="#worlds" aria-label="Explore the collection">
-            <ArrowDownIcon size={18} />
-          </a>
-        </div>
+        <section className="love-letter">
+          <div className="letter-mark" aria-hidden="true">
+            V<i>&</i>M
+          </div>
+          <div>
+            <p className="letter-salutation">Dear almost-married,</p>
+            <h2>
+              You’re inviting them
+              <br />
+              into <em>your story.</em>
+            </h2>
+            <p>
+              Give them that first flutter of excitement. A place that feels
+              like the two of you, with every thoughtful detail already waiting.
+            </p>
+          </div>
+          <div className="letter-aside">
+            <span>
+              A lovely first impression.
+              <br />A much easier everything after.
+            </span>
+            <a href="#worlds" className="text-link">
+              Find your feeling <ArrowDownIcon size={18} />
+            </a>
+          </div>
+        </section>
         <section className="collection section-pad" id="worlds">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">THE DESIGN COLLECTION</p>
+              <p className="collection-caption">The invitation wardrobe</p>
               <h2>
-                Not a template.
+                Something borrowed.
                 <br />
-                <em>A world of your own.</em>
+                <em>Entirely your own.</em>
               </h2>
             </div>
             <p>
-              Six distinct points of view.
+              Six worlds, each with its own kind of romance.
               <br />
-              Thoughtfully composed. Effortlessly yours.
+              Find the one that feels like you.
             </p>
           </div>
           <div className="world-tabs" role="tablist" aria-label="Design worlds">
@@ -178,6 +175,24 @@ export default function Marketing() {
                 id={"tab-" + w.id}
                 aria-controls="world-preview"
                 aria-selected={w.id === active}
+                tabIndex={w.id === active ? 0 : -1}
+                onKeyDown={(event) => {
+                  const index = worlds.indexOf(w);
+                  const next =
+                    event.key === "ArrowRight"
+                      ? (index + 1) % worlds.length
+                      : event.key === "ArrowLeft"
+                        ? (index + worlds.length - 1) % worlds.length
+                        : event.key === "Home"
+                          ? 0
+                          : event.key === "End"
+                            ? worlds.length - 1
+                            : -1;
+                  if (next < 0) return;
+                  event.preventDefault();
+                  setActive(worlds[next].id);
+                  document.getElementById("tab-" + worlds[next].id)?.focus();
+                }}
                 key={w.id}
                 onClick={() => setActive(w.id)}
               >
@@ -225,7 +240,9 @@ export default function Marketing() {
         </section>
         <section className="platform-story section-pad" id="experience">
           <div className="platform-title">
-            <p className="eyebrow">BEAUTY, MEET PEACE OF MIND</p>
+            <p className="collection-caption">
+              Behind every effortless celebration
+            </p>
             <h2>
               A lot goes into a wedding.
               <br />
@@ -305,13 +322,13 @@ export default function Marketing() {
         <section className="planner-section" id="planners">
           <div className="planner-image">
             <img
-              src="/images/maison.webp"
-              alt="Sunlit French limestone chateau and garden"
+              src="/images/wedding-details.webp"
+              alt="Garden roses, silk ribbon and wedding bands, thoughtfully arranged"
               loading="lazy"
             />
           </div>
           <div>
-            <p className="eyebrow">FOR THE PEOPLE BEHIND THE DAY</p>
+            <p className="collection-caption">For the people behind the day</p>
             <h2>
               Your eye for detail.
               <br />
@@ -326,82 +343,59 @@ export default function Marketing() {
             </DemoButton>
           </div>
         </section>
-        <section className="pricing section-pad" id="pricing">
-          <div className="section-heading">
+        <section className="beginning-section section-pad" id="pricing">
+          <div className="beginning-invitation" aria-hidden="true">
+            <span>Save the date</span>
             <div>
-              <p className="eyebrow">A BEAUTIFUL BEGINNING</p>
-              <h2>
-                A little less planning.
-                <br />
-                <em>A little more living.</em>
-              </h2>
-            </div>
-            <p>
-              Explore freely. Choose your collection.
+              Your names
               <br />
-              No card required to create your wedding.
+              <i>go here.</i>
+            </div>
+            <small>
+              A day like no other.
+              <br />
+              An invitation like no one else’s.
+            </small>
+            <span className="beginning-monogram">V M</span>
+          </div>
+          <div className="beginning-copy">
+            <p className="collection-caption">A beautiful beginning</p>
+            <h2>
+              A little less planning.
+              <br />
+              <em>A little more living.</em>
+            </h2>
+            <p>
+              Choose your world. Bring your people. Make room for the moments
+              you’ll want to remember.
             </p>
+            <ul>
+              <li>
+                <CheckIcon size={18} /> Personal invitations & household RSVPs
+              </li>
+              <li>
+                <CheckIcon size={18} /> Events, travel, seating & shared
+                memories
+              </li>
+              <li>
+                <CheckIcon size={18} /> Your own wedding Studio, all connected
+              </li>
+            </ul>
+            <a href="/start" className="button primary">
+              Begin your story <Arrow diagonal />
+            </a>
+            <small>
+              No card required. Your wedding tools are included in this release.
+            </small>
           </div>
-          <div className="price-options">
-            {[
-              {
-                name: "Essential",
-                desc: "Everything starts here.",
-                features: [
-                  "Your wedding experience",
-                  "Guests, households & personal RSVPs",
-                  "Events, travel & seating",
-                ],
-              },
-              {
-                name: "Signature",
-                desc: "A world with your signature.",
-                features: [
-                  "Everything in Essential",
-                  "Your own domain architecture",
-                  "All six design worlds & memories",
-                ],
-              },
-              {
-                name: "Bespoke",
-                desc: "For a vision all your own.",
-                features: [
-                  "Everything in Signature",
-                  "A brief for custom art direction",
-                  "Planner & collaborator tools",
-                ],
-              },
-            ].map((p, i) => (
-              <div className="price-option" key={p.name}>
-                <div className="price-top">
-                  <span>{p.name}</span>
-                  {i === 1 && <small>THE FULL EXPERIENCE</small>}
-                </div>
-                <h3>{p.desc}</h3>
-                <ul>
-                  {p.features.map((f) => (
-                    <li key={f}>
-                      <CheckIcon size={16} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href={"/start?plan=" + p.name.toLowerCase()}
-                  className={i === 1 ? "button primary" : "button outline"}
-                >
-                  Begin with {p.name}
-                  <Arrow diagonal />
-                </a>
-              </div>
-            ))}
-          </div>
-          <p className="pricing-note">
-            Launch preview · Package pricing is being finalized. Creating a
-            wedding does not start a paid subscription.
-          </p>
         </section>
         <section className="closing">
+          <img
+            src="/images/wedding-evening.webp"
+            alt=""
+            loading="lazy"
+            className="closing-photo"
+          />
           <span>ONE BEAUTIFUL PLACE FOR EVERYONE YOU LOVE.</span>
           <h2>
             It begins with
