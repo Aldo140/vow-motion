@@ -66,10 +66,28 @@ export function Modal({
   useEffect(() => {
     const d = ref.current;
     const trigger = document.activeElement as HTMLElement | null;
+    const { scrollX, scrollY } = window;
+    const style = document.body.style;
+    const previous = {
+      position: style.position,
+      top: style.top,
+      left: style.left,
+      width: style.width,
+      overflow: style.overflow,
+    };
+    Object.assign(style, {
+      position: "fixed",
+      top: `-${scrollY}px`,
+      left: `-${scrollX}px`,
+      width: "100%",
+      overflow: "hidden",
+    });
     d?.showModal();
     return () => {
       d?.close();
-      if (trigger?.isConnected) trigger.focus();
+      Object.assign(style, previous);
+      window.scrollTo({ top: scrollY, left: scrollX, behavior: "instant" });
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     };
   }, []);
   return (

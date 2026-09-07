@@ -1,5 +1,8 @@
 "use client";
 import Link from "next/link";
+import GuestInvitationGate from "./guest-invitation-gate";
+import GuestKeepsake from "./guest-keepsake";
+import GuestWeddingPass from "./guest-wedding-pass";
 import { preparePhoto } from "@/lib/prepare-photo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
@@ -10,7 +13,7 @@ import {
   CheckIcon,
   CalendarBlankIcon,
   UploadSimpleIcon,
-  EnvelopeSimpleIcon,
+  CameraIcon,
 } from "@phosphor-icons/react";
 import type { GuestData } from "@/lib/types";
 import { getWorld, formatDate, eventTime } from "@/lib/worlds";
@@ -117,61 +120,20 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       if (localStorage.getItem(openedKey) === "yes") setOpened(true);
     } catch {}
   }, [openedKey]);
-  const openInvitation = async () => {
-    if (opening) return;
+  const openInvitation = () => {
     setOpening(true);
-    const gate = root.current?.querySelector<HTMLElement>(".gate-suite");
-    if (
-      gate &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      const card = gate.querySelector<HTMLElement>(".gate-card");
-      const photo = gate.querySelector<HTMLElement>(".gate-photo-card");
-      const animations: Animation[] = [];
-      if (photo)
-        animations.push(
-          photo.animate(
-            [
-              { transform: "rotate(-10deg) translateX(0)", opacity: 1 },
-              { transform: "rotate(-17deg) translateX(-24px)", opacity: 0 },
-            ],
-            {
-              duration: 420,
-              easing: "cubic-bezier(.22,1,.36,1)",
-              fill: "forwards",
-            },
-          ),
-        );
-      if (card)
-        animations.push(
-          card.animate(
-            [
-              {
-                transform: "rotate(3deg) translateY(0) rotateX(0)",
-                opacity: 1,
-              },
-              {
-                transform: "rotate(0deg) translateY(-55px) rotateX(8deg)",
-                opacity: 0,
-              },
-            ],
-            {
-              duration: 480,
-              easing: "cubic-bezier(.22,1,.36,1)",
-              fill: "forwards",
-            },
-          ),
-        );
-      await Promise.all(
-        animations.map((animation) => animation.finished.catch(() => {})),
-      );
-      if (!gate.isConnected) return;
-    }
     setOpened(true);
     try {
       localStorage.setItem(openedKey, "yes");
     } catch {}
   };
+  const chronologicalEvents = useMemo(
+    () =>
+      [...data.events].sort(
+        (a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at),
+      ),
+    [data.events],
+  );
   useEffect(() => {
     if (opened && opening)
       root.current
@@ -354,51 +316,12 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       lang={locale}
     >
       {!opened ? (
-        <main id="main" className="invitation-gate">
-          <img className="gate-background" src={world.image} alt="" />
-          <div className="gate-top">
-            <Link href="/">VOW MOTION</Link>
-            <button onClick={() => setLocale(locale === "en" ? "es" : "en")}>
-              {locale === "en" ? "ES" : "EN"}
-            </button>
-          </div>
-          <div className="gate-suite">
-            <div className="gate-photo-card" aria-hidden="true">
-              <img src={world.image} alt="" />
-              <span>{data.wedding.location}</span>
-            </div>
-            <div className="gate-card">
-              <span>{c.envelope}</span>
-              <p className="gate-to">
-                {data.guests.map((g) => g.name.split(" ")[0]).join(" & ")},
-              </p>
-              <p>{c.personal}</p>
-              <div className="gate-monogram" aria-hidden="true">
-                {data.wedding.names
-                  .split(" & ")
-                  .map((s) => s[0])
-                  .join("")}
-              </div>
-              <h1>{data.wedding.names}</h1>
-              <p>
-                {formatDate(data.wedding.date, locale)}
-                <br />
-                {data.wedding.location}
-              </p>
-              <button
-                className="gate-open"
-                onClick={openInvitation}
-                disabled={opening}
-              >
-                {c.open}
-                <Arrow />
-              </button>
-            </div>
-          </div>
-          <small className="gate-bottom">
-            {world.name.toUpperCase()} · AN INVITATION BY VOW MOTION
-          </small>
-        </main>
+        <GuestInvitationGate
+          data={data}
+          locale={locale}
+          onLocaleChange={() => setLocale(locale === "en" ? "es" : "en")}
+          onOpen={openInvitation}
+        />
       ) : (
         <>
           <header className="guest-nav">
@@ -480,14 +403,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                     {c.calendar}
                   </span>
                 </a>
-                <figure className="hero-flower-study" aria-hidden="true">
-                  <img src="/images/wedding-details.webp" alt="" />
-                  <figcaption>
-                    {locale === "en"
-                      ? "With love, always."
-                      : "Con amor, siempre."}
-                  </figcaption>
-                </figure>
+                <GuestKeepsake event={chronologicalEvents[0]} locale={locale} />
                 <span className="hero-medallion" aria-hidden="true">
                   <span>
                     {data.wedding.names
@@ -498,7 +414,15 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 </span>
               </div>
               <div className="guest-hero-footer">
-                <span>{c.invited}</span>
+                <span className="hero-personal-note">
+                  {locale === "en"
+                    ? "A place here, just for "
+                    : "Un lugar aquí para "}
+                  {data.guests
+                    .map((guest) => guest.name.split(" ")[0])
+                    .join(" & ")}
+                  .
+                </span>
                 <a
                   href="#story"
                   aria-label={
@@ -577,7 +501,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 <span className="story-signature">{data.wedding.names}</span>
               </div>
             </section>
-            <section className="guest-programme" id="programme">
+            <section className="guest-programme" id="programme" tabIndex={-1}>
               <div className="programme-intro">
                 <span>
                   {formatDate(data.wedding.date, locale, {
@@ -604,9 +528,23 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 <div className="programme-heading">
                   {locale === "en" ? "The celebration" : "La celebración"}
                 </div>
-                {data.events.map((event, i) => (
+                {chronologicalEvents.map((event) => (
                   <article className="programme-event" key={event.id}>
-                    <span className="event-order">0{i + 1}</span>
+                    <time
+                      className="programme-clock"
+                      dateTime={event.starts_at}
+                    >
+                      <strong>
+                        {eventTime(event.starts_at, event.timezone, locale)}
+                      </strong>
+                      <span>
+                        {formatDate(event.starts_at, locale, {
+                          timeZone: event.timezone,
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </span>
+                    </time>
                     <div>
                       <p className="programme-time">
                         {formatDate(event.starts_at, locale, {
@@ -624,7 +562,14 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                       </h3>
                       <p>{event.description}</p>
                       <span>{event.venue}</span>
-                      <small>{event.dress_code}</small>
+                      {event.dress_code && (
+                        <small className="programme-dress">
+                          <span>
+                            {locale === "en" ? "Dress code" : "Vestimenta"}
+                          </span>
+                          {event.dress_code}
+                        </small>
+                      )}
                       <a
                         href={
                           "https://www.google.com/maps/search/?api=1&query=" +
@@ -776,19 +721,33 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                     </figure>
                   ))
                 ) : (
-                  <div className="memory-placeholder">
-                    <EnvelopeSimpleIcon size={32} />
-                    <p>
+                  <button
+                    className="memory-first-photo"
+                    onClick={() => setModal("photos")}
+                    aria-label={
+                      locale === "en"
+                        ? "Add the first memory"
+                        : "Añade el primer recuerdo"
+                    }
+                  >
+                    <img
+                      src="/images/wedding-evening.webp"
+                      alt=""
+                      loading="lazy"
+                    />
+                    <span className="memory-first-photo-label">
+                      <CameraIcon size={24} />
                       {locale === "en"
-                        ? "A collection waiting to happen."
-                        : "Una colección por crear."}
-                    </p>
-                    <span>
-                      {locale === "en"
-                        ? "Yours could be the first memory."
-                        : "El tuyo puede ser el primer recuerdo."}
+                        ? "Your view belongs here."
+                        : "Tu mirada tiene un lugar aquí."}
                     </span>
-                  </div>
+                    <span className="memory-first-photo-action">
+                      {locale === "en"
+                        ? "Be the first to share a memory"
+                        : "Comparte el primer recuerdo"}
+                      <Arrow diagonal size={17} />
+                    </span>
+                  </button>
                 )}
               </div>
             </section>
@@ -891,56 +850,11 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
         />
       )}
       {modal === "pass" && (
-        <Modal title={c.pass} onClose={() => setModal(null)}>
-          <div className="wedding-pass">
-            <span>{c.day}</span>
-            <h2>{data.wedding.names}</h2>
-            <p>{data.guests.map((g) => g.name).join(" & ")}</p>
-            <img
-              className="pass-qr"
-              src={"/api/guest/qr?token=" + data.token}
-              alt={
-                locale === "en"
-                  ? "Your private invitation QR code"
-                  : "Código QR de tu invitación privada"
-              }
-            />
-            {data.events.map((e) => (
-              <div className="pass-event" key={e.id}>
-                <CalendarBlankIcon size={18} />
-                <div>
-                  <b>{locale === "es" && e.title_es ? e.title_es : e.title}</b>
-                  <small>
-                    {eventTime(e.starts_at, e.timezone)} · {e.venue}
-                  </small>
-                </div>
-              </div>
-            ))}
-            {data.guests.map((g) => (
-              <div className="report-line" key={g.id}>
-                <span>{g.name}</span>
-                <b>
-                  {g.table_name ||
-                    (locale === "en"
-                      ? "Table to be announced"
-                      : "Mesa por confirmar")}
-                </b>
-              </div>
-            ))}
-            <a
-              className="button primary"
-              href={"/api/guest/calendar?token=" + data.token}
-            >
-              {c.calendar}
-              <Arrow />
-            </a>
-            <small>
-              {locale === "en"
-                ? "Keep this pass private. You can add this page to your home screen from your browser’s share menu."
-                : "Mantén este pase privado. Puedes añadir esta página a tu pantalla de inicio desde el menú de tu navegador."}
-            </small>
-          </div>
-        </Modal>
+        <GuestWeddingPass
+          data={data}
+          locale={locale}
+          onClose={() => setModal(null)}
+        />
       )}
       {modal === "photos" && (
         <UploadModal

@@ -539,66 +539,6 @@
 .immersive-invitation .gate-bottom {
   color: #fff9e9;
 }
-.immersive-invitation .gate-suite {
-  position: relative;
-  width: min(850px, 100%);
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 45px 0 0;
-  perspective: 1400px;
-}
-.immersive-invitation .gate-photo-card {
-  position: absolute;
-  width: 47%;
-  height: 83%;
-  left: 15px;
-  top: 10%;
-  padding: 12px 12px 42px;
-  background: var(--guest-bg);
-  transform: rotate(-10deg);
-  box-shadow: 0 8px 8px #0003;
-}
-.immersive-invitation .gate-photo-card img {
-  height: 100%;
-}
-.immersive-invitation .gate-photo-card span {
-  display: block;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 19px;
-  text-align: center;
-  margin-top: 7px;
-}
-.immersive-invitation .gate-card {
-  width: 440px;
-  padding: 40px 35px 30px;
-  transform: rotate(3deg);
-  background: var(--depth-paper);
-  box-shadow: 2px 8px 8px #0003;
-  outline-offset: -14px;
-}
-.immersive-invitation .gate-monogram {
-  background: var(--guest-accent);
-  color: var(--guest-bg);
-  border: 0;
-  outline: 1px solid color-mix(in srgb, var(--guest-bg) 50%, transparent);
-  outline-offset: -7px;
-  box-shadow:
-    inset 1px 2px 4px #0004,
-    1px 3px 5px #0002;
-  margin: 25px auto;
-}
-.immersive-invitation .gate-open {
-  position: relative;
-  background: var(--guest-accent);
-  color: var(--guest-bg);
-  min-height: 48px;
-  padding: 14px 20px;
-  border: 0;
-}
-.immersive-invitation .gate-card h1 {
-  overflow-wrap: anywhere;
-}
 /* Each world retains its own silhouette, color, and typographic voice. */
 .immersive-invitation.world-maison .guest-hero h1 {
   margin-bottom: 20px;
@@ -1052,34 +992,6 @@
   }
   .immersive-invitation .invitation-gate {
     padding: 110px 25px 85px;
-  }
-  .immersive-invitation .gate-suite {
-    width: min(410px, 100%);
-    padding: 25px 0 0;
-  }
-  .immersive-invitation .gate-photo-card {
-    left: 10%;
-    top: -7px;
-    width: 85%;
-    height: 75%;
-  }
-  .immersive-invitation .gate-card {
-    width: 100%;
-    padding: 37px 27px 30px;
-    transform: rotate(2deg);
-  }
-  .immersive-invitation .gate-card h1 {
-    font-size: 33px;
-  }
-  .immersive-invitation .gate-to {
-    font-size: 28px;
-    margin-top: 25px;
-  }
-  .immersive-invitation .gate-card > p:not(.gate-to) {
-    font-size: 11px;
-  }
-  .immersive-invitation .gate-open {
-    font-size: 11px;
   }
   .immersive-invitation.world-maison .guest-hero h1 {
     font-size: clamp(51px, 12vw, 69px);

@@ -2520,57 +2520,6 @@ td:last-child {
   color: white;
   padding: 8px;
 }
-.gate-card {
-  position: relative;
-  padding: 43px 40px 30px;
-  background: var(--guest-bg);
-  width: min(470px, 100%);
-  text-align: center;
-  outline: 1px solid var(--guest-line);
-  outline-offset: -15px;
-  box-shadow: 0 15px 40px #0003;
-}
-.gate-card > span {
-  font-size: 8px;
-  letter-spacing: 1.5px;
-}
-.gate-to {
-  font-family: var(--guest-display);
-  font-size: 31px;
-  margin-top: 30px;
-}
-.gate-card > p:not(.gate-to) {
-  font-size: 11px;
-  line-height: 2;
-}
-.gate-monogram {
-  height: 70px;
-  width: 70px;
-  border: 1px solid var(--guest-line);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  margin: 30px auto;
-  font-family: var(--guest-display);
-  font-size: 32px;
-  letter-spacing: -5px;
-  padding-right: 5px;
-}
-.gate-card h1 {
-  font-size: 37px;
-  line-height: 1.25;
-  margin-bottom: 18px;
-}
-.gate-open {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin: 30px auto 0;
-  border-top: 1px solid var(--guest-line);
-  padding: 22px 0 5px;
-  font-size: 11px;
-  color: var(--guest-ink);
-}
 .gate-bottom {
   position: absolute;
   bottom: 25px;
@@ -3257,10 +3206,6 @@ td:last-child {
   border: 10px double var(--guest-line);
   margin-top: 35px;
 }
-.world-heritage .gate-card {
-  outline: 4px double var(--guest-line);
-  outline-offset: -20px;
-}
 .world-modernist .guest-hero {
   text-align: left;
 }
@@ -3306,11 +3251,6 @@ td:last-child {
 }
 .world-garden .travel-postcard {
   transform: rotate(3deg);
-}
-.world-garden .gate-card {
-  border-radius: 180px 180px 0 0;
-  padding-top: 80px;
-  outline: 0;
 }
 .error-page,
 .public-wedding {
@@ -3422,12 +3362,6 @@ td:last-child {
   }
   .guest-text-link:hover {
     opacity: 0.7;
-  }
-  .gate-open:hover svg {
-    transform: translateX(5px);
-  }
-  .gate-open svg {
-    transition: transform 0.2s;
   }
   .guest-experience .button.primary:hover {
     opacity: 0.85;
@@ -4721,29 +4655,6 @@ td:last-child {
   }
   .invitation-gate {
     padding: 80px 24px 60px;
-  }
-  .gate-card {
-    padding: 40px 24px 30px;
-  }
-  .gate-card > span {
-    font-size: 7px;
-  }
-  .gate-to {
-    font-size: 28px;
-    margin-top: 30px;
-  }
-  .gate-monogram {
-    margin: 28px auto;
-  }
-  .gate-card h1 {
-    font-size: 33px;
-  }
-  .gate-card > p:not(.gate-to) {
-    font-size: 10px;
-  }
-  .gate-open {
-    font-size: 10px;
-    gap: 15px;
   }
   .gate-bottom {
     font-size: 6px;

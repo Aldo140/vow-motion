@@ -14,7 +14,7 @@ Landing and guest pages use the ceremony and its physical objects as the visual 
 
 `celebration.css` owns the marketing art direction. `invitation.css` owns the guest composition, using the original image-led invitation as its foundation. Desktop layers a wide photograph, names, a calendar keepsake, a medallion and a floral photograph. Mobile has its own asymmetric name lockup, taller photograph and paired keepsakes below the picture. Story photographs flank the letter on desktop and form an album pair below it on mobile. Travel uses stacked postcards; RSVP uses overlapping reply cards.
 
-Motion follows the physical layers: a 480 ms stationery opening, independent scroll parallax, a subtle desktop pointer tilt, and a reply-card entrance. Mobile reduces the travel distance; reduced motion disables the motion, retaining the full composition and all controls. The date keepsake downloads the guest’s authorized calendar; the existing RSVP/pass dock stays reachable. All six worlds retain their typography, palette and distinctive framing.
+Motion follows the physical layers: a 680 ms envelope opening, independent scroll parallax, a subtle desktop pointer tilt, and a reply-card entrance. Mobile reduces the travel distance; reduced motion disables the motion, retaining the full composition and all controls. The date keepsake downloads the guest’s authorized calendar; the existing RSVP/pass dock stays reachable. All six worlds retain their typography, palette and distinctive framing.
 
 ## Landing hero: the living invitation suite
 
@@ -23,3 +23,12 @@ Motion follows the physical layers: a 480 ms stationery opening, independent scr
 Desktop uses a short sticky stage with independent scroll depth and pointer tilt. Mobile uses natural scrolling, a smaller stage, shorter parallax travel and full touch targets. Reduced motion removes pinning and animation while retaining the complete layout and interactions. Hero-only venue derivatives are optimized WebP files; the existing guest experience and its styling stay separate. The collection preview, introductory monogram and closing invitation use smaller, scoped motion details.
 
 Mobile marketing navigation uses an ivory menu sheet over a dimmed backdrop. Large serif links, a persistent start action and sign-in remain reachable; only the links scroll on short screens. A native modal dialog isolates background interaction, with explicit focus cycling, Escape/backdrop dismissal, scroll restoration and automatic cleanup when switching to desktop. Selecting a section transfers focus to its destination. Touch opening uses a 220 ms entrance; keyboard and reduced-motion opening are immediate.
+
+
+## Guest invitation: a useful keepsake
+
+The guest refinement preserves the approved photographic hero and six world identities. Design variance 8, motion 7, density 3: expressive physical layers around an uncluttered guest flow. `guest-keepsakes.css` owns the new objects; `invitation.css` remains the underlying composition.
+
+The opening pairs a venue photograph with a personalized folded envelope. The seal releases, the flap lifts, and the letter slides out before the invitation appears. Pointer tilt is confined to fine pointers; keyboard and reduced-motion opening are immediate. The floral keepsake turns over to show the earliest authorized event with its local time, date, venue and a link to the plans. Only the visible face is interactive and exposed to assistive technology.
+
+The wedding pass uses a ticket composition with a private QR code, household names, table assignments and a chronological itinerary. Every event includes its local date and time zone, dress code and direct directions. Guest dialogs retain a visible close control while scrolling, lock the background and restore the original scroll position. The empty memory album is a working photo-upload invitation. All guest additions support English and Spanish.

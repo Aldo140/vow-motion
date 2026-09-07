@@ -11,6 +11,7 @@ import "./globals.css";
 import "./celebration.css";
 import "./landing-hero.css";
 import "./invitation.css";
+import "./guest-keepsakes.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

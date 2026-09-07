@@ -1,6 +1,7 @@
 import { db, transaction } from "./db";
 import { id, token, hash, passwordHash } from "./auth";
 import { getWorld } from "./worlds";
+import { eventInstant } from "./event-time";
 import type { World } from "./types";
 export async function createWedding(
   ownerId: string,
@@ -66,7 +67,8 @@ export async function createWedding(
         input.date,
       ],
     );
-    // UTC instants and explicit IANA timezones; the event editor accepts offset-aware timestamps.
+    // Resolve the default gathering times in the venue's timezone, then store UTC.
+    const ceremonyStart = eventInstant(input.date + "T16:00", timezone);
     const eventId = id();
     await c.query(
       "INSERT INTO events(id,wedding_id,title,title_es,starts_at,ends_at,timezone,venue,address,description,dress_code) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
@@ -75,8 +77,8 @@ export async function createWedding(
         weddingId,
         "The wedding",
         "La boda",
-        input.date + "T14:00:00Z",
-        input.date + "T22:00:00Z",
+        ceremonyStart,
+        new Date(Date.parse(ceremonyStart) + 8 * 3600000).toISOString(),
         timezone,
         demo ? venue : input.location,
         input.location,
@@ -181,8 +183,8 @@ export async function createWedding(
             : input.world === "maison"
               ? "Una tarde en el jardín"
               : "Aperitivo de bienvenida",
-          input.date + "T10:00:00Z",
-          input.date + "T12:00:00Z",
+          eventInstant(input.date + "T12:00", timezone),
+          eventInstant(input.date + "T14:00", timezone),
           timezone,
           terrace,
           input.location,
