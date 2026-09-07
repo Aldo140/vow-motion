@@ -1,0 +1,998 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { db, rows, transaction } from "@/lib/db";
+import {
+  currentUser,
+  requireUser,
+  session,
+  passwordHash,
+  passwordMatches,
+  hash,
+  id,
+  access,
+  audit,
+  rateLimit,
+  sameOrigin,
+  HttpError,
+} from "@/lib/auth";
+import { createDemo, createWedding, issueToken } from "@/lib/seed";
+import { guestData, studioData } from "@/lib/data";
+import {
+  guestSchema,
+  eventSchema,
+  schemas,
+  csvCell,
+  escapeIcs,
+  worldSchema,
+} from "@/lib/validation";
+import { deliver, checkout } from "@/lib/providers";
+import { sendMessage } from "@/lib/messages";
+import { listWeddings } from "@/lib/wedding-access";
+import { randomInt } from "node:crypto";
+import { savePhoto, readPhoto, deletePhoto } from "@/lib/photo-storage";
+import { readJson } from "@/lib/request-body";
+import sharp from "sharp";
+import QRCode from "qrcode";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+type Context = { params: Promise<{ path: string[] }> };
+const json = (data: unknown, status = 200) =>
+  NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } });
+async function handler(request: NextRequest, context: Context) {
+  try {
+    const parts = (await context.params).path;
+    const [area, action, item] = parts;
+    const method = request.method;
+    if (method !== "GET") sameOrigin(request);
+    const body = () => readJson(request, 2_000_000);
+    if (area === "auth")
+      throw new HttpError(404, "This account action is unavailable.");
+    if (area === "demo" && method === "POST") {
+      await rateLimit("demo:" + request.headers.get("x-forwarded-for"), 30);
+      const existing = await currentUser();
+      if (!existing) await session(await createDemo());
+      return json({ ok: true });
+    }
+    if (area === "weddings") {
+      const user = await requireUser();
+      if (method === "GET") return json(await listWeddings(user.id));
+      const input = z
+        .object({
+          names: z.string().min(3).max(150),
+          date: z.iso.date(),
+          location: z.string().min(2).max(200),
+          world: worldSchema,
+          timezone: z
+            .string()
+            .refine((v) => {
+              try {
+                new Intl.DateTimeFormat("en", { timeZone: v });
+                return true;
+              } catch {
+                return false;
+              }
+            }, "Choose a valid timezone.")
+            .default("Europe/Rome"),
+        })
+        .parse(await body());
+      const weddingId = await createWedding(user.id, input);
+      return json({ id: weddingId });
+    }
+    if (area === "studio") {
+      const weddingId = request.nextUrl.searchParams.get("wedding");
+      if (!weddingId) throw new HttpError(400, "Choose a wedding.");
+      const { user, role } = await access(weddingId, method !== "GET");
+      if (!action && method === "GET") return json(await studioData(weddingId));
+      if (action === "export") {
+        const data = await studioData(weddingId);
+        const header = [
+          "Name",
+          "Email",
+          "Phone",
+          "Address",
+          "Household",
+          "Tags",
+          "RSVP",
+          "Meal",
+          "Dietary needs",
+          "Table",
+        ];
+        const lines = data.guests.map((g) => [
+          g.name,
+          g.email,
+          g.phone,
+          g.address,
+          data.households.find((h) => h.id === g.household_id)?.name,
+          g.tags,
+          g.status,
+          g.meal,
+          g.dietary,
+          g.table_name,
+        ]);
+        return new NextResponse(
+          [header, ...lines].map((r) => r.map(csvCell).join(",")).join("\r\n"),
+          {
+            headers: {
+              "Content-Type": "text/csv; charset=utf-8",
+              "Content-Disposition":
+                'attachment; filename="wedding-guests.csv"',
+              "Cache-Control": "no-store",
+            },
+          },
+        );
+      }
+      if (action === "invitations" && method === "POST") {
+        const input = z
+          .object({ household_id: z.string(), revoke: z.boolean().optional() })
+          .parse(await body());
+        if (
+          !(
+            await rows(
+              "SELECT id FROM households WHERE id=$1 AND wedding_id=$2",
+              [input.household_id, weddingId],
+            )
+          ).length
+        )
+          throw new HttpError(404, "Household not found.");
+        if (input.revoke)
+          await (
+            await db()
+          ).query(
+            "UPDATE invitation_tokens SET revoked=true WHERE household_id=$1",
+            [input.household_id],
+          );
+        const raw = await issueToken(weddingId, input.household_id);
+        await audit(weddingId, user.id, "Personal invitation link created");
+        return json({
+          url: `${process.env.APP_URL || new URL(request.url).protocol + "//" + request.headers.get("host")}/i/${raw}`,
+        });
+      }
+      if (action === "guests" && method === "POST") {
+        const input = await body();
+        const guests = z
+          .array(guestSchema)
+          .min(1)
+          .max(1000)
+          .parse(Array.isArray(input) ? input : [input]);
+        const added = await transaction(async (c) => {
+          const result = [];
+          for (const guest of guests) {
+            let householdId = guest.household_id;
+            if (householdId) {
+              if (
+                !(
+                  await c.query(
+                    "SELECT id FROM households WHERE id=$1 AND wedding_id=$2",
+                    [householdId, weddingId],
+                  )
+                ).rows.length
+              )
+                throw new HttpError(400, "Invalid household.");
+            } else {
+              const existing = guest.household
+                ? (
+                    await c.query<{ id: string }>(
+                      "SELECT id FROM households WHERE wedding_id=$1 AND name=$2",
+                      [weddingId, guest.household],
+                    )
+                  ).rows[0]
+                : null;
+              householdId = existing?.id || id();
+              if (!existing)
+                await c.query(
+                  "INSERT INTO households(id,wedding_id,name) VALUES($1,$2,$3)",
+                  [
+                    householdId,
+                    weddingId,
+                    guest.household || guest.name + " household",
+                  ],
+                );
+            }
+            const guestId = id();
+            await c.query(
+              "INSERT INTO guests(id,wedding_id,household_id,name,email,phone,address,language,tags,notes,is_plus_one,consent) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+              [
+                guestId,
+                weddingId,
+                householdId,
+                guest.name,
+                guest.email,
+                guest.phone,
+                guest.address,
+                guest.language,
+                guest.tags,
+                guest.notes,
+                guest.is_plus_one,
+                guest.consent,
+              ],
+            );
+            result.push(guestId);
+          }
+          return result;
+        });
+        await audit(
+          weddingId,
+          user.id,
+          `${added.length} guest${added.length === 1 ? "" : "s"} added`,
+        );
+        return json({ added: added.length });
+      }
+      if (action === "guests" && method === "PATCH") {
+        const input = guestSchema.parse(await body());
+        const result = await (
+          await db()
+        ).query(
+          "UPDATE guests SET name=$1,email=$2,phone=$3,address=$4,language=$5,tags=$6,notes=$7,consent=$8 WHERE id=$9 AND wedding_id=$10 RETURNING id",
+          [
+            input.name,
+            input.email,
+            input.phone,
+            input.address,
+            input.language,
+            input.tags,
+            input.notes,
+            input.consent,
+            item,
+            weddingId,
+          ],
+        );
+        if (!result.rows.length) throw new HttpError(404, "Guest not found.");
+        return json({ ok: true });
+      }
+      if (action === "guests" && method === "DELETE") {
+        await (
+          await db()
+        ).query("DELETE FROM guests WHERE id=$1 AND wedding_id=$2", [
+          item,
+          weddingId,
+        ]);
+        await audit(weddingId, user.id, "Guest removed");
+        return json({ ok: true });
+      }
+      if (action === "events" && (method === "POST" || method === "PATCH")) {
+        const input = eventSchema.parse(await body());
+        const eventId = item || id();
+        await transaction(async (c) => {
+          if (
+            item &&
+            !(
+              await c.query(
+                "SELECT id FROM events WHERE id=$1 AND wedding_id=$2",
+                [item, weddingId],
+              )
+            ).rows.length
+          )
+            throw new HttpError(404, "Event not found.");
+          for (const householdId of input.household_ids)
+            if (
+              !(
+                await c.query(
+                  "SELECT id FROM households WHERE id=$1 AND wedding_id=$2",
+                  [householdId, weddingId],
+                )
+              ).rows.length
+            )
+              throw new HttpError(400, "Invalid household.");
+          const { household_ids, ...fields } = input;
+          const keys = Object.keys(fields),
+            values = Object.values(fields);
+          if (item)
+            await c.query(
+              `UPDATE events SET ${keys.map((k, i) => `${k}=$${i + 1}`).join(",")} WHERE id=$${keys.length + 1} AND wedding_id=$${keys.length + 2}`,
+              [...values, item, weddingId],
+            );
+          else
+            await c.query(
+              `INSERT INTO events(id,wedding_id,${keys.join(",")}) VALUES(${Array.from({ length: keys.length + 2 }, (_, i) => "$" + (i + 1)).join(",")})`,
+              [eventId, weddingId, ...values],
+            );
+          await c.query("DELETE FROM event_guest_access WHERE event_id=$1", [
+            eventId,
+          ]);
+          for (const h of household_ids)
+            await c.query(
+              "INSERT INTO event_guest_access(event_id,household_id) VALUES($1,$2)",
+              [eventId, h],
+            );
+        });
+        await audit(
+          weddingId,
+          user.id,
+          `Event ${item ? "updated" : "created"}: ${input.title}`,
+        );
+        return json({ ok: true });
+      }
+      if (action === "events" && method === "DELETE") {
+        await (
+          await db()
+        ).query("DELETE FROM events WHERE id=$1 AND wedding_id=$2", [
+          item,
+          weddingId,
+        ]);
+        return json({ ok: true });
+      }
+      if (action === "settings" && method === "PATCH") {
+        const input = z
+          .object({
+            names: z.string().min(3).max(150),
+            date: z.iso.date(),
+            location: z.string().min(2).max(200),
+            timezone: z.string().refine((v) => {
+              try {
+                new Intl.DateTimeFormat("en", { timeZone: v });
+                return true;
+              } catch {
+                return false;
+              }
+            }, "Choose a valid timezone."),
+            world: worldSchema,
+            story: z.string().max(10000),
+            privacy: z.enum(["public", "invite-only", "password"]),
+            password: z.string().min(8).max(200).optional(),
+            locale: z.enum(["en", "es"]),
+            status: z.enum(["draft", "published", "memories"]),
+            rsvp_deadline: z.iso.date(),
+            settings: z.record(z.string(), z.unknown()).optional(),
+          })
+          .parse(await body());
+        if (input.privacy === "password" && !input.password) {
+          const current = (
+            await rows("SELECT password_hash FROM weddings WHERE id=$1", [
+              weddingId,
+            ])
+          )[0];
+          if (!current.password_hash)
+            throw new HttpError(
+              400,
+              "Set a password with at least 8 characters.",
+            );
+        }
+        if (!["owner", "partner"].includes(role)) {
+          const before = (
+            await rows("SELECT * FROM weddings WHERE id=$1", [weddingId])
+          )[0];
+          if (
+            input.password ||
+            ["privacy", "status", "rsvp_deadline"].some(
+              (k) => input[k as keyof typeof input] !== before[k],
+            )
+          )
+            throw new HttpError(
+              403,
+              "Only the couple can change publishing and privacy settings.",
+            );
+        }
+        const { password, ...fields } = input;
+        const record: Record<string, unknown> = { ...fields };
+        if (password) record.password_hash = passwordHash(password);
+        if (record.settings) record.settings = JSON.stringify(record.settings);
+        const keys = Object.keys(record);
+        await (
+          await db()
+        ).query(
+          `UPDATE weddings SET ${keys.map((k, i) => `${k}=$${i + 1}`).join(",")} WHERE id=$${keys.length + 1}`,
+          [...Object.values(record), weddingId],
+        );
+        await audit(weddingId, user.id, "Wedding experience settings saved");
+        return json({ ok: true });
+      }
+      if (action === "seating" && method === "POST") {
+        const input = z
+          .object({ guest_id: z.string(), table_id: z.string().nullable() })
+          .parse(await body());
+        await transaction(async (c) => {
+          if (
+            !(
+              await c.query(
+                "SELECT id FROM guests WHERE id=$1 AND wedding_id=$2 AND status='attending'",
+                [input.guest_id, weddingId],
+              )
+            ).rows.length
+          )
+            throw new HttpError(400, "Only attending guests can be seated.");
+          if (!input.table_id) {
+            await c.query("DELETE FROM seat_assignments WHERE guest_id=$1", [
+              input.guest_id,
+            ]);
+            return;
+          }
+          const table = (
+            await c.query<{ capacity: number }>(
+              "SELECT capacity FROM seating_tables WHERE id=$1 AND wedding_id=$2 FOR UPDATE",
+              [input.table_id, weddingId],
+            )
+          ).rows[0];
+          if (!table) throw new HttpError(404, "Table not found.");
+          const count = (
+            await c.query<{ count: string }>(
+              "SELECT count(*) FROM seat_assignments WHERE table_id=$1 AND guest_id<>$2",
+              [input.table_id, input.guest_id],
+            )
+          ).rows[0];
+          if (Number(count.count) >= table.capacity)
+            throw new HttpError(
+              409,
+              "This table is full. Choose another table.",
+            );
+          await c.query(
+            "INSERT INTO seat_assignments(guest_id,table_id) VALUES($1,$2) ON CONFLICT(guest_id) DO UPDATE SET table_id=$2",
+            [input.guest_id, input.table_id],
+          );
+        });
+        return json({ ok: true });
+      }
+      if (action === "messages" && method === "POST") {
+        const input = z
+          .object({
+            subject: z.string().min(1).max(200),
+            body: z.string().min(1).max(5000),
+            audience: z.string().max(200),
+            channel: z.enum(["email", "sms"]),
+            scheduled_at: z
+              .union([z.iso.datetime({ offset: true }), z.literal("")])
+              .optional(),
+          })
+          .parse(await body());
+        const messageId = id();
+        await (
+          await db()
+        ).query(
+          "INSERT INTO messages(id,wedding_id,subject,body,audience,channel,scheduled_at) VALUES($1,$2,$3,$4,$5,$6,$7)",
+          [
+            messageId,
+            weddingId,
+            input.subject,
+            input.body,
+            input.audience,
+            input.channel,
+            input.scheduled_at || null,
+          ],
+        );
+        await audit(weddingId, user.id, "Message draft saved");
+        return json({ id: messageId });
+      }
+      if (action === "send" && method === "POST")
+        return json(await sendMessage(weddingId, item, user.id, user.is_demo));
+      if (action === "photos" && method === "PATCH") {
+        const input = z.object({ approved: z.boolean() }).parse(await body());
+        await (
+          await db()
+        ).query("UPDATE photos SET approved=$1 WHERE id=$2 AND wedding_id=$3", [
+          input.approved,
+          item,
+          weddingId,
+        ]);
+        return json({ ok: true });
+      }
+      if (action === "photos" && method === "DELETE") {
+        const photo = (
+          await rows(
+            "SELECT filename FROM photos WHERE id=$1 AND wedding_id=$2",
+            [item, weddingId],
+          )
+        )[0];
+        if (!photo) throw new HttpError(404, "Photo not found.");
+        await deletePhoto(String(photo.filename));
+        await (
+          await db()
+        ).query("DELETE FROM photos WHERE id=$1 AND wedding_id=$2", [
+          item,
+          weddingId,
+        ]);
+        return json({ ok: true });
+      }
+      if (action === "checkout" && method === "POST") {
+        const { plan } = z
+          .object({ plan: z.enum(["essential", "signature", "bespoke"]) })
+          .parse(await body());
+        return json({ url: await checkout(plan, weddingId, user.email) });
+      }
+      const tableMap: Record<string, string> = {
+        travel: "travel_items",
+        registry: "registry_links",
+        questions: "rsvp_questions",
+        tables: "seating_tables",
+        collaborators: "collaborators",
+        domains: "domains",
+      };
+      if (action in tableMap) {
+        if (
+          ["collaborators", "domains"].includes(action) &&
+          !["owner", "partner"].includes(role)
+        )
+          throw new HttpError(403, "Only the couple can manage this setting.");
+        const table = tableMap[action];
+        if (method === "DELETE") {
+          await (
+            await db()
+          ).query(`DELETE FROM ${table} WHERE id=$1 AND wedding_id=$2`, [
+            item,
+            weddingId,
+          ]);
+          return json({ ok: true });
+        }
+        if (
+          method === "PATCH" &&
+          item &&
+          ["travel", "registry"].includes(action)
+        ) {
+          const fields = schemas[action as "travel" | "registry"].parse(
+            await body(),
+          );
+          const keys = Object.keys(fields);
+          const updated = await (
+            await db()
+          ).query(
+            `UPDATE ${table} SET ${keys.map((key, index) => `${key}=$${index + 1}`).join(",")} WHERE id=$${keys.length + 1} AND wedding_id=$${keys.length + 2} RETURNING id`,
+            [...Object.values(fields), item, weddingId],
+          );
+          if (!updated.rows.length)
+            throw new HttpError(
+              404,
+              "This detail could not be found. Refresh and try again.",
+            );
+          await audit(weddingId, user.id, `${action} updated`);
+          return json({ ok: true });
+        }
+        if (method === "POST") {
+          const schema = schemas[action as keyof typeof schemas];
+          const fields = schema.parse(await body());
+          const keys = Object.keys(fields),
+            values = Object.values(fields).map((v) =>
+              Array.isArray(v) ? JSON.stringify(v) : v,
+            );
+          await (
+            await db()
+          ).query(
+            `INSERT INTO ${table}(id,wedding_id,${keys.join(",")}) VALUES(${Array.from({ length: keys.length + 2 }, (_, i) => "$" + (i + 1)).join(",")})`,
+            [id(), weddingId, ...values],
+          );
+          await audit(weddingId, user.id, `${action} updated`);
+          return json({ ok: true });
+        }
+      }
+    }
+    if (area === "guest") {
+      const raw = request.nextUrl.searchParams.get("token") || "";
+      const data = await guestData(raw);
+      const weddingId = data.wedding.id;
+      if (!action && method === "GET") {
+        await (
+          await db()
+        ).query(
+          "UPDATE invitation_tokens SET opened_at=COALESCE(opened_at,now()) WHERE token_hash=$1",
+          [hash(raw)],
+        );
+        return json(data);
+      }
+      if (action === "rsvp" && method === "POST") {
+        await rateLimit("rsvp:" + hash(raw), 100);
+        if (
+          data.wedding.rsvp_deadline <
+          new Intl.DateTimeFormat("en-CA", {
+            timeZone: data.wedding.timezone,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }).format(new Date())
+        )
+          throw new HttpError(
+            403,
+            "The RSVP deadline has passed. Please contact your hosts.",
+          );
+        const input = z
+          .object({
+            responses: z
+              .array(
+                z.object({
+                  guest_id: z.string(),
+                  event_id: z.string(),
+                  attending: z.boolean(),
+                  meal: z.string().max(200).default(""),
+                  dietary: z.string().max(1000).default(""),
+                  name: z.string().max(150).optional(),
+                  answers: z
+                    .record(z.string(), z.string().max(1000))
+                    .default({}),
+                }),
+              )
+              .max(200),
+          })
+          .parse(await body());
+        const expected =
+          data.guests.length *
+          data.events.filter((e) => e.rsvp_required).length;
+        const unique = new Set(
+          input.responses.map((r) => r.guest_id + ":" + r.event_id),
+        );
+        if (
+          unique.size !== input.responses.length ||
+          input.responses.length !== expected
+        )
+          throw new HttpError(
+            400,
+            "Please answer for every invited guest and event.",
+          );
+        for (const response of input.responses) {
+          if (
+            !data.guests.some((g) => g.id === response.guest_id) ||
+            !data.events.some(
+              (e) => e.id === response.event_id && e.rsvp_required,
+            )
+          )
+            throw new HttpError(
+              403,
+              "This response is not part of your invitation.",
+            );
+          if (response.attending && !response.meal)
+            throw new HttpError(
+              400,
+              "Please choose a meal for every attending guest.",
+            );
+          for (const q of data.questions) {
+            if (
+              q.required &&
+              (q.condition === "always" || response.attending) &&
+              !response.answers[q.id]?.trim()
+            )
+              throw new HttpError(400, `Please answer: ${q.label}`);
+          }
+        }
+        await transaction(async (c) => {
+          const eventIds = [
+            ...new Set(input.responses.map((r) => r.event_id)),
+          ].sort();
+          const locked = await c.query<{ id: string; capacity: number }>(
+            "SELECT id,capacity FROM events WHERE id=ANY($1::text[]) ORDER BY id FOR UPDATE",
+            [eventIds],
+          );
+          const active = await c.query(
+            "SELECT id FROM invitation_tokens WHERE token_hash=$1 AND revoked=false AND expires_at>now()",
+            [hash(raw)],
+          );
+          if (!active.rows.length)
+            throw new HttpError(
+              403,
+              "Your invitation changed. Please reopen it.",
+            );
+          for (const event of locked.rows) {
+            const allowed = await c.query(
+              "SELECT id FROM events WHERE id=$1 AND (visibility='all' OR EXISTS(SELECT 1 FROM event_guest_access WHERE event_id=$1 AND household_id=$2))",
+              [event.id, data.guests[0].household_id],
+            );
+            if (!allowed.rows.length)
+              throw new HttpError(
+                403,
+                "Your event invitation changed. Please reopen it.",
+              );
+          }
+          for (const r of input.responses) {
+            await c.query(
+              "INSERT INTO guest_event_responses(guest_id,event_id,attending,meal,dietary,answers) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(guest_id,event_id) DO UPDATE SET attending=$3,meal=$4,dietary=$5,answers=$6,updated_at=now()",
+              [
+                r.guest_id,
+                r.event_id,
+                r.attending,
+                r.attending ? r.meal : "",
+                r.attending ? r.dietary : "",
+                JSON.stringify(r.answers),
+              ],
+            );
+            if (
+              r.name &&
+              data.guests.find((g) => g.id === r.guest_id)?.is_plus_one
+            )
+              await c.query("UPDATE guests SET name=$1 WHERE id=$2", [
+                r.name,
+                r.guest_id,
+              ]);
+          }
+          for (const event of locked.rows) {
+            const count = (
+              await c.query<{ count: string }>(
+                "SELECT count(*) FROM guest_event_responses WHERE event_id=$1 AND attending=true",
+                [event.id],
+              )
+            ).rows[0];
+            if (Number(count.count) > event.capacity)
+              throw new HttpError(
+                409,
+                "This event has reached capacity. Please contact your hosts.",
+              );
+          }
+          for (const g of data.guests) {
+            const responses = input.responses.filter(
+                (r) => r.guest_id === g.id,
+              ),
+              attending = responses.some((r) => r.attending),
+              meal = responses.find((r) => r.attending)?.meal || "",
+              dietary = responses.find((r) => r.attending)?.dietary || "";
+            await c.query(
+              "UPDATE guests SET status=$1,meal=$2,dietary=$3 WHERE id=$4",
+              [attending ? "attending" : "declined", meal, dietary, g.id],
+            );
+            if (!attending)
+              await c.query("DELETE FROM seat_assignments WHERE guest_id=$1", [
+                g.id,
+              ]);
+          }
+        });
+        await audit(weddingId, "guest", `${data.household} saved their RSVP`);
+        return json({ ok: true });
+      }
+      if (action === "contact" && method === "POST") {
+        const input = z
+          .object({
+            guest_id: z.string(),
+            email: z.union([z.email(), z.literal("")]),
+            phone: z.string().max(50),
+            address: z.string().max(500),
+            consent: z.boolean(),
+          })
+          .parse(await body());
+        if (!data.guests.some((g) => g.id === input.guest_id))
+          throw new HttpError(403, "Guest not found.");
+        await (
+          await db()
+        ).query(
+          "UPDATE guests SET email=$1,phone=$2,address=$3,consent=$4 WHERE id=$5",
+          [
+            input.email,
+            input.phone,
+            input.address,
+            input.consent,
+            input.guest_id,
+          ],
+        );
+        return json({ ok: true });
+      }
+      if (action === "calendar") {
+        const events = item
+          ? data.events.filter((e) => e.id === item)
+          : data.events;
+        const stamp = (s: string) =>
+          new Date(s)
+            .toISOString()
+            .replaceAll("-", "")
+            .replaceAll(":", "")
+            .replace(/\.\d{3}/, "");
+        const content = [
+          "BEGIN:VCALENDAR",
+          "VERSION:2.0",
+          "PRODID:-//Vow Motion//Wedding//EN",
+          ...events.flatMap((e) => [
+            "BEGIN:VEVENT",
+            `UID:${e.id}@vowmotion`,
+            `DTSTAMP:${stamp(new Date().toISOString())}`,
+            `DTSTART:${stamp(e.starts_at)}`,
+            `DTEND:${stamp(e.ends_at)}`,
+            `SUMMARY:${escapeIcs(e.title + " — " + data.wedding.names)}`,
+            `LOCATION:${escapeIcs(e.venue + ", " + e.address)}`,
+            "END:VEVENT",
+          ]),
+          "END:VCALENDAR",
+        ].join("\r\n");
+        return new NextResponse(content, {
+          headers: {
+            "Content-Type": "text/calendar; charset=utf-8",
+            "Content-Disposition": 'attachment; filename="our-wedding.ics"',
+            "Cache-Control": "no-store",
+          },
+        });
+      }
+      if (action === "qr") {
+        return new NextResponse(
+          await QRCode.toString(
+            `${process.env.APP_URL || new URL(request.url).protocol + "//" + request.headers.get("host")}/i/${raw}`,
+            {
+              type: "svg",
+              margin: 2,
+              color: { dark: "#292b23", light: "#ffffff" },
+            },
+          ),
+          {
+            headers: {
+              "Content-Type": "image/svg+xml",
+              "Cache-Control": "no-store",
+            },
+          },
+        );
+      }
+      if (action === "photos" && method === "POST") {
+        await rateLimit("photo:" + hash(raw), 50);
+        if (Number(request.headers.get("content-length") || 0) > 11_000_000)
+          throw new HttpError(
+            413,
+            "Please choose an image smaller than 10 MB.",
+          );
+        const form = await request.formData();
+        const file = form.get("file");
+        if (
+          !(file instanceof File) ||
+          file.size > 10_000_000 ||
+          !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+        )
+          throw new HttpError(
+            400,
+            "Choose a JPG, PNG or WebP image under 10 MB.",
+          );
+        const bytes = await file.arrayBuffer();
+        let output: Buffer;
+        try {
+          output = await sharp(Buffer.from(bytes), {
+            limitInputPixels: 40_000_000,
+          })
+            .rotate()
+            .resize(2400, 2400, { fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 85 })
+            .toBuffer();
+        } catch {
+          throw new HttpError(
+            400,
+            "We could not read that image. Please choose another.",
+          );
+        }
+        const photoId = id();
+        const filename = await savePhoto(weddingId, photoId, output);
+        try {
+          await (
+            await db()
+          ).query(
+            "INSERT INTO photos(id,wedding_id,household_id,filename,caption) VALUES($1,$2,$3,$4,$5)",
+            [
+              photoId,
+              weddingId,
+              data.guests[0].household_id,
+              filename,
+              String(form.get("caption") || "").slice(0, 300),
+            ],
+          );
+        } catch (error) {
+          await deletePhoto(filename).catch(() => {});
+          throw error;
+        }
+        return json({ ok: true });
+      }
+    }
+    if (area === "photos" && method === "GET") {
+      const photo = (
+        await rows("SELECT * FROM photos WHERE id=$1", [action])
+      )[0];
+      if (!photo) throw new HttpError(404, "Photo not found.");
+      const raw = request.nextUrl.searchParams.get("token");
+      if (raw) {
+        const data = await guestData(raw);
+        if (!data.photos.some((p) => p.id === action))
+          throw new HttpError(403, "Photo unavailable.");
+      } else await access(String(photo.wedding_id));
+      const bytes = await readPhoto(String(photo.filename));
+      return new NextResponse(bytes, {
+        headers: {
+          "Content-Type": "image/webp",
+          "Cache-Control": "private, no-store",
+        },
+      });
+    }
+    if (area === "lookup" && method === "POST") {
+      await rateLimit("lookup:" + request.headers.get("x-forwarded-for"), 20);
+      const input = z
+        .object({
+          slug: z.string().optional(),
+          name: z.string().min(2).optional(),
+          email: z.email().optional(),
+          challenge: z.string().optional(),
+          code: z.string().length(6).optional(),
+        })
+        .parse(await body());
+      if (input.challenge && input.code) {
+        const challenge = (
+          await rows(
+            "UPDATE verification_challenges SET attempts=attempts+1 WHERE id=$1 AND consumed=false AND expires_at>now() AND attempts<5 RETURNING *",
+            [input.challenge],
+          )
+        )[0];
+        if (
+          !challenge ||
+          !passwordMatches(input.code, String(challenge.code_hash))
+        )
+          throw new HttpError(
+            400,
+            "That code is incorrect or expired. Request a new one.",
+          );
+        const consumed = await (
+          await db()
+        ).query(
+          "UPDATE verification_challenges SET consumed=true WHERE id=$1 AND consumed=false RETURNING id",
+          [input.challenge],
+        );
+        if (!consumed.rows.length)
+          throw new HttpError(400, "That code has already been used.");
+        return json({
+          url:
+            "/i/" +
+            (await issueToken(
+              String(challenge.wedding_id),
+              String(challenge.household_id),
+            )),
+        });
+      }
+      if (!input.slug || !input.email || !input.name)
+        throw new HttpError(400, "Enter your name and email address.");
+      const guests = await rows(
+        "SELECT g.*,w.id wid,u.is_demo FROM guests g JOIN weddings w ON w.id=g.wedding_id JOIN users u ON u.id=w.owner_id WHERE w.slug=$1 AND lower(g.email)=$2",
+        [input.slug, input.email.toLowerCase()],
+      );
+      const normalize = (s: string) =>
+        s
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[^a-z]/g, "");
+      const g = guests.find(
+        (g) =>
+          normalize(String(g.name)).includes(normalize(input.name!)) ||
+          normalize(input.name!).includes(normalize(String(g.name))),
+      );
+      const challengeId = id();
+      if (!g)
+        return json({
+          challenge: challengeId,
+          message:
+            "If your details match an invitation, a verification code will arrive by email.",
+        });
+      const code = String(randomInt(100000, 1000000));
+      await (
+        await db()
+      ).query(
+        "INSERT INTO verification_challenges(id,wedding_id,household_id,code_hash,expires_at) VALUES($1,$2,$3,$4,now()+interval '10 minutes')",
+        [challengeId, g.wid, g.household_id, passwordHash(code)],
+      );
+      await deliver({
+        channel: "email",
+        to: String(g.email),
+        subject: "Your wedding invitation code",
+        body:
+          "Your verification code is " + code + ". It expires in 10 minutes.",
+        idempotencyKey: challengeId,
+        demo: Boolean(g.is_demo),
+      });
+      const owner = await currentUser();
+      const canPreview =
+        !!owner &&
+        Boolean(g.is_demo) &&
+        (
+          await rows("SELECT id FROM weddings WHERE id=$1 AND owner_id=$2", [
+            g.wid,
+            owner.id,
+          ])
+        ).length > 0;
+      return json({
+        challenge: challengeId,
+        message:
+          "If your details match an invitation, a verification code will arrive by email.",
+        ...(canPreview ? { development_code: code } : {}),
+      });
+    }
+    throw new HttpError(404, "This action is unavailable.");
+  } catch (error) {
+    if (error instanceof z.ZodError)
+      return json({ error: error.issues.map((i) => i.message).join(" ") }, 400);
+    if (error instanceof HttpError)
+      return json({ error: error.message }, error.status);
+    console.error(
+      "Request failed:",
+      error instanceof Error ? error.message : "unknown",
+    );
+    return json(
+      {
+        error:
+          "Something went wrong. Your saved data is safe. Please try again.",
+      },
+      500,
+    );
+  }
+}
+export const GET = handler;
+export const POST = handler;
+export const PATCH = handler;
+export const DELETE = handler;

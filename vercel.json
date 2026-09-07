@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": [
+    "iad1"
+  ],
+  "functions": {
+    "src/app/api/[...path]/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/demo/[world]/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "buildCommand": "npm run lint && npm test && npm run build"
+}

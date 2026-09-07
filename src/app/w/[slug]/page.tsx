@@ -1,0 +1,57 @@
+import { rows } from "@/lib/db";
+import { getWorld, formatDate } from "@/lib/worlds";
+import { notFound } from "next/navigation";
+import { Brand } from "@/components/ui";
+import Lookup from "@/components/lookup";
+import StoryUnlock from "@/components/story-unlock";
+import { storyUnlocked } from "@/lib/wedding-access";
+export const dynamic = "force-dynamic";
+export const metadata = {
+  title: "A wedding story",
+  robots: { index: false, follow: false },
+  openGraph: {
+    title: "A wedding story",
+    description: "An invitation to celebrate.",
+    images: [],
+  },
+};
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const w = (
+    await rows("SELECT * FROM weddings WHERE slug=$1", [(await params).slug])
+  )[0];
+  if (!w || w.status === "draft") notFound();
+  const unlocked =
+    w.privacy === "public" ||
+    (w.privacy === "password" &&
+      (await storyUnlocked(String(w.id), String(w.password_hash))));
+  return (
+    <main id="main" className="public-wedding">
+      <Brand />
+      {unlocked ? (
+        <>
+          <img src={getWorld(String(w.world)).image} alt="A wedding setting" />
+          <h1>{String(w.names)}</h1>
+          <p>
+            {formatDate(String(w.date))} · {String(w.location)}
+          </p>
+          <p>{String(w.story)}</p>
+        </>
+      ) : w.privacy === "password" ? (
+        <StoryUnlock slug={String(w.slug)} />
+      ) : (
+        <>
+          <h1>You’re in the right place.</h1>
+          <p>
+            This celebration is private. Open your personal invitation to see
+            the details.
+          </p>
+        </>
+      )}
+      <Lookup slug={String(w.slug)} />
+    </main>
+  );
+}
