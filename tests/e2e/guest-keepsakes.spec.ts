@@ -64,20 +64,19 @@ test("the guest pass includes local dates and maps, retains its close control an
   await expect(pass).toBeVisible();
   await expect(pass.locator(".day-pass-event")).toHaveCount(data.events.length);
   const event = data.events[0];
-  expect(
+  const row = pass.locator(".day-pass-event").filter({ hasText: event.title });
+  const local = (options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat("en-GB", {
       timeZone: event.timezone,
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(event.starts_at)),
-  ).toBe("12:00");
-  const row = pass.locator(".day-pass-event").filter({ hasText: event.title });
-  const date = new Intl.DateTimeFormat("en-GB", {
-    timeZone: event.timezone,
-    day: "numeric",
-    month: "short",
-  }).format(new Date(event.starts_at));
-  await expect(row.locator("time")).toContainText(date);
+      ...options,
+    }).format(new Date(event.starts_at));
+  // The pass reads in the venue's local time, whatever the visitor's own zone.
+  await expect(row.locator("time")).toContainText(
+    local({ day: "numeric", month: "short" }),
+  );
+  await expect(row.locator("time")).toContainText(
+    local({ hour: "numeric", minute: "2-digit" }),
+  );
   const directions = row.getByRole("link", {
     name: `Directions to ${event.venue || event.title}`,
   });

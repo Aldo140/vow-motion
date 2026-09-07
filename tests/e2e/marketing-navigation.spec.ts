@@ -89,7 +89,6 @@ test("menu destinations, short screens, reduced motion and desktop resizing rema
       ["The design collection", "worlds"],
       ["How it works", "experience"],
       ["Pricing", "pricing"],
-      ["For planners", "planners"],
     ]) {
       await page.evaluate(() =>
         window.scrollTo({ top: 0, behavior: "instant" }),
@@ -112,6 +111,15 @@ test("menu destinations, short screens, reduced motion and desktop resizing rema
         )
         .toBe(90);
     }
+    // "For planners" is a page of its own, not a section of this one.
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await toggle.tap();
+    await menu.getByRole("link", { name: "For planners", exact: true }).tap();
+    await expect(page).toHaveURL(/\/planners$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: /worth remembering twice/ }),
+    ).toBeVisible();
+    await page.goto("/");
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,

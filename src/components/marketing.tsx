@@ -283,9 +283,9 @@ export default function Marketing() {
               Give every couple their own world. Keep every wedding, guest list,
               and collaborator beautifully in hand.
             </p>
-            <DemoButton className="button light-button">
-              Explore the planner Studio
-            </DemoButton>
+            <a href="/planners" className="button light-button">
+              How planners use Vow Motion <Arrow diagonal size={15} />
+            </a>
           </div>
         </section>
         <section

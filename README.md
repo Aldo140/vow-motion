@@ -54,6 +54,7 @@ The application uses Next.js 16.3.4 App Router, React 19, TypeScript, PostgreSQL
 | Location | Responsibility |
 | --- | --- |
 | `src/app/page.tsx`, `src/components/marketing.tsx` | Product presentation and world previews. |
+| `src/app/planners`, `src/components/planners.tsx` | The planner argument: each Studio capability paired with its guest outcome, and the one-wedding pilot. |
 | `src/app/studio/[[...section]]`, `src/components/studio*.tsx` | Authenticated workspace, guest management, events, experience settings, messaging, travel, seating, photos, and collaborators. |
 | `src/app/i/[token]`, `src/components/guest-experience.tsx` | Household invitation, permitted events, RSVP, contact updates, wedding pass, calendar, and photos. |
 | `src/app/w/[slug]` | Published story and invitation lookup entry point. |

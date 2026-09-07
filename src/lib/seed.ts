@@ -67,6 +67,12 @@ export async function createWedding(
         input.date,
       ],
     );
+    // The celebration spans a weekend, so resolve each day from the wedding
+    // date at midday UTC, clear of any local daylight-saving change.
+    const day = (offset: number) =>
+      new Date(Date.parse(input.date + "T12:00:00Z") + offset * 86400000)
+        .toISOString()
+        .slice(0, 10);
     // Resolve the default gathering times in the venue's timezone, then store UTC.
     const ceremonyStart = eventInstant(input.date + "T16:00", timezone);
     const eventId = id();
@@ -126,6 +132,7 @@ export async function createWedding(
         "Lily Martin",
         "Jack Martin",
       ];
+      const confirmed: string[] = [];
       for (let i = 0; i < names.length; i += 2) {
         const householdId = id();
         await c.query(
@@ -155,10 +162,19 @@ export async function createWedding(
                   ? "Garden risotto"
                   : "Sea bass"
                 : "",
-              j === 4 ? "Gluten free" : "",
+              j === 4
+                ? "Gluten free"
+                : j === 9
+                  ? "Vegetarian"
+                  : j === 13
+                    ? "No nuts"
+                    : j === 20
+                      ? "Dairy free"
+                      : "",
               i === 10 ? "es" : "en",
             ],
           );
+          if (status === "attending") confirmed.push(guestId);
           if (status !== "pending")
             await c.query(
               "INSERT INTO guest_event_responses(guest_id,event_id,attending,meal) VALUES($1,$2,$3,$4)",
@@ -183,8 +199,8 @@ export async function createWedding(
             : input.world === "maison"
               ? "Una tarde en el jardín"
               : "Aperitivo de bienvenida",
-          eventInstant(input.date + "T12:00", timezone),
-          eventInstant(input.date + "T14:00", timezone),
+          eventInstant(day(-1) + "T18:00", timezone),
+          eventInstant(day(-1) + "T21:00", timezone),
           timezone,
           terrace,
           input.location,
@@ -204,6 +220,22 @@ export async function createWedding(
           "INSERT INTO event_guest_access(event_id,household_id) VALUES($1,$2)",
           [welcomeId, h.id],
         );
+      await c.query(
+        "INSERT INTO events(id,wedding_id,title,title_es,starts_at,ends_at,timezone,venue,address,description,dress_code) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+        [
+          id(),
+          weddingId,
+          "Farewell brunch",
+          "Brunch de despedida",
+          eventInstant(day(1) + "T10:30", timezone),
+          eventInstant(day(1) + "T13:00", timezone),
+          timezone,
+          venue,
+          input.location,
+          "Coffee, something sweet, and slow goodbyes before you travel home.",
+          "Come as you are",
+        ],
+      );
       await c.query(
         "INSERT INTO travel_items(id,wedding_id,title,type,description,address,url,price) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
         [
@@ -243,10 +275,34 @@ export async function createWedding(
               : "Milan Malpensa Airport",
         ],
       );
-      for (const name of ["Olivo", "Limone", "Cipresso"])
+      const tables: string[] = [];
+      for (const name of ["Olivo", "Limone", "Cipresso"]) {
+        const tableId = id();
+        tables.push(tableId);
         await c.query(
           "INSERT INTO seating_tables(id,wedding_id,name,capacity) VALUES($1,$2,$3,8)",
-          [id(), weddingId, name],
+          [tableId, weddingId, name],
+        );
+      }
+      // Seat most confirmed households, two to a table so each stays together.
+      // The remainder stays unseated, as the Studio's outstanding work.
+      for (const [index, guestId] of confirmed.slice(0, 12).entries())
+        await c.query(
+          "INSERT INTO seat_assignments(guest_id,table_id) VALUES($1,$2)",
+          [guestId, tables[Math.floor(index / 4)]],
+        );
+      for (const [title, search] of [
+        ["A little something for the home", "wedding gift list"],
+        ["The honeymoon fund", "honeymoon fund"],
+      ])
+        await c.query(
+          "INSERT INTO registry_links(id,wedding_id,title,url) VALUES($1,$2,$3,$4)",
+          [
+            id(),
+            weddingId,
+            title,
+            "https://www.google.com/search?q=" + encodeURIComponent(search),
+          ],
         );
       await c.query(
         "INSERT INTO messages(id,wedding_id,subject,body,audience,status) VALUES($1,$2,$3,$4,$5,$6)",

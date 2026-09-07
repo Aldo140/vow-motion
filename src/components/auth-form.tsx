@@ -6,9 +6,11 @@ import { worlds } from "@/lib/worlds";
 export default function AuthForm({
   register = false,
   setup = false,
+  notice = "",
 }: {
   register?: boolean;
   setup?: boolean;
+  notice?: string;
 }) {
   const [step, setStep] = useState(setup ? 1 : 0),
     [busy, setBusy] = useState(false),
@@ -53,6 +55,7 @@ export default function AuthForm({
                 ? "Your wedding, your people, one beautiful place."
                 : "Your people. Your plans. Right where you left them."}
           </p>
+          {notice && <Notice>{notice}</Notice>}
           {error && <Notice error>{error}</Notice>}
           {!register && !setup && (
             <p>

@@ -4,16 +4,17 @@ Reviewed 7 September 2026. Vow Motion is a persistent, functional launch preview
 
 ## Implemented
 
-| Area | Current behavior |
-| --- | --- |
-| Product and design | Responsive marketing experience, Studio, invitation reveal, reduced-motion handling, self-hosted type, and generated demo imagery. Six selectable worlds; Riviera, Maison, and Notte have dedicated imagery and seeded demo weddings. Heritage, Modernist, and Garden reuse those assets and the shared guest layout. |
-| Accounts and workspaces | Registration, password login, seven-day sessions, email verification before collaborator access, separate visitor demos, multiple weddings, and partner/planner/viewer access controls. |
-| Guest list | Persistent households and guests, contact details, language, tags, consent, plus-one records, CSV import/export, filtering, and personal links. Invitation tokens can expire and be revoked. |
-| Events and RSVP | Timezone-aware events, household-based private access, per-person/event responses, meals, dietary details, configurable questions, RSVP deadlines, capacity checks, and saved responses. |
-| Guest experience | Account-free household invitations, English/Spanish interface, password-protected or public story, event details, travel/registry links, contact correction, QR wedding pass, and calendar download. |
-| Wedding operations | Seating with drag/drop and accessible table menus, capacity checks, travel/registry records, photo upload/approval/deletion, collaborator roles, and an activity log. |
-| Messaging | Consent-filtered drafts and audiences, email/SMS adapters, visible development outbox, and an authenticated worker for scheduled messages. Demo sends always stay local. |
-| Billing | Optional hosted one-time Checkout and a signed Stripe webhook that deduplicates events and records paid plans. Missing payment configuration returns an explicit unavailable response. |
+| Area                    | Current behavior                                                                                                                                                                                                                                                                                                      |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planner presentation    | A dedicated `/planners` page stating the planner argument, pairing each Studio capability with the guest outcome it produces, and offering a one-wedding pilot. Linked from the main navigation and the homepage planner section.                                                                                     |
+| Product and design      | Responsive marketing experience, Studio, invitation reveal, reduced-motion handling, self-hosted type, and generated demo imagery. Six selectable worlds; Riviera, Maison, and Notte have dedicated imagery and seeded demo weddings. Heritage, Modernist, and Garden reuse those assets and the shared guest layout. |
+| Accounts and workspaces | Registration, password login, seven-day sessions, email verification before collaborator access, separate visitor demos, multiple weddings, and partner/planner/viewer access controls.                                                                                                                               |
+| Guest list              | Persistent households and guests, contact details, language, tags, consent, plus-one records, CSV import/export, filtering, and personal links. Invitation tokens can expire and be revoked.                                                                                                                          |
+| Events and RSVP         | Timezone-aware events, household-based private access, per-person/event responses, meals, dietary details, configurable questions, RSVP deadlines, capacity checks, and saved responses.                                                                                                                              |
+| Guest experience        | Account-free household invitations, English/Spanish interface, password-protected or public story, event details, travel/registry links, contact correction, QR wedding pass, and calendar download.                                                                                                                  |
+| Wedding operations      | Seating with drag/drop and accessible table menus, capacity checks, travel/registry records, photo upload/approval/deletion, collaborator roles, and an activity log.                                                                                                                                                 |
+| Messaging               | Consent-filtered drafts and audiences, email/SMS adapters, visible development outbox, and an authenticated worker for scheduled messages. Demo sends always stay local.                                                                                                                                              |
+| Billing                 | Optional hosted one-time Checkout and a signed Stripe webhook that deduplicates events and records paid plans. Missing payment configuration returns an explicit unavailable response.                                                                                                                                |
 
 ## Validation evidence
 
@@ -21,11 +22,13 @@ Verified locally on 7 September 2026:
 
 - TypeScript and ESLint checks passed.
 - Eleven unit tests passed.
-- Eleven Playwright tests passed, covering the core workflow, verification, privacy, photos, capacity, keyboard behavior, venue-time editing, message audiences, photo retries, and travel editing.
+- Twenty-two Playwright tests passed, covering the core workflow, verification, privacy, photos, capacity, keyboard behavior, venue-time editing, message audiences, photo retries, travel editing, invitation keepsake spacing, and the planner page on desktop and phone.
 - Optimized Next.js production build passed.
 - Production-dependency audit reported zero known vulnerabilities.
 - Fifteen page/viewport combinations across marketing, Studio, and three guest worlds at 390×844, 768×1024, and 1440×1000 had no document overflow or JavaScript page errors.
 - The review’s hidden-sidebar focus, unnamed modal, and Maison mobile heading overlap findings were fixed and covered by a regression test.
+
+Demo weddings now seed a three-day weekend (welcome gathering, wedding, farewell brunch), seated tables, registry links and varied dietary notes, so a walkthrough shows a populated wedding rather than an empty one. Exhausting the demo allowance for a network redirects to the sign-in page with an explanation instead of returning a server error.
 
 The hosted release smoke also verified database health, persisted household RSVPs, private photo upload/read/moderation, denial of anonymous photo access, and mobile rendering. This is not certification of untested integrations or production load capacity.
 
@@ -33,18 +36,18 @@ See [README validation instructions](../README.md#validation) to reproduce the c
 
 ## Remaining production work
 
-| Area | Limitation and required work |
-| --- | --- |
-| Infrastructure | Local PGlite and filesystem uploads support one persistent application process. Hosted Neon PostgreSQL and private Vercel Blob have passed the live core-flow smoke test. Backup/restore exercises and multi-instance load tests remain. Migration startup now uses a transaction-scoped advisory lock to coordinate replicas. |
-| Email and SMS | Live delivery requires credentials and approved senders. No delivery/bounce callback processing, unsubscribe link workflow, automatic retries, or recovery of interrupted processing is implemented. The UI's status does not establish recipient delivery or an email open. |
-| Scheduled jobs | A scheduler must call the worker with `CRON_SECRET`; there is no autonomous scheduler or durable queue service. |
-| Payments | Live Checkout and webhook tests remain. Recorded plans do not yet enforce feature entitlements, quotas, refunds, or subscription lifecycle behavior. |
-| Domains | The Studio stores a hostname and pending status. DNS ownership checks, host routing, SSL provisioning, and Vercel API automation are not implemented. |
-| Account operations | No password reset, MFA, ownership transfer, or self-service account deletion. Operator deletion is documented in the README; demo/session/challenge retention cleanup is not scheduled. |
-| Full product brief | No advanced invitation composition editor, printed stationery integration, native wallet pass, check-in scanning, complete planner administration, referral rewards, or comprehensive operational analytics. QR codes link back to the invitation. |
-| RSVP design | Household and person questions support simple attendance conditions; household answers are copied into per-person/event response records. Arbitrary branching, event-specific meal configuration, and a separate household-answer model are not implemented. |
-| Language and creative depth | English/Spanish interface support does not translate user-authored content automatically. Six worlds share structural components; the three secondary worlds need distinct imagery and deeper direction to meet the full bespoke-world brief. |
-| Operational readiness | Publish operator-specific privacy information and retention rules; configure backups, restore exercises, monitoring, incident handling, abuse controls, and production capacity checks. No compliance certification or operational SLA is claimed. |
+| Area                        | Limitation and required work                                                                                                                                                                                                                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Infrastructure              | Local PGlite and filesystem uploads support one persistent application process. Hosted Neon PostgreSQL and private Vercel Blob have passed the live core-flow smoke test. Backup/restore exercises and multi-instance load tests remain. Migration startup now uses a transaction-scoped advisory lock to coordinate replicas. |
+| Email and SMS               | Live delivery requires credentials and approved senders. No delivery/bounce callback processing, unsubscribe link workflow, automatic retries, or recovery of interrupted processing is implemented. The UI's status does not establish recipient delivery or an email open.                                                   |
+| Scheduled jobs              | A scheduler must call the worker with `CRON_SECRET`; there is no autonomous scheduler or durable queue service.                                                                                                                                                                                                                |
+| Payments                    | Live Checkout and webhook tests remain. Recorded plans do not yet enforce feature entitlements, quotas, refunds, or subscription lifecycle behavior.                                                                                                                                                                           |
+| Domains                     | The Studio stores a hostname and pending status. DNS ownership checks, host routing, SSL provisioning, and Vercel API automation are not implemented.                                                                                                                                                                          |
+| Account operations          | No password reset, MFA, ownership transfer, or self-service account deletion. Operator deletion is documented in the README; demo/session/challenge retention cleanup is not scheduled.                                                                                                                                        |
+| Full product brief          | No advanced invitation composition editor, printed stationery integration, native wallet pass, check-in scanning, complete planner administration, referral rewards, or comprehensive operational analytics. QR codes link back to the invitation.                                                                             |
+| RSVP design                 | Household and person questions support simple attendance conditions; household answers are copied into per-person/event response records. Arbitrary branching, event-specific meal configuration, and a separate household-answer model are not implemented.                                                                   |
+| Language and creative depth | English/Spanish interface support does not translate user-authored content automatically. Six worlds share structural components; the three secondary worlds need distinct imagery and deeper direction to meet the full bespoke-world brief.                                                                                  |
+| Operational readiness       | Publish operator-specific privacy information and retention rules; configure backups, restore exercises, monitoring, incident handling, abuse controls, and production capacity checks. No compliance certification or operational SLA is claimed.                                                                             |
 
 ## Review artifacts
 

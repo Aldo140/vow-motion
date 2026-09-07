@@ -8,7 +8,7 @@ const links = [
   { href: "#worlds", label: "The design collection" },
   { href: "#experience", label: "How it works" },
   { href: "#pricing", label: "Pricing" },
-  { href: "#planners", label: "For planners" },
+  { href: "/planners", label: "For planners" },
 ];
 
 export default function MarketingNavigation() {
@@ -84,7 +84,7 @@ export default function MarketingNavigation() {
           {links.map(({ href, label }) => (
             <a key={href} href={href}>
               {label}
-              {href === "#planners" && <Arrow diagonal size={13} />}
+              {href === "/planners" && <Arrow diagonal size={13} />}
             </a>
           ))}
         </nav>
@@ -200,9 +200,11 @@ export default function MarketingNavigation() {
                   closeMenu(false);
                   // Let the native anchor update history and scroll; move keyboard
                   // focus to the destination after the modal releases the page.
-                  document
-                    .getElementById(href.slice(1))
-                    ?.focus({ preventScroll: true });
+                  // A page link navigates instead, and carries its own focus.
+                  if (href.startsWith("#"))
+                    document
+                      .getElementById(href.slice(1))
+                      ?.focus({ preventScroll: true });
                 }}
               >
                 <span className="marketing-menu-number" aria-hidden="true">

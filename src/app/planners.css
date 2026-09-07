@@ -1,0 +1,290 @@
+/* The planner page argues one thing: every detail kept on the planner's side
+   becomes something a guest receives on theirs. The ledger carries that. */
+.planner-page {
+  --spine: color-mix(in srgb, var(--olive) 35%, var(--line));
+}
+.planner-hero {
+  max-width: 1100px;
+  margin: auto;
+  padding: clamp(50px, 9vw, 120px) 6% clamp(22px, 3vw, 40px);
+  text-align: center;
+}
+.planner-hero h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(38px, 6.4vw, 82px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  margin: 18px 0 0;
+}
+.planner-hero h1 em {
+  font-style: italic;
+}
+/* The thesis is a pair, so it is set as a pair: the working half in the
+   utility face, the felt half in the serif that the invitations use. */
+.planner-thesis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 30px 0 0;
+}
+.planner-thesis > span:first-child {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.planner-thesis > span:last-child {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(19px, 2.4vw, 27px);
+  color: var(--olive);
+}
+.planner-lede {
+  max-width: 620px;
+  margin: 26px auto 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+.planner-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px 26px;
+  margin-top: 34px;
+}
+
+/* The ledger */
+.planner-ledger {
+  max-width: 1240px;
+  margin: auto;
+  padding: clamp(24px, 3.5vw, 48px) 6% clamp(50px, 8vw, 100px);
+}
+.ledger-intro {
+  max-width: 640px;
+  margin-bottom: clamp(34px, 5vw, 60px);
+}
+.ledger-intro h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(30px, 4.2vw, 52px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+}
+.ledger-intro h2 em {
+  font-style: italic;
+}
+.ledger-intro p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 480px;
+}
+.ledger-columns {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0 clamp(24px, 4vw, 60px);
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.ledger-columns > span:last-child {
+  grid-column: 3;
+  color: var(--olive);
+}
+.ledger-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ledger-row {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0 clamp(24px, 4vw, 60px);
+  align-items: start;
+  padding: clamp(24px, 3vw, 38px) 0;
+  border-bottom: 1px solid var(--line);
+}
+.ledger-spine {
+  align-self: stretch;
+  position: relative;
+  background: var(--line);
+}
+/* The mark on the spine is the correspondence itself: one action, one effect. */
+.ledger-spine::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 50%;
+  background: var(--spine);
+}
+.ledger-side h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(19px, 2.1vw, 26px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+.ledger-side p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 46ch;
+}
+.ledger-guest h3 {
+  font-style: italic;
+  color: var(--olive);
+}
+.ledger-label {
+  display: none;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The pilot */
+.planner-pilot {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  align-items: center;
+  gap: clamp(30px, 5vw, 80px);
+  max-width: 1240px;
+  margin: auto;
+  padding: clamp(40px, 6vw, 80px) 6%;
+}
+.pilot-photo img {
+  display: block;
+  width: 100%;
+  height: clamp(320px, 42vw, 520px);
+  object-fit: cover;
+}
+.pilot-copy h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(30px, 4.2vw, 52px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  margin: 14px 0 18px;
+}
+.pilot-copy h2 em {
+  font-style: italic;
+}
+.pilot-copy > p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 52ch;
+}
+.pilot-list {
+  list-style: none;
+  margin: 26px 0 30px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  max-width: 52ch;
+}
+.pilot-list li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.pilot-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 9px;
+  height: 1px;
+  background: var(--olive);
+}
+.pilot-copy small {
+  display: block;
+  margin-top: 16px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 44ch;
+}
+
+/* The close */
+.planner-closing {
+  text-align: center;
+  padding: clamp(60px, 9vw, 120px) 6%;
+  background: var(--olive-light);
+}
+.planner-closing > span {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--olive);
+}
+.planner-closing h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(30px, 4.6vw, 58px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  margin: 20px 0 32px;
+}
+.planner-closing h2 em {
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .planner-pilot {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  /* The pairing still reads on a phone, stacked and labelled, with the spine
+     turned into the rule that separates the two halves of each row. */
+  .ledger-columns {
+    display: none;
+  }
+  .ledger-rows {
+    border-top: 1px solid var(--ink);
+  }
+  .ledger-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 30px 0;
+    border-bottom-color: var(--ink);
+  }
+  .ledger-label {
+    display: block;
+    margin-bottom: 7px;
+  }
+  .ledger-guest .ledger-label {
+    color: var(--olive);
+  }
+  .ledger-spine {
+    height: 1px;
+    align-self: auto;
+    margin: 22px 0;
+    background: color-mix(in srgb, var(--line) 60%, transparent);
+  }
+  .ledger-spine::after {
+    top: 50%;
+    left: 0;
+    margin: -3.5px 0 0;
+  }
+  .planner-hero-actions {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

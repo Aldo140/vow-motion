@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser, session, rateLimit } from "@/lib/auth";
+import { currentUser, session, rateLimit, HttpError } from "@/lib/auth";
 import { createDemo, createWedding, issueToken } from "@/lib/seed";
 import { rows } from "@/lib/db";
 import { getWorld } from "@/lib/worlds";
@@ -12,7 +12,15 @@ export async function GET(
   let user = await currentUser();
   if (user && !user.is_demo) return NextResponse.redirect(new URL("/studio", req.url));
   if (!user) {
-    await rateLimit("demo:" + req.headers.get("x-forwarded-for"), 30);
+    try {
+      await rateLimit("demo:" + req.headers.get("x-forwarded-for"), 30);
+    } catch (error) {
+      // Shared addresses can exhaust the demo allowance. Explain that on the
+      // sign-in page rather than failing the visit with a server error.
+      if (error instanceof HttpError && error.status === 429)
+        return NextResponse.redirect(new URL("/login?demo=busy", req.url));
+      throw error;
+    }
     await session(await createDemo());
     user = await currentUser();
   }

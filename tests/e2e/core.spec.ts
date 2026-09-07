@@ -173,12 +173,17 @@ test("tenant isolation, event privacy, invalid RSVP, and durable household respo
   );
   const invalid = await request.post("/api/guest/rsvp?token=" + token, {
     data: {
-      responses: guest.guests.map((g: { id: string }) => ({
-        guest_id: g.id,
-        event_id: forbidden.id,
-        attending: true,
-        meal: "Sea bass",
-      })),
+      // A complete set for this household, with one event swapped for a
+      // private one it was never invited to, so authorization is what
+      // rejects the response rather than the completeness check.
+      responses: guest.guests.flatMap((g: { id: string }) =>
+        guest.events.map((e: { id: string }, index: number) => ({
+          guest_id: g.id,
+          event_id: index === 0 ? forbidden.id : e.id,
+          attending: true,
+          meal: "Sea bass",
+        })),
+      ),
     },
   });
   expect(invalid.status()).toBe(403);
