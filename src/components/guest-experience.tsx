@@ -3,6 +3,7 @@ import Link from "next/link";
 import { preparePhoto } from "@/lib/prepare-photo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import {
   ArrowDownIcon,
@@ -14,7 +15,7 @@ import {
 import type { GuestData } from "@/lib/types";
 import { getWorld, formatDate, eventTime } from "@/lib/worlds";
 import { Arrow, Modal, Field, Submit, Notice, api } from "./ui";
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 const copy = {
   en: {
     invited: "Together with our families",
@@ -124,18 +125,46 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       gate &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      const animation = gate.animate(
-        [
-          { opacity: 1, transform: "translateY(0)" },
-          { opacity: 0, transform: "translateY(-24px)" },
-        ],
-        {
-          duration: 280,
-          easing: "cubic-bezier(.22,1,.36,1)",
-          fill: "forwards",
-        },
+      const card = gate.querySelector<HTMLElement>(".gate-card");
+      const photo = gate.querySelector<HTMLElement>(".gate-photo-card");
+      const animations: Animation[] = [];
+      if (photo)
+        animations.push(
+          photo.animate(
+            [
+              { transform: "rotate(-10deg) translateX(0)", opacity: 1 },
+              { transform: "rotate(-17deg) translateX(-24px)", opacity: 0 },
+            ],
+            {
+              duration: 420,
+              easing: "cubic-bezier(.22,1,.36,1)",
+              fill: "forwards",
+            },
+          ),
+        );
+      if (card)
+        animations.push(
+          card.animate(
+            [
+              {
+                transform: "rotate(3deg) translateY(0) rotateX(0)",
+                opacity: 1,
+              },
+              {
+                transform: "rotate(0deg) translateY(-55px) rotateX(8deg)",
+                opacity: 0,
+              },
+            ],
+            {
+              duration: 480,
+              easing: "cubic-bezier(.22,1,.36,1)",
+              fill: "forwards",
+            },
+          ),
+        );
+      await Promise.all(
+        animations.map((animation) => animation.finished.catch(() => {})),
       );
-      await animation.finished.catch(() => {});
       if (!gate.isConnected) return;
     }
     setOpened(true);
@@ -156,22 +185,172 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
     () => {
       if (!opened) return;
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(".guest-hero h1", { y: 35, duration: 1, ease: "power3.out" });
-        gsap.from(".guest-hero .guest-hero-photo", {
-          scale: 1.04,
-          duration: 1.4,
-          ease: "power2.out",
-        });
-      });
+      mm.add(
+        {
+          desktop: "(min-width: 769px)",
+          mobile: "(max-width: 768px)",
+          motion: "(prefers-reduced-motion: no-preference)",
+        },
+        (context) => {
+          if (!context.conditions?.motion) return;
+          const desktop = context.conditions.desktop;
+          gsap.from(".guest-hero-title h1 > *", {
+            y: desktop ? 35 : 18,
+            duration: 1,
+            stagger: 0.09,
+            ease: "power3.out",
+            clearProps: "transform",
+          });
+          gsap.from(".hero-image-frame", {
+            y: 28,
+            duration: 1.3,
+            ease: "power3.out",
+          });
+          gsap.from(".date-keepsake", {
+            rotation: -11,
+            y: 45,
+            duration: 1.25,
+            delay: 0.15,
+            ease: "power3.out",
+          });
+          gsap.to(".guest-hero-photo > img", {
+            yPercent: desktop ? 9 : 4,
+            scale: 1.12,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".guest-hero",
+              start: "top top",
+              end: "bottom top",
+              scrub: 0.8,
+            },
+          });
+          gsap.to(".hero-flower-study", {
+            y: desktop ? -85 : -28,
+            rotation: desktop ? 2 : 4,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".hero-depth-scene",
+              start: "top center",
+              end: "bottom top",
+              scrub: 1,
+            },
+          });
+          gsap.to(".hero-medallion", {
+            rotation: desktop ? 24 : 10,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".guest-hero",
+              start: "top top",
+              end: "bottom top",
+              scrub: 1,
+            },
+          });
+          gsap.fromTo(
+            ".story-florals",
+            { y: desktop ? 65 : 25, rotation: -7 },
+            {
+              y: desktop ? -40 : -12,
+              rotation: -2,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".guest-story",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+              },
+            },
+          );
+          gsap.fromTo(
+            ".story-photo-memory",
+            { y: desktop ? -30 : -12, rotation: 7 },
+            {
+              y: desktop ? 40 : 15,
+              rotation: 3,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".guest-story",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+              },
+            },
+          );
+          gsap.fromTo(
+            ".travel-postcard",
+            { rotation: -6, y: 30 },
+            {
+              rotation: -2,
+              y: -15,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".guest-travel",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+              },
+            },
+          );
+          gsap.from(".rsvp-stationery", {
+            rotation: 3,
+            y: 35,
+            duration: 0.9,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: ".rsvp-scene",
+              start: "top 75%",
+              once: true,
+            },
+          });
+        },
+      );
+      mm.add(
+        "(min-width: 769px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
+        () => {
+          const scene =
+            root.current?.querySelector<HTMLElement>(".hero-depth-scene");
+          const card =
+            root.current?.querySelector<HTMLElement>(".hero-image-frame");
+          if (!scene || !card) return;
+          const rotateX = gsap.quickTo(card, "rotationX", {
+            duration: 0.8,
+            ease: "power3.out",
+          });
+          const rotateY = gsap.quickTo(card, "rotationY", {
+            duration: 0.8,
+            ease: "power3.out",
+          });
+          const move = (event: PointerEvent) => {
+            const box = scene.getBoundingClientRect();
+            rotateX((0.5 - (event.clientY - box.top) / box.height) * 3);
+            rotateY(((event.clientX - box.left) / box.width - 0.5) * 3);
+          };
+          const reset = () => {
+            rotateX(0);
+            rotateY(0);
+          };
+          scene.addEventListener("pointermove", move);
+          scene.addEventListener("pointerleave", reset);
+          return () => {
+            scene.removeEventListener("pointermove", move);
+            scene.removeEventListener("pointerleave", reset);
+          };
+        },
+      );
       return () => mm.revert();
     },
-    { scope: root, dependencies: [opened] },
+    { scope: root, dependencies: [opened], revertOnUpdate: true },
   );
+  useEffect(() => {
+    if (!opened) return;
+    const node = root.current;
+    const observer = new ResizeObserver(() => ScrollTrigger.refresh());
+    if (node) observer.observe(node);
+    return () => observer.disconnect();
+  }, [opened]);
   return (
     <div
       ref={root}
-      className={"guest-experience atelier-invitation world-" + world.id}
+      className={"guest-experience immersive-invitation world-" + world.id}
       lang={locale}
     >
       {!opened ? (
@@ -260,20 +439,63 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                   <span>{data.wedding.names.split(" & ")[1] || ""}</span>
                 </h1>
               </div>
-              <p className="guest-hero-date">
-                {formatDate(data.wedding.date, locale)}
-                <span>{data.wedding.location}</span>
-              </p>
-              <div className="guest-hero-photo">
-                <img
-                  src={world.image}
-                  alt={`${data.wedding.location}, the setting for our celebration`}
-                  fetchPriority="high"
-                />
-                <div className="guest-photo-note">
-                  <span>{data.wedding.location}</span>
-                  <span>{formatDate(data.wedding.date, locale)}</span>
+              <div className="hero-depth-scene">
+                <span className="hero-side-note" aria-hidden="true">
+                  {locale === "en"
+                    ? "A place in our forever"
+                    : "Un lugar en nuestro siempre"}
+                </span>
+                <div className="hero-image-frame">
+                  <div className="guest-hero-photo">
+                    <img
+                      src={world.image}
+                      alt={`${data.wedding.location}, the setting for our celebration`}
+                      fetchPriority="high"
+                    />
+                    <div className="guest-photo-note">
+                      <span>{data.wedding.location}</span>
+                      <span>{c.invited}</span>
+                    </div>
+                  </div>
                 </div>
+                <a
+                  className="date-keepsake"
+                  href={"/api/guest/calendar?token=" + data.token}
+                  aria-label={c.calendar}
+                >
+                  <span className="date-keepsake-script">
+                    {locale === "en" ? "Save the date" : "Reserva la fecha"}
+                  </span>
+                  <strong>
+                    {formatDate(data.wedding.date, locale, { day: "2-digit" })}
+                  </strong>
+                  <span className="date-keepsake-month">
+                    {formatDate(data.wedding.date, locale, {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span className="date-keepsake-action">
+                    <CalendarBlankIcon size={15} />
+                    {c.calendar}
+                  </span>
+                </a>
+                <figure className="hero-flower-study" aria-hidden="true">
+                  <img src="/images/wedding-details.webp" alt="" />
+                  <figcaption>
+                    {locale === "en"
+                      ? "With love, always."
+                      : "Con amor, siempre."}
+                  </figcaption>
+                </figure>
+                <span className="hero-medallion" aria-hidden="true">
+                  <span>
+                    {data.wedding.names
+                      .split(" & ")
+                      .map((name) => name[0])
+                      .join(" & ")}
+                  </span>
+                </span>
               </div>
               <div className="guest-hero-footer">
                 <span>{c.invited}</span>
@@ -315,6 +537,13 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               </section>
             )}
             <section id="story" className="guest-story">
+              <span className="story-watermark" aria-hidden="true">
+                &
+              </span>
+              <figure className="story-photo-memory" aria-hidden="true">
+                <img src={world.image} alt="" loading="lazy" />
+                <figcaption>{data.wedding.location.split(",")[0]}</figcaption>
+              </figure>
               <div className="story-florals">
                 <img
                   src="/images/wedding-details.webp"
@@ -371,6 +600,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 </a>
               </div>
               <div className="programme-events">
+                <span className="programme-fold" aria-hidden="true" />
                 <div className="programme-heading">
                   {locale === "en" ? "The celebration" : "La celebración"}
                 </div>
@@ -413,17 +643,25 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               </div>
             </section>
             <section className="guest-travel" id="travel">
-              <div className="travel-postcard">
-                <img
-                  src={world.image}
-                  alt={"A postcard from " + data.wedding.location}
-                  loading="lazy"
-                />
-                <span>
-                  {locale === "en" ? "Greetings from" : "Saludos desde"}
-                  <br />
-                  <em>{data.wedding.location.split(",")[0]}</em>
-                </span>
+              <div className="travel-photo-stack">
+                <div className="travel-card-back" aria-hidden="true">
+                  <span>
+                    {locale === "en" ? "Meet us here." : "Nos vemos aquí."}
+                  </span>
+                  <p>{data.wedding.location}</p>
+                </div>
+                <div className="travel-postcard">
+                  <img
+                    src={world.image}
+                    alt={"A postcard from " + data.wedding.location}
+                    loading="lazy"
+                  />
+                  <span>
+                    {locale === "en" ? "Greetings from" : "Saludos desde"}
+                    <br />
+                    <em>{data.wedding.location.split(",")[0]}</em>
+                  </span>
+                </div>
               </div>
               <div className="guest-travel-copy">
                 <h2>{c.journey}</h2>
@@ -461,6 +699,15 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               </div>
             </section>
             <section className="rsvp-scene" id="rsvp">
+              <img
+                className="rsvp-scene-image"
+                src={world.image}
+                alt=""
+                loading="lazy"
+              />
+              <div className="rsvp-back-paper" aria-hidden="true">
+                <span>{data.wedding.names}</span>
+              </div>
               <div className="rsvp-stationery">
                 <span className="rsvp-seal" aria-hidden="true">
                   {data.wedding.names
