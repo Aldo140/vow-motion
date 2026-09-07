@@ -1,0 +1,296 @@
+/* The ceremonial layer of a household invitation: an engraved crest, the
+   weekend set out as an order of service, and the wait counted down. All of it
+   is drawn in hairlines so it reads as pressed into paper, not printed on it. */
+
+/* The crest */
+.guest-crest {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  color: var(--guest-accent);
+  flex-shrink: 0;
+}
+.guest-crest svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.crest-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.75;
+}
+.crest-inner {
+  stroke-width: 0.6;
+  opacity: 0.45;
+}
+.crest-ornament {
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+.crest-dot {
+  fill: currentColor;
+  opacity: 0.5;
+}
+.crest-initials {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--serif);
+  line-height: 1;
+}
+.crest-initials b {
+  font-weight: 400;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+}
+.crest-initials i {
+  font-size: 15px;
+  opacity: 0.65;
+}
+.crest-plain .crest-initials b {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+}
+
+/* The crest draws itself once, when the section arrives. */
+@media (prefers-reduced-motion: no-preference) {
+  .programme-crest .crest-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .programme-crest.crest-drawn .crest-line {
+    animation: crest-draw 1.5s var(--ease) forwards;
+  }
+  .programme-crest.crest-drawn .crest-inner {
+    animation-delay: 0.18s;
+  }
+  .programme-crest.crest-drawn .crest-ornament {
+    animation-delay: 0.34s;
+  }
+  .programme-crest .crest-dot,
+  .programme-crest .crest-initials {
+    opacity: 0;
+  }
+  .programme-crest.crest-drawn .crest-dot,
+  .programme-crest.crest-drawn .crest-initials {
+    animation: crest-settle 0.7s var(--ease) 0.55s forwards;
+  }
+}
+@keyframes crest-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes crest-settle {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.programme-crest {
+  margin-bottom: 26px;
+}
+
+/* The order of the day */
+.order-of-day,
+.order-moments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.order-day + .order-day {
+  margin-top: 34px;
+}
+.order-day-label {
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--guest-line);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--guest-ink);
+  opacity: 0.75;
+}
+/* One hairline runs the length of a day, and each moment is marked on it. */
+.order-moments {
+  position: relative;
+  padding-left: 34px;
+}
+.order-moments::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 6px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--guest-line) 8%,
+    var(--guest-line) 92%,
+    transparent
+  );
+}
+.order-moment {
+  position: relative;
+  padding-bottom: 30px;
+}
+.order-moment:last-child {
+  padding-bottom: 4px;
+}
+.order-mark {
+  position: absolute;
+  left: -34px;
+  top: 1px;
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  color: var(--guest-accent);
+  background: var(--guest-bg);
+  box-shadow: 0 0 0 1px var(--guest-line);
+}
+.order-time {
+  display: inline-block;
+  margin-bottom: 7px;
+  padding: 3px 9px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: var(--guest-bg);
+  background: var(--guest-accent);
+}
+.order-body h3 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(20px, 2.1vw, 26px);
+  line-height: 1.2;
+}
+.order-body > p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.65;
+  max-width: 44ch;
+}
+.order-venue {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+}
+/* The dress note is a block of its own, so the directions link below it does
+   not run on from the end of the sentence. */
+.order-body .programme-dress {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.order-body .guest-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The wait */
+.guest-wait {
+  padding: clamp(46px, 7vw, 90px) 6%;
+  text-align: center;
+  border-top: 1px solid var(--guest-line);
+}
+.countdown-label {
+  display: block;
+  margin-bottom: 22px;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.countdown-figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0 clamp(14px, 2.5vw, 30px);
+  margin: 0;
+}
+.countdown-figures > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: clamp(14px, 2.5vw, 30px);
+}
+.countdown-figures b {
+  display: inline-block;
+  min-width: 1.7em;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(46px, 8vw, 96px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-figures small {
+  margin-left: 8px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.countdown-figures i {
+  font-style: normal;
+  font-size: 20px;
+  opacity: 0.3;
+}
+.countdown-past {
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(24px, 3.4vw, 40px);
+}
+
+@media (max-width: 768px) {
+  .programme-crest {
+    margin-bottom: 20px;
+  }
+  .order-moments {
+    padding-left: 30px;
+  }
+  .order-moments::before {
+    left: 10px;
+  }
+  .order-mark {
+    left: -30px;
+    width: 21px;
+    height: 21px;
+  }
+  .order-moment {
+    padding-bottom: 26px;
+  }
+  /* Four figures will not sit on one phone line, so they pair up instead. */
+  .countdown-figures {
+    gap: 16px 0;
+  }
+  .countdown-figures > span {
+    width: 50%;
+    justify-content: center;
+  }
+  .countdown-figures i {
+    display: none;
+  }
+  .countdown-figures b {
+    font-size: clamp(40px, 13vw, 62px);
+  }
+}

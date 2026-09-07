@@ -49,3 +49,15 @@ The dock is fixed to the foot of the viewport while the invitation sits at a fix
 ## The planner page
 
 `/planners` argues the case that the homepage cannot: the couple sees a celebration, the planner sees a plan. Its signature is a ledger whose every row pairs something the planner sets in the Studio with what the couple's guests meet because of it, so the correspondence is the structure rather than a claim. The planner half stays in the working face and the guest half in the invitation's italic olive, divided by a spine marked once per row. On a phone the pair stacks and each half names its side, because the columns no longer can. Nothing here introduces a colour or a face the wedding surfaces do not already use.
+
+## The ceremonial layer
+
+Three things recur across the reference material this direction was drawn from, and the invitation had none of them: an engraved crest, the day set out as an order of service, and the wait counted down.
+
+`guest-crest.tsx` draws an oval cartouche in hairlines, holding the couple's initials. It is line art rather than an image, so it takes the world's ink, scales without an asset, and works for any pair of initials. Modernist keeps the proportions and drops the ornament, which is the same decision that world already makes about the silk. When motion is welcome the crest draws itself once as the order of the day arrives, outer oval first, then the ornament, then the initials settle; under reduced motion it is simply there, complete.
+
+The programme is now an order of service. Moments group under the day they fall on, resolved in the venue's timezone rather than the reader's, so a destination weekend reads as Friday, Saturday, Sunday instead of one flat list. A hairline runs the length of each day, every moment is marked on it with a glyph matched to the kind of moment it is, and the time sits in a struck chip beside it. The glyph is matched on the words couples actually use, in both languages, and falls back rather than guessing wrongly.
+
+The countdown closes the weekend. Figures are set in the serif at display size with tabular numerals so the digits do not jostle as they tick; on a phone the four pair up two by two rather than shrinking to fit. The ticking figures are hidden from assistive technology, which is given one settled sentence instead of a stream of seconds. After the day it reads as a statement rather than a clock.
+
+Not taken from the references: an ambient soundtrack, which appears in most of them. A track cannot be licensed here, and a speaker control that plays silence is worse than no control at all.

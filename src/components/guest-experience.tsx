@@ -2,6 +2,8 @@
 import Link from "next/link";
 import GuestInvitationGate from "./guest-invitation-gate";
 import GuestInvitationHero from "./guest-invitation-hero";
+import GuestCountdown from "./guest-countdown";
+import GuestCrest from "./guest-crest";
 import GuestWeddingPass from "./guest-wedding-pass";
 import { preparePhoto } from "@/lib/prepare-photo";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -9,6 +11,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import {
+  ChampagneIcon,
+  HeartIcon,
+  MusicNotesIcon,
+  CoffeeIcon,
+  ForkKnifeIcon,
   CheckIcon,
   CalendarBlankIcon,
   UploadSimpleIcon,
@@ -98,6 +105,18 @@ const copy = {
     day: "Todo el día, en tu bolsillo.",
   },
 };
+const MOMENT_ICONS: [RegExp, typeof HeartIcon][] = [
+  [/welcome|aperitivo|bienvenid|drinks|c[oó]ctel|cocktail/i, ChampagneIcon],
+  [/ceremon|vows|boda|wedding/i, HeartIcon],
+  [/reception|dinner|banquet|cena|celebraci/i, MusicNotesIcon],
+  [/brunch|breakfast|desayuno|coffee|farewell|despedida/i, CoffeeIcon],
+];
+function momentIcon(title: string) {
+  return (
+    MOMENT_ICONS.find(([pattern]) => pattern.test(title))?.[1] ?? ForkKnifeIcon
+  );
+}
+
 export default function GuestExperience({ initial }: { initial: GuestData }) {
   const [data, setData] = useState(initial),
     [opened, setOpened] = useState(false),
@@ -141,6 +160,23 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       ),
     [data.events],
   );
+  // A wedding weekend reads as days, not as a flat list, so group the moments
+  // by their date in the venue's own timezone rather than the visitor's.
+  const orderOfDay = useMemo(() => {
+    const days: { label: string; moments: typeof chronologicalEvents }[] = [];
+    for (const event of chronologicalEvents) {
+      const label = formatDate(event.starts_at, locale, {
+        timeZone: event.timezone,
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+      const day = days.find((entry) => entry.label === label);
+      if (day) day.moments.push(event);
+      else days.push({ label, moments: [event] });
+    }
+    return days;
+  }, [chronologicalEvents, locale]);
   useEffect(() => {
     if (opened && opening)
       root.current
@@ -235,6 +271,25 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               start: "top top",
               end: "bottom top",
               scrub: 1,
+            },
+          });
+          // The crest draws itself the first time the order of the day arrives.
+          ScrollTrigger.create({
+            trigger: ".programme-crest",
+            start: "top 85%",
+            once: true,
+            onEnter: (self) => self.trigger?.classList.add("crest-drawn"),
+          });
+          gsap.from(".order-moment", {
+            y: 18,
+            opacity: 0,
+            duration: 0.65,
+            stagger: 0.07,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: ".order-of-day",
+              start: "top 80%",
+              once: true,
             },
           });
           gsap.to(".hero-medallion", {
@@ -472,6 +527,12 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             </section>
             <section className="guest-programme" id="programme" tabIndex={-1}>
               <div className="programme-intro">
+                <GuestCrest
+                  names={data.wedding.names}
+                  world={data.wedding.world}
+                  className="programme-crest"
+                  size={116}
+                />
                 <span>
                   {formatDate(data.wedding.date, locale, {
                     month: "long",
@@ -495,66 +556,89 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               <div className="programme-events">
                 <span className="programme-fold" aria-hidden="true" />
                 <div className="programme-heading">
-                  {locale === "en" ? "The celebration" : "La celebración"}
+                  {locale === "en"
+                    ? "The order of the day"
+                    : "El orden del día"}
                 </div>
-                {chronologicalEvents.map((event) => (
-                  <article className="programme-event" key={event.id}>
-                    <time
-                      className="programme-clock"
-                      dateTime={event.starts_at}
-                    >
-                      <strong>
-                        {eventTime(event.starts_at, event.timezone, locale)}
-                      </strong>
-                      <span>
-                        {formatDate(event.starts_at, locale, {
-                          timeZone: event.timezone,
-                          day: "numeric",
-                          month: "short",
+                <ol className="order-of-day">
+                  {orderOfDay.map(({ label, moments }) => (
+                    <li className="order-day" key={label}>
+                      <p className="order-day-label">{label}</p>
+                      <ol className="order-moments">
+                        {moments.map((event) => {
+                          const Moment = momentIcon(event.title);
+                          return (
+                            <li className="order-moment" key={event.id}>
+                              <span className="order-mark" aria-hidden="true">
+                                <Moment size={15} />
+                              </span>
+                              <time
+                                className="order-time"
+                                dateTime={event.starts_at}
+                              >
+                                {eventTime(
+                                  event.starts_at,
+                                  event.timezone,
+                                  locale,
+                                )}
+                              </time>
+                              <div className="order-body">
+                                <h3>
+                                  {locale === "es" && event.title_es
+                                    ? event.title_es
+                                    : event.title}
+                                </h3>
+                                {event.description && (
+                                  <p>{event.description}</p>
+                                )}
+                                <span className="order-venue">
+                                  {event.venue}
+                                </span>
+                                {event.dress_code && (
+                                  <small className="programme-dress">
+                                    <span>
+                                      {locale === "en"
+                                        ? "Dress code"
+                                        : "Vestimenta"}
+                                    </span>
+                                    {event.dress_code}
+                                  </small>
+                                )}
+                                <a
+                                  href={
+                                    "https://www.google.com/maps/search/?api=1&query=" +
+                                    encodeURIComponent(
+                                      event.venue + " " + event.address,
+                                    )
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="guest-text-link"
+                                >
+                                  {c.directions}
+                                  <Arrow diagonal size={15} />
+                                </a>
+                              </div>
+                            </li>
+                          );
                         })}
-                      </span>
-                    </time>
-                    <div>
-                      <p className="programme-time">
-                        {formatDate(event.starts_at, locale, {
-                          timeZone: event.timezone,
-                          weekday: "long",
-                          day: "numeric",
-                          month: "short",
-                        })}{" "}
-                        · {eventTime(event.starts_at, event.timezone, locale)}
-                      </p>
-                      <h3>
-                        {locale === "es" && event.title_es
-                          ? event.title_es
-                          : event.title}
-                      </h3>
-                      <p>{event.description}</p>
-                      <span>{event.venue}</span>
-                      {event.dress_code && (
-                        <small className="programme-dress">
-                          <span>
-                            {locale === "en" ? "Dress code" : "Vestimenta"}
-                          </span>
-                          {event.dress_code}
-                        </small>
-                      )}
-                      <a
-                        href={
-                          "https://www.google.com/maps/search/?api=1&query=" +
-                          encodeURIComponent(event.venue + " " + event.address)
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                        className="guest-text-link"
-                      >
-                        {c.directions}
-                        <Arrow diagonal size={15} />
-                      </a>
-                    </div>
-                  </article>
-                ))}
+                      </ol>
+                    </li>
+                  ))}
+                </ol>
               </div>
+            </section>
+            <section
+              className="guest-wait"
+              aria-label={
+                locale === "en" ? "Time until the wedding" : "Tiempo que falta"
+              }
+            >
+              <GuestCountdown
+                target={chronologicalEvents[0]?.starts_at || data.wedding.date}
+                locale={locale}
+                married={data.wedding.status === "memories"}
+              />
             </section>
             <section className="guest-travel" id="travel">
               <div className="travel-photo-stack">
