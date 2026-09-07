@@ -123,8 +123,8 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
     [body, setBody] = useState("");
   const recipients = data.guests.filter(
     (g) =>
-      g.consent &&
-      (channel === "email" ? g.email : g.phone) &&
+      (channel === "invitation" ||
+        (g.consent && (channel === "email" ? g.email : g.phone))) &&
       (audience === "everyone" ||
         g.status === audience ||
         g.tags
@@ -166,7 +166,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
       <Notice>
         {data.user.is_demo
           ? "Demo messages are recorded in your development outbox. No email or SMS is sent."
-          : "Messages use the configured email or SMS provider. Without credentials, they are saved to a development outbox."}
+          : "Email your guests, or post an update inside their private invitations. Published updates appear when guests visit."}
       </Notice>
       <div className="message-list">
         {data.messages.map((m) => (
@@ -182,7 +182,13 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                     "status " + (m.status === "draft" ? "pending" : "attending")
                   }
                 >
-                  {m.status === "development" ? "Development outbox" : m.status}
+                  {m.status === "development"
+                    ? "Development outbox"
+                    : m.status === "published" &&
+                        m.scheduled_at &&
+                        new Date(m.scheduled_at) > new Date()
+                      ? "Scheduled"
+                      : m.status}
                 </span>
               </div>
               <h2>{m.subject}</h2>
@@ -203,11 +209,14 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                     const result = (await mutate("send/" + m.id, {})) as {
                       development: boolean;
                       count: number;
+                      published?: boolean;
                     };
                     notify(
-                      result.development
-                        ? `${result.count} messages recorded in the development outbox.`
-                        : `${result.count} messages accepted by the provider.`,
+                      result.published
+                        ? `${result.count} guests can see this update in their invitation when it is due.`
+                        : result.development
+                          ? `${result.count} messages recorded in the development outbox.`
+                          : `${result.count} messages accepted by the provider.`,
                     );
                   } catch (e) {
                     notify((e as Error).message);
@@ -218,9 +227,11 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
               >
                 {sending === m.id
                   ? "Processing…"
-                  : data.user.is_demo
-                    ? "Preview send"
-                    : "Send message"}
+                  : m.channel === "invitation"
+                    ? "Publish update"
+                    : data.user.is_demo
+                      ? "Preview send"
+                      : "Send message"}
                 <Arrow />
               </button>
             )}
@@ -322,8 +333,14 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                   value={channel}
                   onChange={(e) => setChannel(e.target.value)}
                 >
-                  <option value="email">Email</option>
-                  <option value="sms">SMS</option>
+                  <option
+                    value="email"
+                    disabled={!data.user.is_demo && !data.capabilities.email}
+                  >
+                    Email
+                  </option>
+                  <option value="invitation">Inside the invitation</option>
+                  {data.capabilities.sms && <option value="sms">SMS</option>}
                 </select>
               </Field>
             </div>
@@ -340,7 +357,11 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
               <strong>
                 {recipients.length}{" "}
                 {recipients.length === 1 ? "guest" : "guests"} can receive this{" "}
-                {channel === "email" ? "email" : "text"}
+                {channel === "invitation"
+                  ? "invitation update"
+                  : channel === "email"
+                    ? "email"
+                    : "text"}
               </strong>
               <p>
                 {recipients.length
@@ -354,8 +375,9 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                   : "Choose another audience, or add contact details and messaging consent in your guest list."}
               </p>
               <small>
-                Only guests with contact details and messaging consent are
-                included.
+                {channel === "invitation"
+                  ? "Updates are visible inside the selected guests’ private household invitations."
+                  : "Only guests with contact details and messaging consent are included."}
               </small>
             </div>
             <Field label="Delivery">
@@ -363,7 +385,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
             </Field>
             <Field
               label="Schedule (optional)"
-              hint={`Time in ${data.wedding.timezone}. Scheduled delivery requires the delivery worker to be running. Leave blank to send manually.`}
+              hint={`Time in ${data.wedding.timezone}. Invitation updates become visible at this time. Scheduled email is dispatched by the daily delivery run after this time.`}
             >
               <input name="scheduled_at" type="datetime-local" />
             </Field>
@@ -1132,30 +1154,32 @@ export function SettingsManager({ data, mutate, notify }: PanelProps) {
         <div>
           <h2>Your collection</h2>
           <p className="muted-copy">
-            No card data is stored here. Checkout opens securely with Stripe
-            when production billing is configured.
+            {data.capabilities.billing
+              ? "No card data is stored here. Checkout opens securely with Stripe."
+              : "Your wedding tools are available without checkout in this release. No card is required and no charge will be made."}
           </p>
         </div>
         <div className="billing-buttons">
-          {["essential", "signature", "bespoke"].map((plan) => (
-            <button
-              key={plan}
-              className="button outline"
-              onClick={async () => {
-                try {
-                  const r = (await mutate("checkout", { plan })) as {
-                    url: string;
-                  };
-                  window.location.href = r.url;
-                } catch (e) {
-                  notify((e as Error).message);
-                }
-              }}
-            >
-              {plan}
-              <Arrow diagonal size={16} />
-            </button>
-          ))}
+          {data.capabilities.billing &&
+            ["essential", "signature", "bespoke"].map((plan) => (
+              <button
+                key={plan}
+                className="button outline"
+                onClick={async () => {
+                  try {
+                    const r = (await mutate("checkout", { plan })) as {
+                      url: string;
+                    };
+                    window.location.href = r.url;
+                  } catch (e) {
+                    notify((e as Error).message);
+                  }
+                }}
+              >
+                {plan}
+                <Arrow diagonal size={16} />
+              </button>
+            ))}
         </div>
       </section>
     </>

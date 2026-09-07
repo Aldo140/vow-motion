@@ -250,6 +250,28 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 </span>
               </div>
             </section>
+            {!!data.updates?.length && (
+              <section
+                className="guest-updates"
+                aria-label={
+                  locale === "en"
+                    ? "Updates from your hosts"
+                    : "Novedades de los anfitriones"
+                }
+              >
+                <span className="eyebrow">
+                  {locale === "en"
+                    ? "A NOTE FROM YOUR HOSTS"
+                    : "UNA NOTA DE LOS ANFITRIONES"}
+                </span>
+                {data.updates.map((update) => (
+                  <article key={update.id}>
+                    <h2>{update.subject}</h2>
+                    <p>{update.body}</p>
+                  </article>
+                ))}
+              </section>
+            )}
             <section id="story" className="guest-story">
               <span className="story-monogram">
                 {data.wedding.names

@@ -27,3 +27,5 @@ export async function POST(req: NextRequest) {
   }
   return NextResponse.json({ processed: results.length, results });
 }
+
+export const GET = POST;

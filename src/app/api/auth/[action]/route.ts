@@ -15,7 +15,7 @@ import {
   sameOrigin,
   session,
 } from "@/lib/auth";
-import { deliver } from "@/lib/providers";
+import { deliver, emailAvailable } from "@/lib/providers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,10 +73,7 @@ async function handler(request: NextRequest, context: Context) {
           "Create your own account to collaborate on a wedding.",
         );
       await rateLimit("account-verification-request:" + user.id, 5);
-      if (
-        process.env.NODE_ENV === "production" &&
-        !process.env.RESEND_API_KEY
-      ) {
+      if (process.env.NODE_ENV === "production" && !emailAvailable()) {
         throw new HttpError(
           503,
           "Email verification is not configured yet. Please try again later.",
@@ -164,6 +161,109 @@ async function handler(request: NextRequest, context: Context) {
       return json({ ok: true, verified: true });
     }
 
+    if (action === "reset-request") {
+      await rateLimit(
+        "reset-request:" + request.headers.get("x-forwarded-for"),
+        10,
+      );
+      const input = z
+        .object({ email: z.email().toLowerCase() })
+        .parse(await readBody(request));
+      await rateLimit("reset-email:" + hash(input.email), 5);
+      if (!emailAvailable() && process.env.NODE_ENV === "production")
+        throw new HttpError(
+          503,
+          "Account recovery is temporarily unavailable. Please try again later.",
+        );
+      const user = (
+        await rows<{ id: string; is_demo: boolean }>(
+          "SELECT id,is_demo FROM users WHERE email=$1",
+          [input.email],
+        )
+      )[0];
+      const challenge = id(),
+        code = String(randomInt(100000, 1000000));
+      if (user && !user.is_demo) {
+        await transaction(async (connection) => {
+          await connection.query(
+            "SELECT id FROM users WHERE id=$1 FOR UPDATE",
+            [user.id],
+          );
+          await connection.query(
+            "UPDATE password_reset_challenges SET consumed=true WHERE user_id=$1",
+            [user.id],
+          );
+          await connection.query(
+            "INSERT INTO password_reset_challenges(id,user_id,code_hash,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')",
+            [challenge, user.id, passwordHash(code)],
+          );
+        });
+        try {
+          await deliver({
+            channel: "email",
+            to: input.email,
+            subject: "Reset your Vow Motion password",
+            body: `Your password reset code is ${code}. It expires in 10 minutes. Enter it on the Vow Motion recovery page. If you did not request this, you can ignore this email.`,
+            idempotencyKey: challenge,
+            demo: false,
+          });
+        } catch {
+          await (
+            await db()
+          ).query(
+            "UPDATE password_reset_challenges SET consumed=true WHERE id=$1",
+            [challenge],
+          );
+        }
+      }
+      return json({
+        ok: true,
+        challenge,
+        message:
+          "If an account matches that email, a recovery code is on its way.",
+      });
+    }
+    if (action === "reset-confirm") {
+      await rateLimit(
+        "reset-confirm:" + request.headers.get("x-forwarded-for"),
+        30,
+      );
+      const input = z
+        .object({
+          challenge: z.uuid(),
+          code: z.string().regex(/^\d{6}$/),
+          password: z.string().min(10).max(200),
+        })
+        .parse(await readBody(request));
+      const result = await transaction(async (connection) => {
+        const record = (
+          await connection.query<{ user_id: string; code_hash: string }>(
+            "UPDATE password_reset_challenges SET attempts=attempts+1 WHERE id=$1 AND consumed=false AND expires_at>now() AND attempts<5 RETURNING user_id,code_hash",
+            [input.challenge],
+          )
+        ).rows[0];
+        if (!record || !passwordMatches(input.code, record.code_hash))
+          return false;
+        await connection.query(
+          "UPDATE password_reset_challenges SET consumed=true WHERE id=$1",
+          [input.challenge],
+        );
+        await connection.query(
+          "UPDATE users SET password_hash=$1,email_verified=true WHERE id=$2",
+          [passwordHash(input.password), record.user_id],
+        );
+        await connection.query("DELETE FROM sessions WHERE user_id=$1", [
+          record.user_id,
+        ]);
+        return true;
+      });
+      if (!result)
+        throw new HttpError(
+          400,
+          "That code is incorrect or expired. Request a new one.",
+        );
+      return json({ ok: true });
+    }
     if (action !== "register" && action !== "login")
       throw new HttpError(404, "This action is unavailable.");
     await rateLimit("auth:" + request.headers.get("x-forwarded-for"), 30);

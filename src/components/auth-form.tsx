@@ -54,6 +54,13 @@ export default function AuthForm({
                 : "Your people. Your plans. Right where you left them."}
           </p>
           {error && <Notice error>{error}</Notice>}
+          {!register && !setup && (
+            <p>
+              <Link href="/recover" className="text-link">
+                Forgot your password?
+              </Link>
+            </p>
+          )}
           <form
             onSubmit={async (e) => {
               e.preventDefault();

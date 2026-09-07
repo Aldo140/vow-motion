@@ -12,5 +12,11 @@
       "maxDuration": 60
     }
   },
-  "buildCommand": "npm run lint && npm test && npm run build"
+  "buildCommand": "npm run lint && npm test && npm run build",
+  "crons": [
+    {
+      "path": "/api/worker",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-import { db, rows } from "./db";
+import { db, rows, transaction } from "./db";
 import { id, HttpError, audit } from "./auth";
 import { deliver } from "./providers";
 export async function sendMessage(
@@ -15,14 +15,14 @@ export async function sendMessage(
   )[0];
   if (!message) throw new HttpError(404, "Message not found.");
   if (
+    message.channel !== "invitation" &&
     message.scheduled_at &&
     new Date(String(message.scheduled_at)) > new Date()
   )
     throw new HttpError(400, "This message is scheduled for later.");
-  let guests = await rows(
-    "SELECT * FROM guests WHERE wedding_id=$1 AND consent=true",
-    [weddingId],
-  );
+  let guests = await rows("SELECT * FROM guests WHERE wedding_id=$1", [
+    weddingId,
+  ]);
   if (message.audience !== "everyone")
     guests = guests.filter(
       (g) =>
@@ -32,14 +32,37 @@ export async function sendMessage(
           .map((t) => t.trim())
           .includes(String(message.audience)),
     );
-  guests = guests.filter((g) =>
-    message.channel === "email" ? g.email : g.phone,
+  guests = guests.filter(
+    (g) =>
+      message.channel === "invitation" ||
+      (g.consent && (message.channel === "email" ? g.email : g.phone)),
   );
   if (!guests.length)
     throw new HttpError(
       400,
       "No guests in this audience have contact details and messaging consent.",
     );
+  if (message.channel === "invitation") {
+    return transaction(async (connection) => {
+      const claimed = await connection.query(
+        "UPDATE messages SET status='published' WHERE id=$1 AND status='draft' RETURNING id",
+        [messageId],
+      );
+      if (!claimed.rows.length)
+        throw new HttpError(409, "This update is already published.");
+      for (const guest of guests)
+        await connection.query(
+          "INSERT INTO deliveries(id,wedding_id,message_id,guest_id,status) VALUES($1,$2,$3,$4,'published') ON CONFLICT(message_id,guest_id) DO NOTHING",
+          [id(), weddingId, messageId, guest.id],
+        );
+      return {
+        ok: true,
+        development: false,
+        published: true,
+        count: guests.length,
+      };
+    });
+  }
   const claimed = await (
     await db()
   ).query(

@@ -1,4 +1,21 @@
 import { HttpError } from "./auth";
+export const emailAvailable = () =>
+  Boolean(
+    process.env.RESEND_API_KEY ||
+    (process.env.AGENTMAIL_API_KEY && process.env.AGENTMAIL_INBOX_ID),
+  );
+export const serviceCapabilities = () => ({
+  email: emailAvailable(),
+  sms: Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_FROM,
+  ),
+  billing: Boolean(
+    process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_ESSENTIAL,
+  ),
+  invitation: true,
+});
 export async function deliver(input: {
   channel: string;
   to: string;
@@ -9,10 +26,41 @@ export async function deliver(input: {
 }) {
   if (
     input.demo ||
-    (!process.env.RESEND_API_KEY && input.channel === "email") ||
+    (!emailAvailable() && input.channel === "email") ||
     (!process.env.TWILIO_ACCOUNT_SID && input.channel === "sms")
   )
     return { status: "development", provider_id: null };
+  if (
+    input.channel === "email" &&
+    process.env.AGENTMAIL_API_KEY &&
+    process.env.AGENTMAIL_INBOX_ID &&
+    !process.env.RESEND_API_KEY
+  ) {
+    const response = await fetch(
+      `https://api.agentmail.to/v0/inboxes/${encodeURIComponent(process.env.AGENTMAIL_INBOX_ID)}/messages/send`,
+      {
+        method: "POST",
+        signal: AbortSignal.timeout(20_000),
+        headers: {
+          Authorization: `Bearer ${process.env.AGENTMAIL_API_KEY}`,
+          "Content-Type": "application/json",
+          "Idempotency-Key": input.idempotencyKey,
+        },
+        body: JSON.stringify({
+          to: [input.to],
+          subject: input.subject,
+          text: input.body,
+        }),
+      },
+    );
+    if (!response.ok)
+      throw new HttpError(
+        502,
+        "Email could not be sent. Please try again shortly.",
+      );
+    const result = await response.json();
+    return { status: "sent", provider_id: result.message_id };
+  }
   if (input.channel === "email") {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",

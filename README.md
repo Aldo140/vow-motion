@@ -35,6 +35,7 @@ Copy [.env.example](.env.example) and configure only the services you intend to 
 | `APP_URL` | Canonical origin for invitation links, checkout redirects, and metadata. Use the final HTTPS origin in production. |
 | `DATABASE_URL` | PostgreSQL connection string. When empty, the app uses embedded PGlite at `DATA_DIR/postgres`. |
 | `DATA_DIR` | Persistent local storage directory; defaults to `./data`. Uploaded photos are stored under `uploads`, even with remote PostgreSQL. |
+| `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX_ID` | Enable email using a managed AgentMail inbox; no custom sender domain is required. Resend takes precedence if both providers are configured. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Enable email delivery. The sender must be configured with the email provider. Missing credentials route messages to a development outbox. |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | Enable SMS delivery. All three values must be configured for actual sending. |
 | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ESSENTIAL`, `STRIPE_PRICE_SIGNATURE`, `STRIPE_PRICE_BESPOKE` | Enable one-time Stripe Checkout for configured prices. No card data is stored by this application. |
@@ -137,3 +138,11 @@ Foreign-key cascades remove the owned weddings' related data and the user's sess
 ## Hosted release
 
 See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for the Vercel/PostgreSQL/private Blob deployment contract, health checks, and remaining operator configuration. Local guest data, secrets, build output, and test screenshots are excluded from Git.
+
+### Managed service release
+
+The hosted release uses Neon for durable data, private Vercel Blob for photos, and a verified AgentMail inbox for email. Password recovery at `/recover` sends a ten-minute, single-use code, limits guesses, and revokes existing sessions after a successful reset.
+
+Hosts can publish updates directly inside private household invitations without email addresses or messaging consent. Future updates become visible when their scheduled time arrives. Vercel invokes the authenticated message worker daily at 06:00 UTC; scheduled email is processed on the next daily run. Provider acceptance is not a guarantee of inbox delivery.
+
+SMS controls are hidden until a complete SMS provider configuration exists. Checkout is hidden when billing is unavailable, and the wedding tools remain usable without a card. Real payment settlement still requires a verified merchant account.

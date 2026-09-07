@@ -5373,3 +5373,25 @@ td:last-child {
     flex: 1;
   }
 }
+.guest-updates {
+  width: min(860px, calc(100% - 48px));
+  margin: 64px auto;
+  padding: 30px;
+  border: 1px solid currentColor;
+}
+.guest-updates article + article {
+  border-top: 1px solid #8885;
+  margin-top: 24px;
+  padding-top: 24px;
+}
+.guest-updates h2 {
+  font-family: var(--serif);
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 400;
+  margin: 16px 0;
+}
+.guest-updates p {
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.8;
+}

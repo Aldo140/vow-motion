@@ -89,6 +89,12 @@ export type Photo = {
   filename: string;
 };
 export type StudioData = {
+  capabilities: {
+    email: boolean;
+    sms: boolean;
+    billing: boolean;
+    invitation: boolean;
+  };
   wedding: Wedding;
   weddings: Wedding[];
   guests: Guest[];
@@ -113,6 +119,10 @@ export type StudioData = {
   };
 };
 export type GuestData = {
+  updates: Pick<
+    Message,
+    "id" | "subject" | "body" | "created_at" | "scheduled_at"
+  >[];
   wedding: Omit<Wedding, "owner_id">;
   guests: Guest[];
   events: Event[];

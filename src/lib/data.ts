@@ -1,3 +1,4 @@
+import { serviceCapabilities } from "./providers";
 import { rows } from "./db";
 import { safeWedding, listWeddings } from "./wedding-access";
 import { access, hash, HttpError } from "./auth";
@@ -69,6 +70,7 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     deliveries,
     activity,
     role,
+    capabilities: serviceCapabilities(),
   } as unknown as StudioData;
 }
 export async function guestData(rawToken: string): Promise<GuestData> {
@@ -97,6 +99,7 @@ export async function guestData(rawToken: string): Promise<GuestData> {
     photos,
     responses,
     households,
+    updates,
   ] = await Promise.all([
     rows(
       "SELECT id,slug,names,date,location,timezone,world,privacy,story,locale,status,rsvp_deadline,settings FROM weddings WHERE id=$1",
@@ -122,6 +125,10 @@ export async function guestData(rawToken: string): Promise<GuestData> {
       [householdId],
     ),
     rows("SELECT name FROM households WHERE id=$1", [householdId]),
+    rows(
+      "SELECT DISTINCT m.id,m.subject,m.body,m.created_at,m.scheduled_at FROM messages m JOIN deliveries d ON d.message_id=m.id JOIN guests g ON g.id=d.guest_id WHERE m.wedding_id=$1 AND g.household_id=$2 AND m.channel='invitation' AND d.status='published' AND (m.scheduled_at IS NULL OR m.scheduled_at<=now()) ORDER BY m.created_at DESC",
+      [weddingId, householdId],
+    ),
   ]);
   return {
     wedding: weddings[0],
@@ -133,6 +140,7 @@ export async function guestData(rawToken: string): Promise<GuestData> {
     photos,
     responses,
     household: households[0]?.name,
+    updates,
     token: rawToken,
   } as unknown as GuestData;
 }

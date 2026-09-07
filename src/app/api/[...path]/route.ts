@@ -427,7 +427,7 @@ async function handler(request: NextRequest, context: Context) {
             subject: z.string().min(1).max(200),
             body: z.string().min(1).max(5000),
             audience: z.string().max(200),
-            channel: z.enum(["email", "sms"]),
+            channel: z.enum(["email", "sms", "invitation"]),
             scheduled_at: z
               .union([z.iso.datetime({ offset: true }), z.literal("")])
               .optional(),
