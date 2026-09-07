@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import GuestInvitationGate from "./guest-invitation-gate";
-import GuestKeepsake from "./guest-keepsake";
+import GuestInvitationHero from "./guest-invitation-hero";
 import GuestWeddingPass from "./guest-wedding-pass";
 import { preparePhoto } from "@/lib/prepare-photo";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -9,7 +9,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import {
-  ArrowDownIcon,
   CheckIcon,
   CalendarBlankIcon,
   UploadSimpleIcon,
@@ -108,6 +107,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       null,
     );
   const root = useRef<HTMLDivElement>(null);
+  const replayRequested = useRef(false);
   const c = copy[locale],
     world = getWorld(data.wedding.world),
     url = "/api/guest?token=" + data.token;
@@ -139,6 +139,12 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       root.current
         ?.querySelector<HTMLElement>(".guest-hero h1")
         ?.focus({ preventScroll: true });
+    if (!opened && replayRequested.current) {
+      root.current
+        ?.querySelector<HTMLElement>(".envelope-open")
+        ?.focus({ preventScroll: true });
+      replayRequested.current = false;
+    }
   }, [opened, opening]);
   useEffect(() => {
     fetch(url).catch(() => {});
@@ -157,11 +163,16 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
           if (!context.conditions?.motion) return;
           const desktop = context.conditions.desktop;
           gsap.from(".guest-hero-title h1 > *", {
-            y: desktop ? 35 : 18,
+            y: desktop ? 22 : 12,
             duration: 1,
             stagger: 0.09,
             ease: "power3.out",
             clearProps: "transform",
+          });
+          gsap.from(".atelier-letter", {
+            x: desktop ? -24 : -12,
+            duration: 1.1,
+            ease: "power3.out",
           });
           gsap.from(".hero-image-frame", {
             y: 28,
@@ -193,6 +204,28 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             scrollTrigger: {
               trigger: ".hero-depth-scene",
               start: "top center",
+              end: "bottom top",
+              scrub: 1,
+            },
+          });
+          gsap.to(".atelier-silk", {
+            y: desktop ? -55 : -18,
+            rotation: desktop ? 12 : -8,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".guest-hero",
+              start: "top top",
+              end: "bottom top",
+              scrub: 1.2,
+            },
+          });
+          gsap.to(".atelier-vellum", {
+            y: desktop ? -25 : -10,
+            rotation: desktop ? -6 : -5,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".guest-hero",
+              start: "top top",
               end: "bottom top",
               scrub: 1,
             },
@@ -347,97 +380,16 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             </button>
           </header>
           <main id="main">
-            <section className="guest-hero">
-              <span className="guest-hero-kicker">
-                {data.wedding.status === "memories"
-                  ? locale === "en"
-                    ? "WE GOT MARRIED"
-                    : "NOS CASAMOS"
-                  : c.celebrate}
-              </span>
-              <div className="guest-hero-title">
-                <h1 tabIndex={-1}>
-                  <span>{data.wedding.names.split(" & ")[0]}</span>
-                  <i>&</i>
-                  <span>{data.wedding.names.split(" & ")[1] || ""}</span>
-                </h1>
-              </div>
-              <div className="hero-depth-scene">
-                <span className="hero-side-note" aria-hidden="true">
-                  {locale === "en"
-                    ? "A place in our forever"
-                    : "Un lugar en nuestro siempre"}
-                </span>
-                <div className="hero-image-frame">
-                  <div className="guest-hero-photo">
-                    <img
-                      src={world.image}
-                      alt={`${data.wedding.location}, the setting for our celebration`}
-                      fetchPriority="high"
-                    />
-                    <div className="guest-photo-note">
-                      <span>{data.wedding.location}</span>
-                      <span>{c.invited}</span>
-                    </div>
-                  </div>
-                </div>
-                <a
-                  className="date-keepsake"
-                  href={"/api/guest/calendar?token=" + data.token}
-                  aria-label={c.calendar}
-                >
-                  <span className="date-keepsake-script">
-                    {locale === "en" ? "Save the date" : "Reserva la fecha"}
-                  </span>
-                  <strong>
-                    {formatDate(data.wedding.date, locale, { day: "2-digit" })}
-                  </strong>
-                  <span className="date-keepsake-month">
-                    {formatDate(data.wedding.date, locale, {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <span className="date-keepsake-action">
-                    <CalendarBlankIcon size={15} />
-                    {c.calendar}
-                  </span>
-                </a>
-                <GuestKeepsake event={chronologicalEvents[0]} locale={locale} />
-                <span className="hero-medallion" aria-hidden="true">
-                  <span>
-                    {data.wedding.names
-                      .split(" & ")
-                      .map((name) => name[0])
-                      .join(" & ")}
-                  </span>
-                </span>
-              </div>
-              <div className="guest-hero-footer">
-                <span className="hero-personal-note">
-                  {locale === "en"
-                    ? "A place here, just for "
-                    : "Un lugar aquí para "}
-                  {data.guests
-                    .map((guest) => guest.name.split(" ")[0])
-                    .join(" & ")}
-                  .
-                </span>
-                <a
-                  href="#story"
-                  aria-label={
-                    locale === "en" ? "Read our story" : "Nuestra historia"
-                  }
-                >
-                  <ArrowDownIcon size={22} />
-                </a>
-                <span>
-                  {locale === "en"
-                    ? "A day. A place. Our people."
-                    : "Un día. Un lugar. Nuestra gente."}
-                </span>
-              </div>
-            </section>
+            <GuestInvitationHero
+              data={data}
+              locale={locale}
+              onReplay={() => {
+                replayRequested.current = true;
+                setOpening(false);
+                setOpened(false);
+                window.scrollTo({ top: 0, behavior: "instant" });
+              }}
+            />
             {!!data.updates?.length && (
               <section
                 className="guest-updates"
@@ -465,8 +417,12 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 &
               </span>
               <figure className="story-photo-memory" aria-hidden="true">
-                <img src={world.image} alt="" loading="lazy" />
-                <figcaption>{data.wedding.location.split(",")[0]}</figcaption>
+                <img src="/images/wedding-evening.webp" alt="" loading="lazy" />
+                <figcaption>
+                  {locale === "en"
+                    ? "An evening to remember"
+                    : "Una noche para recordar"}
+                </figcaption>
               </figure>
               <div className="story-florals">
                 <img
@@ -481,9 +437,11 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               </div>
               <div className="story-letter">
                 <span className="story-letter-label">
-                  {locale === "en"
-                    ? "A little love letter"
-                    : "Una pequeña carta de amor"}
+                  {locale === "en" ? "Dearest " : "Con cariño, para "}
+                  {data.guests
+                    .map((guest) => guest.name.split(" ")[0])
+                    .join(" & ")}
+                  ,
                 </span>
                 <span className="story-monogram">
                   {data.wedding.names

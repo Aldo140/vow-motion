@@ -82,7 +82,7 @@ npm test
 npm run build
 ```
 
-The Playwright configuration expects an already-running application at `http://localhost:3000`; it does not start a server. Use a disposable local or staging database because the browser tests create demo weddings and persist mutations.
+The Playwright configuration reuses an application already serving `http://localhost:3000` and starts `npm run dev` only when none is running. Embedded PGlite allows a single process, so stop any other server against the same data directory first. Use a disposable local or staging database because the browser tests create demo weddings and persist mutations.
 
 ```bash
 npx playwright install chromium

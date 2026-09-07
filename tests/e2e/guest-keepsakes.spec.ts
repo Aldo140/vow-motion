@@ -31,6 +31,14 @@ test("the invitation opens by keyboard and the keepsake leads to the authorized 
   await page.reload();
   await expect(open).toHaveCount(0);
   await expect(page.locator(".guest-hero h1")).toBeVisible();
+  await page.getByRole("button", { name: "Open the envelope again" }).click();
+  await expect(open).toBeFocused();
+  await expect(open).toBeInViewport();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".guest-hero h1")).toBeFocused();
+  await expect(page.locator(".guest-hero h1")).toBeInViewport();
+  await page.reload();
+  await expect(open).toHaveCount(0);
 });
 
 test("the guest pass includes local dates and maps, retains its close control and restores scrolling", async ({
@@ -120,4 +128,50 @@ test("the guest pass includes local dates and maps, retains its close control an
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+
+// The guest dock floats over the bottom of the viewport and the keepsakes rest
+// on the print's mount. Both hid parts of the invitation before they were
+// spaced apart, so assert the resting composition rather than the CSS.
+test("the save-the-date action clears the floating dock and the print caption stays legible", async ({
+  page,
+}) => {
+  // Maison positions the keepsake itself, so it exercises the world override.
+  await page.goto("/demo/maison");
+  const open = page.getByRole("button", { name: "Open your invitation" });
+  if (await open.count()) await open.click();
+  await expect(page.locator(".date-keepsake-action")).toBeVisible();
+
+  // What a guest can actually tap where the invitation first comes to rest.
+  const reachable = (selector: string) =>
+    page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return false;
+      const box = el.getBoundingClientRect();
+      const atCentre = document.elementFromPoint(
+        box.x + box.width / 2,
+        box.y + box.height / 2,
+      );
+      return !!atCentre && el.contains(atCentre);
+    }, selector);
+
+  expect(await reachable(".date-keepsake-action")).toBe(true);
+  for (const span of await page.locator(".atelier-photo-caption span").all())
+    await expect(span).toBeVisible();
+  expect(
+    await page.locator(".atelier-photo-caption span").evaluateAll((spans) =>
+      spans.every((span) => {
+        const box = span.getBoundingClientRect();
+        const atCentre = document.elementFromPoint(
+          box.x + box.width / 2,
+          box.y + box.height / 2,
+        );
+        return !!atCentre && span.contains(atCentre);
+      }),
+    ),
+  ).toBe(true);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(400);
+  expect(await reachable(".date-keepsake-action")).toBe(true);
 });

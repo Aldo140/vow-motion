@@ -212,7 +212,7 @@ test("full event accepts household attendee swaps but rejects net overcapacity",
   ).toHaveLength(1);
 });
 
-test("mobile keyboard navigation and named dialogs restore focus; Maison heading clears photo", async ({
+test("mobile navigation and dialogs restore focus; Maison names remain clear on the layered paper", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -236,8 +236,29 @@ test("mobile keyboard navigation and named dialogs restore focus; Maison heading
   await page.getByRole("button", { name: "Open your invitation" }).click();
   await page.waitForTimeout(1100);
   const title = await page.locator(".guest-hero h1").boundingBox(),
+    letter = await page.locator(".atelier-letter").boundingBox(),
     photo = await page.locator(".guest-hero-photo").boundingBox();
-  expect(title!.y + title!.height).toBeLessThanOrEqual(photo!.y);
+  // The name card intentionally overlaps the print. Its text must stay inside
+  // the paper, above the photograph, with a useful area of the photo exposed.
+  expect(title!.y).toBeGreaterThan(letter!.y);
+  expect(title!.y + title!.height).toBeLessThan(letter!.y + letter!.height);
+  expect(title!.x).toBeGreaterThan(letter!.x);
+  expect(title!.x + title!.width).toBeLessThan(letter!.x + letter!.width);
+  expect(photo!.y + photo!.height).toBeGreaterThan(
+    letter!.y + letter!.height + 100,
+  );
+  expect(
+    await page.locator(".guest-hero h1 > span").evaluateAll((names) =>
+      names.every((name) => {
+        const box = name.getBoundingClientRect();
+        return (
+          document
+            .elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
+            ?.closest(".atelier-letter") !== null
+        );
+      }),
+    ),
+  ).toBe(true);
   await page.screenshot({
     path: "artifacts/maison-mobile-fixed.png",
     fullPage: true,

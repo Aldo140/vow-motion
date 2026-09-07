@@ -550,7 +550,9 @@
 }
 .immersive-invitation.world-maison .date-keepsake {
   left: 3%;
-  bottom: 90px;
+  /* Maison places the keepsake itself, so it repeats the dock clearance the
+     atelier hero sets; the fallback keeps other layouts unchanged. */
+  bottom: calc(90px + var(--dock-clearance, 0px));
 }
 .immersive-invitation.world-maison .hero-flower-study {
   right: 0;
@@ -1002,7 +1004,7 @@
   }
   .immersive-invitation.world-maison .date-keepsake {
     left: 10px;
-    bottom: 6px;
+    bottom: calc(6px + var(--dock-clearance, 0px));
   }
   .immersive-invitation.world-maison .hero-flower-study {
     right: 8px;

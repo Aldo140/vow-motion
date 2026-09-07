@@ -16,4 +16,12 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   reporter: [["list"], ["html", { open: "never" }]],
+  // Embedded PGlite allows a single process, so reuse a running server when one
+  // is already serving the workspace and start one only when it is absent.
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: true,
+    timeout: 180000,
+  },
 });

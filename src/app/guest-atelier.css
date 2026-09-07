@@ -1,0 +1,443 @@
+/* A personal invitation laid across a venue print. The paper remains in normal
+   grid flow, so custom names can grow without colliding with the keepsakes. */
+.immersive-invitation .guest-hero.atelier-invitation {
+  /* The guest dock floats over the bottom of the viewport. Hold the calendar
+     keepsake's action above it so it stays tappable without scrolling first. */
+  --dock-clearance: 26px;
+  padding: 35px 6% 0;
+  max-width: 1600px;
+  margin: auto;
+}
+.atelier-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 35px;
+}
+.atelier-heading > span {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+}
+.invitation-replay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 11px;
+  color: var(--guest-ink);
+}
+.immersive-invitation .hero-depth-scene.atelier-suite {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: center;
+  padding: 15px 0 125px;
+  perspective: 1400px;
+}
+.atelier-invitation .atelier-vellum {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: color-mix(in srgb, var(--guest-accent) 15%, var(--guest-bg));
+  transform: rotate(-4deg) translate(-8px, 7px);
+  box-shadow: 0 3px 6px var(--depth-shadow);
+  pointer-events: none;
+}
+.atelier-letter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--depth-paper);
+  box-shadow: 1px 6px 8px var(--depth-shadow);
+  outline: 1px solid var(--guest-line);
+  outline-offset: -14px;
+  pointer-events: none;
+}
+.atelier-invitation .guest-hero-title.atelier-letter {
+  grid-area: 1 / 1 / 2 / 7;
+  width: 94%;
+  padding: 42px 36px 38px;
+  margin: 0;
+  background: transparent;
+  color: var(--guest-ink);
+  transform: rotate(-3deg);
+}
+.atelier-invitation .guest-hero-kicker {
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.025em;
+  text-transform: none;
+}
+.immersive-invitation .atelier-invitation .guest-hero-title h1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  font-size: clamp(54px, 6vw, 86px);
+  line-height: 1.12;
+  margin: 26px 0 32px;
+  letter-spacing: -0.035em;
+  text-shadow: none;
+  font-weight: 400;
+}
+.immersive-invitation .atelier-invitation h1 > span {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.immersive-invitation .atelier-invitation h1 i {
+  font-family: var(--serif);
+  font-size: 0.44em;
+  line-height: 1.2;
+  padding: 2px 0;
+}
+.atelier-invitation-line {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.5;
+  white-space: pre-line;
+  margin: 0;
+}
+.atelier-letter-date {
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+  margin-top: 25px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.atelier-letter-date::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  margin-bottom: 8px;
+  background: var(--guest-line);
+}
+.atelier-letter-date > span:last-child {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-style: italic;
+}
+.atelier-invitation .hero-image-frame {
+  grid-area: 1 / 5 / 2 / -1;
+  padding: 11px 11px 0;
+  transform: rotate(2deg);
+}
+.atelier-invitation .hero-image-frame::before {
+  display: none;
+}
+.immersive-invitation .atelier-invitation .guest-hero-photo {
+  height: clamp(480px, 40vw, 580px);
+}
+.atelier-invitation .atelier-photo-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  /* The keepsakes rest on both ends of the mount; keep the caption between
+     them. The insets track the print's width, as the keepsakes do. */
+  padding: 17px 26% 17px 30%;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.atelier-photo-caption > span:last-child {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 19px;
+}
+.atelier-silk {
+  position: absolute;
+  z-index: 5;
+  width: clamp(130px, 15vw, 215px);
+  height: auto;
+  left: -6%;
+  top: 12%;
+  transform: rotate(14deg);
+  pointer-events: none;
+  user-select: none;
+}
+.atelier-invitation .date-keepsake {
+  left: 36%;
+  bottom: calc(28px + var(--dock-clearance));
+  width: 190px;
+  min-height: 218px;
+  padding: 24px 18px 18px;
+  transform: rotate(-8deg);
+  z-index: 4;
+}
+.atelier-invitation .date-keepsake strong {
+  font-size: 74px;
+}
+.atelier-invitation .hero-flower-study.useful-keepsake {
+  right: -1%;
+  bottom: 0;
+  z-index: 4;
+  transform: rotate(8deg);
+}
+.atelier-invitation .hero-medallion {
+  top: -10px;
+  right: 4%;
+  width: 92px;
+  height: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  background: var(--guest-accent);
+  color: var(--guest-bg);
+  border: 0;
+  outline-color: color-mix(in srgb, var(--guest-bg) 45%, transparent);
+  transform: rotate(12deg);
+}
+.hero-medallion small {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+}
+.immersive-invitation .atelier-invitation .guest-hero-footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0 25px;
+  margin-top: 6px;
+}
+.atelier-story-link {
+  display: inline-flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 11px;
+  min-height: 44px;
+}
+.atelier-story-link svg {
+  flex-shrink: 0;
+}
+.world-heritage .atelier-invitation .guest-hero-title h1,
+.world-garden .atelier-invitation .guest-hero-title h1 {
+  font-size: clamp(40px, 4.5vw, 67px);
+  line-height: 1.2;
+}
+.world-modernist .atelier-invitation .guest-hero-title h1 {
+  font-size: clamp(45px, 5.5vw, 78px);
+  font-weight: 600;
+}
+.world-modernist .atelier-letter,
+.world-modernist .hero-image-frame {
+  transform: none;
+}
+.world-modernist .atelier-silk {
+  display: none;
+}
+.world-notte .atelier-letter {
+  --depth-paper: oklch(24% 0.008 80);
+}
+.world-garden .atelier-invitation .hero-medallion {
+  top: 6%;
+  right: 1%;
+}
+@media (hover: hover) and (pointer: fine) {
+  .invitation-replay:hover,
+  .atelier-story-link:hover span {
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .atelier-invitation .guest-hero-title.atelier-letter {
+    padding-inline: 25px;
+  }
+  .atelier-invitation .hero-flower-study.useful-keepsake {
+    width: 165px;
+    height: 225px;
+  }
+  .atelier-invitation .date-keepsake {
+    left: 32%;
+    width: 170px;
+  }
+  .atelier-invitation .atelier-silk {
+    left: -7%;
+    top: 19%;
+  }
+  .atelier-invitation .hero-medallion {
+    width: 76px;
+    height: 76px;
+  }
+}
+/* The held invitation: name paper above, portrait print below, with the two
+   useful keepsakes resting at the bottom rather than covering the names. */
+@media (max-width: 768px) {
+  .immersive-invitation .guest-hero.atelier-invitation {
+    /* The dock sits lower and the phone composition ends nearer the fold, so
+       the keepsake needs the dock's full height plus its offset. */
+    --dock-clearance: 80px;
+    padding: 17px 24px 0;
+  }
+  .atelier-heading {
+    padding-bottom: 23px;
+    justify-content: center;
+  }
+  .atelier-heading > span {
+    display: none;
+  }
+  .invitation-replay {
+    font-size: 10px;
+  }
+  .immersive-invitation .hero-depth-scene.atelier-suite {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    padding: 6px 0 155px;
+  }
+  .atelier-invitation .guest-hero-title.atelier-letter {
+    grid-area: 1 / 1;
+    width: 86%;
+    align-self: start;
+    padding: 27px 22px 24px;
+    transform: rotate(-4deg);
+  }
+  .atelier-invitation .atelier-vellum {
+    transform: rotate(5deg) translate(8px, 4px);
+  }
+  .atelier-letter::after {
+    outline-offset: -9px;
+  }
+  .immersive-invitation .atelier-invitation .guest-hero-title h1 {
+    font-size: clamp(42px, 12vw, 76px);
+    line-height: 1.06;
+    margin: 16px 0 22px;
+  }
+  .immersive-invitation .atelier-invitation h1 i {
+    padding: 0;
+  }
+  .atelier-invitation .guest-hero-kicker {
+    font-size: 9px;
+    max-width: none;
+  }
+  .atelier-invitation-line {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .atelier-letter-date {
+    margin-top: 15px;
+    gap: 5px;
+    font-size: 10px;
+  }
+  .atelier-letter-date::before {
+    display: none;
+  }
+  .atelier-letter-date > span:last-child {
+    font-size: 15px;
+  }
+  .atelier-invitation .hero-image-frame {
+    grid-area: 1 / 1;
+    width: 91%;
+    justify-self: end;
+    margin-top: 150px;
+    padding: 7px 7px 0;
+    transform: rotate(3deg);
+  }
+  .immersive-invitation .atelier-invitation .guest-hero-photo {
+    height: clamp(280px, 83vw, 455px);
+  }
+  .atelier-invitation .atelier-photo-caption {
+    /* Both keepsakes rest on this strip on a phone, and the letter above
+       already carries the location. Keep the mount's spacing, drop the text. */
+    padding: 13px 5px 38px;
+    font-size: 9px;
+    visibility: hidden;
+  }
+  .atelier-photo-caption > span:last-child {
+    font-size: 15px;
+  }
+  .atelier-silk {
+    width: 132px;
+    left: auto;
+    right: -25px;
+    top: -22px;
+    transform: rotate(-17deg);
+  }
+  .atelier-invitation .date-keepsake {
+    width: 148px;
+    min-height: 186px;
+    left: 0;
+    bottom: calc(7px + var(--dock-clearance));
+    padding: 20px 12px 16px;
+    transform: rotate(-7deg);
+  }
+  .atelier-invitation .date-keepsake strong {
+    font-size: 60px;
+  }
+  .atelier-invitation .hero-flower-study.useful-keepsake {
+    width: 145px;
+    height: 205px;
+    right: 0;
+    bottom: 9px;
+  }
+  .atelier-invitation .hero-medallion,
+  .world-garden .atelier-invitation .hero-medallion {
+    width: 58px;
+    height: 58px;
+    top: auto;
+    right: auto;
+    left: 0;
+    bottom: 45%;
+    z-index: 3;
+    gap: 2px;
+  }
+  .hero-medallion small {
+    font-size: 10px;
+  }
+  .immersive-invitation .atelier-invitation .guest-hero-footer {
+    margin-top: 10px;
+    gap: 12px;
+    padding: 20px 0;
+    align-items: start;
+  }
+  .immersive-invitation .atelier-invitation .hero-personal-note {
+    font-size: 17px;
+    max-width: 70%;
+  }
+  .atelier-story-link {
+    padding: 0 10px !important;
+  }
+  .atelier-story-link > span {
+    display: none;
+  }
+  .world-heritage .atelier-invitation .guest-hero-title h1,
+  .world-garden .atelier-invitation .guest-hero-title h1 {
+    font-size: clamp(33px, 9.2vw, 57px);
+    line-height: 1.2;
+  }
+  .world-modernist .atelier-invitation .guest-hero-title h1 {
+    font-size: clamp(37px, 10.5vw, 62px);
+  }
+}
+@media (max-width: 359px) {
+  .immersive-invitation .guest-hero.atelier-invitation {
+    padding-inline: 20px;
+  }
+  .atelier-invitation .guest-hero-title.atelier-letter {
+    padding-inline: 16px;
+    width: 89%;
+  }
+  .atelier-invitation .atelier-silk {
+    width: 110px;
+    right: -20px;
+  }
+  .atelier-invitation .date-keepsake {
+    width: 131px;
+  }
+  .atelier-invitation .hero-flower-study.useful-keepsake {
+    width: 129px;
+    height: 193px;
+    right: -1px;
+  }
+  .atelier-invitation .date-keepsake-script {
+    font-size: 17px;
+  }
+}
+
+.atelier-letter h1:focus {
+  outline: none;
+}
