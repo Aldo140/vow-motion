@@ -3,19 +3,14 @@ import { useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LandingHero from "./landing-hero";
+import MarketingNavigation from "./marketing-navigation";
 import { useGSAP } from "@gsap/react";
-import {
-  ListIcon,
-  XIcon,
-  CheckIcon,
-  ArrowDownIcon,
-} from "@phosphor-icons/react";
+import { CheckIcon, ArrowDownIcon } from "@phosphor-icons/react";
 import { Brand, Arrow, DemoButton } from "./ui";
 import { worlds } from "@/lib/worlds";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 export default function Marketing() {
   const root = useRef<HTMLDivElement>(null),
-    [menu, setMenu] = useState(false),
     [active, setActive] = useState("riviera");
   const world = worlds.find((w) => w.id === active)!;
   useGSAP(
@@ -69,39 +64,7 @@ export default function Marketing() {
   );
   return (
     <div ref={root} className="marketing">
-      <header className="marketing-nav">
-        <Brand />
-        <nav className={menu ? "open" : ""} aria-label="Main navigation">
-          <a href="#worlds" onClick={() => setMenu(false)}>
-            The design collection
-          </a>
-          <a href="#experience" onClick={() => setMenu(false)}>
-            How it works
-          </a>
-          <a href="#pricing" onClick={() => setMenu(false)}>
-            Pricing
-          </a>
-          <a href="#planners" onClick={() => setMenu(false)}>
-            For planners <Arrow diagonal size={13} />
-          </a>
-        </nav>
-        <div className="nav-actions">
-          <a href="/login" className="signin">
-            Sign in
-          </a>
-          <a href="/start" className="button primary small">
-            Begin your story <Arrow diagonal size={15} />
-          </a>
-        </div>
-        <button
-          className="mobile-toggle icon-button"
-          onClick={() => setMenu(!menu)}
-          aria-expanded={menu}
-          aria-label="Toggle navigation"
-        >
-          {menu ? <XIcon size={24} /> : <ListIcon size={24} />}
-        </button>
-      </header>
+      <MarketingNavigation />
       <main id="main">
         <LandingHero />
         <section className="love-letter">
@@ -130,7 +93,7 @@ export default function Marketing() {
             </a>
           </div>
         </section>
-        <section className="collection section-pad" id="worlds">
+        <section className="collection section-pad" id="worlds" tabIndex={-1}>
           <div className="section-heading">
             <div>
               <p className="collection-caption">The invitation wardrobe</p>
@@ -216,7 +179,11 @@ export default function Marketing() {
             </div>
           </div>
         </section>
-        <section className="platform-story section-pad" id="experience">
+        <section
+          className="platform-story section-pad"
+          id="experience"
+          tabIndex={-1}
+        >
           <div className="platform-title">
             <p className="collection-caption">
               Behind every effortless celebration
@@ -297,7 +264,7 @@ export default function Marketing() {
             </div>
           </div>
         </section>
-        <section className="planner-section" id="planners">
+        <section className="planner-section" id="planners" tabIndex={-1}>
           <div className="planner-image">
             <img
               src="/images/wedding-details.webp"
@@ -321,7 +288,11 @@ export default function Marketing() {
             </DemoButton>
           </div>
         </section>
-        <section className="beginning-section section-pad" id="pricing">
+        <section
+          className="beginning-section section-pad"
+          id="pricing"
+          tabIndex={-1}
+        >
           <div className="beginning-invitation" aria-hidden="true">
             <span>Save the date</span>
             <div>

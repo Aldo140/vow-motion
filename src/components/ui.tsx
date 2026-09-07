@@ -10,6 +10,7 @@ import {
   cloneElement,
   type ReactElement,
   type ReactNode,
+  type MouseEventHandler,
 } from "react";
 import {
   ArrowUpRightIcon,
@@ -30,12 +31,19 @@ export function Arrow({
     <ArrowRightIcon size={size} />
   );
 }
-export function Brand({ light = false }: { light?: boolean }) {
+export function Brand({
+  light = false,
+  onClick,
+}: {
+  light?: boolean;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
+}) {
   return (
     <Link
       href="/"
       className={"brand " + (light ? "light" : "")}
       aria-label="Vow Motion home"
+      onClick={onClick}
     >
       VOW<span>MOTION</span>
       <i>®</i>
