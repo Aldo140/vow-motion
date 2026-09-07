@@ -44,6 +44,8 @@ Generation prompt: “Create one production-ready photorealistic isolated object
 
 The floating guest dock overlays the bottom of the viewport, so the invitation holds its keepsakes above it: the save-the-date's calendar action stays tappable where the composition first comes to rest, without scrolling. On a desktop print the venue caption sits in the clear band between the two keepsakes; on a phone both keepsakes rest on that strip, so the caption keeps its spacing and drops its text, which the letter above already carries.
 
+The dock is fixed to the foot of the viewport while the invitation sits at a fixed place in the document, so for a narrow band of window heights the two still meet. No fixed clearance removes that; it only moves which heights are affected. What holds at every height, and is tested, is that a small scroll frees the action, and the same calendar download sits inside the wedding pass the dock itself opens.
+
 ## The planner page
 
 `/planners` argues the case that the homepage cannot: the couple sees a celebration, the planner sees a plan. Its signature is a ledger whose every row pairs something the planner sets in the Studio with what the couple's guests meet because of it, so the correspondence is the structure rather than a claim. The planner half stays in the working face and the guest half in the invitation's italic olive, divided by a spine marked once per row. On a phone the pair stacks and each half names its side, because the columns no longer can. Nothing here introduces a colour or a face the wedding surfaces do not already use.

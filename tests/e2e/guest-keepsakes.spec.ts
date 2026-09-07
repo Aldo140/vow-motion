@@ -173,4 +173,25 @@ test("the save-the-date action clears the floating dock and the print caption st
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(400);
   expect(await reachable(".date-keepsake-action")).toBe(true);
+
+  // The dock is fixed to the foot of the viewport while the invitation sits at
+  // a fixed place in the document, so for a narrow band of window heights the
+  // two meet. That is inherent to a floating dock; what must hold everywhere is
+  // that a small scroll frees the action rather than it being lost behind.
+  for (const height of [850, 900, 950, 1000]) {
+    await page.setViewportSize({ width: 1440, height });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await page.waitForTimeout(250);
+    let cleared = await reachable(".date-keepsake-action");
+    for (const top of [40, 80, 120, 200]) {
+      if (cleared) break;
+      await page.evaluate(
+        (y) => window.scrollTo({ top: y, behavior: "instant" }),
+        top,
+      );
+      await page.waitForTimeout(150);
+      cleared = await reachable(".date-keepsake-action");
+    }
+    expect(cleared, `calendar unreachable at ${height}px tall`).toBe(true);
+  }
 });
