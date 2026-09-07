@@ -1,7 +1,8 @@
 "use client";
-import Link from "next/link";
 import { useRef, useState } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import LandingHero from "./landing-hero";
 import { useGSAP } from "@gsap/react";
 import {
   ListIcon,
@@ -11,7 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { Brand, Arrow, DemoButton } from "./ui";
 import { worlds } from "@/lib/worlds";
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 export default function Marketing() {
   const root = useRef<HTMLDivElement>(null),
     [menu, setMenu] = useState(false),
@@ -21,18 +22,45 @@ export default function Marketing() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(".hero-copy > *", {
-          y: 24,
-          opacity: 0,
-          duration: 0.85,
-          stagger: 0.12,
+        gsap.fromTo(
+          ".letter-mark",
+          { rotation: -12 },
+          {
+            rotation: 12,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".love-letter",
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          },
+        );
+        gsap.fromTo(
+          ".beginning-invitation",
+          { rotation: -7, y: 35 },
+          {
+            rotation: -1,
+            y: -15,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".beginning-section",
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          },
+        );
+        gsap.from(".studio-specimen", {
+          y: 25,
+          rotation: -4,
+          duration: 0.9,
           ease: "power3.out",
-        });
-        gsap.from(".hero-keepsake", {
-          y: 30,
-          rotation: 1.5,
-          duration: 1.1,
-          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".platform-layout",
+            start: "top 80%",
+            once: true,
+          },
         });
       });
       return () => mm.revert();
@@ -75,57 +103,7 @@ export default function Marketing() {
         </button>
       </header>
       <main id="main">
-        <section className="marketing-hero celebration-hero">
-          <img
-            src="/images/wedding-evening.webp"
-            alt="Candlelight, garden roses and linen set for a wedding dinner beside the lake"
-            fetchPriority="high"
-            className="celebration-background"
-          />
-          <div className="hero-copy">
-            <p className="hero-dedication">
-              For the day. For your people. Forever.
-            </p>
-            <h1>
-              Your entire wedding.
-              <br />
-              <em>Beautifully shared.</em>
-            </h1>
-            <p className="hero-description">
-              The anticipation. The gathering. The happily ever after.
-              <br />
-              It all begins with a beautiful invitation.
-            </p>
-            <div className="hero-actions">
-              <a href="/start" className="button light-button">
-                Create your wedding <Arrow diagonal />
-              </a>
-              <Link href="/demo/riviera" prefetch={false} className="text-link">
-                Experience a wedding <Arrow />
-              </Link>
-            </div>
-          </div>
-          <Link
-            className="hero-keepsake"
-            href="/demo/riviera"
-            prefetch={false}
-            aria-label="Open Elena and Matteo’s sample invitation"
-          >
-            <span className="keepsake-seal" aria-hidden="true">
-              E<i>&</i>M
-            </span>
-            <span className="keepsake-copy">
-              <small>You are joyfully invited</small>
-              <strong>Elena & Matteo</strong>
-              <span>Lake Como · 19 June 2027</span>
-            </span>
-            <Arrow diagonal size={22} />
-          </Link>
-          <div className="hero-edition">
-            <span>Vow Motion</span>
-            <span>Wedding websites, with a little soul.</span>
-          </div>
-        </section>
+        <LandingHero />
         <section className="love-letter">
           <div className="letter-mark" aria-hidden="true">
             V<i>&</i>M
@@ -207,7 +185,7 @@ export default function Marketing() {
             id="world-preview"
             aria-labelledby={"tab-" + active}
           >
-            <div className="collection-image">
+            <div className="collection-image" key={world.id}>
               <img
                 src={world.image}
                 alt={`${world.name} architectural and celebration art direction`}

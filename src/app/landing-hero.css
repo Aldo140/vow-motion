@@ -1,0 +1,939 @@
+/* A live invitation suite. The scroll stage and the paper each own their movement. */
+.hero-scroll-shell {
+  --hero-stage-height: clamp(720px, calc(100svh - 82px), 920px);
+  height: calc(var(--hero-stage-height) + 48svh);
+  position: relative;
+}
+.immersive-landing-hero {
+  --suite-paper: #f3eedb;
+  --suite-edge: #d5d1bd;
+  --suite-ink: #295265;
+  --suite-envelope: #e7e1ca;
+  position: sticky;
+  top: 0;
+  min-height: var(--hero-stage-height);
+  height: var(--hero-stage-height);
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  align-items: center;
+  gap: 1%;
+  padding: 25px 5% 125px;
+  isolation: isolate;
+  overflow: clip;
+  color: #fff9e9;
+  background: #1c302a;
+}
+.hero-ambient {
+  position: absolute;
+  inset: -6% 0;
+  z-index: -3;
+  overflow: hidden;
+}
+.hero-ambient img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: 70% 60%;
+  opacity: 0;
+  transition: opacity 650ms ease;
+}
+.hero-ambient img.is-active {
+  opacity: 1;
+}
+.hero-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(
+    90deg,
+    #0f251fe8 0%,
+    #142a23cd 33%,
+    #142a2361 72%,
+    #11201b5c 100%
+  );
+}
+.immersive-landing-hero::after {
+  content: "";
+  position: absolute;
+  inset: 17px;
+  border: 1px solid #ede7ce26;
+  pointer-events: none;
+  z-index: -1;
+}
+.hero-copy-depth {
+  position: relative;
+  z-index: 5;
+}
+.immersive-hero-copy {
+  max-width: 760px;
+}
+.immersive-hero-copy .hero-dedication {
+  margin-bottom: 25px;
+  font-size: 12px;
+  color: #eee6cf;
+}
+.immersive-hero-copy h1 {
+  font-family: var(--serif);
+  font-size: clamp(47px, 4.65vw, 72px);
+  line-height: 1.14;
+  letter-spacing: -0.035em;
+  margin: 0 0 28px;
+}
+.immersive-hero-copy h1 > span,
+.immersive-hero-copy h1 > em {
+  display: block;
+}
+.immersive-hero-copy h1 em {
+  color: #f1dfb6;
+}
+.immersive-hero-copy .hero-description {
+  color: #ede9df;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.immersive-hero-copy .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+  align-items: center;
+  margin: 30px 0 0;
+}
+.immersive-hero-copy .hero-actions .button {
+  background: #f3eedf;
+  color: #263d31;
+  padding: 15px 22px;
+}
+.hero-explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-size: 12px;
+}
+.hero-reassurance {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #e0ddcf;
+}
+.hero-art-stage {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: min(590px, 46vw);
+  perspective: 1500px;
+  margin-top: 5px;
+}
+.suite-pointer-plane {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.suite-photo-drift,
+.suite-flower-drift,
+.suite-envelope-drift {
+  position: absolute;
+}
+.suite-photo-drift {
+  top: 0;
+  left: 1%;
+  width: 65%;
+  height: 75%;
+  z-index: 1;
+}
+.suite-photo-layer {
+  width: 100%;
+  height: 100%;
+}
+.suite-venue-photo {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 11px 11px 36px;
+  background: #f3eddb;
+  transform: rotate(-10deg);
+  box-shadow: 3px 8px 8px #0c171b45;
+  color: #2f4d40;
+}
+.suite-venue-photo img {
+  width: 100%;
+  height: 100%;
+  object-position: 61% center;
+}
+.suite-venue-photo figcaption {
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  margin-top: 5px;
+}
+.suite-flower-drift {
+  top: 31%;
+  right: -2%;
+  width: 35%;
+  height: 44%;
+  z-index: 2;
+}
+.suite-flower-layer {
+  width: 100%;
+  height: 100%;
+}
+.suite-flower-photo {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  background: #f5efdf;
+  color: #3b4937;
+  padding: 8px 8px 30px;
+  transform: rotate(12deg);
+  box-shadow: 3px 8px 8px #0c171b45;
+}
+.suite-flower-photo img {
+  height: 100%;
+  width: 100%;
+  object-position: center 42%;
+}
+.suite-flower-photo figcaption {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  text-align: center;
+  margin-top: 6px;
+}
+.suite-envelope-drift {
+  width: 65%;
+  top: 51%;
+  left: 20%;
+  z-index: 4;
+}
+.suite-envelope-layer {
+  transform: rotate(5deg);
+}
+.interactive-invitation {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.28;
+  isolation: isolate;
+}
+.suite-envelope-back {
+  position: absolute;
+  inset: 0;
+  background: var(--suite-edge);
+  box-shadow: 2px 8px 8px #0b1c1b40;
+}
+.suite-paper-window {
+  position: absolute;
+  inset: -230px 12px 0;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+}
+.suite-invitation-paper {
+  position: absolute;
+  bottom: 13px;
+  left: 0;
+  right: 0;
+  height: 370px;
+  padding: 24px 18px 15px;
+  background: var(--suite-paper);
+  color: var(--suite-ink);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  outline: 1px solid color-mix(in srgb, var(--suite-ink) 26%, transparent);
+  outline-offset: -11px;
+  transform: translateY(32%);
+  transition:
+    transform 750ms var(--ease),
+    background 300ms,
+    color 300ms;
+  pointer-events: auto;
+}
+.suite-letterline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+}
+.suite-names {
+  font-family: "Italiana", serif;
+  font-size: clamp(35px, 3.1vw, 48px);
+  line-height: 1.02;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.suite-names i {
+  font-family: var(--serif);
+  font-size: 0.5em;
+  line-height: 1;
+}
+.suite-date {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.suite-visit {
+  min-height: 44px;
+  padding: 10px 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--suite-ink) 25%, transparent);
+}
+.suite-envelope-pocket {
+  position: absolute;
+  inset: 26% 0 0;
+  z-index: 3;
+  background: var(--suite-envelope);
+  clip-path: polygon(0 0, 50% 39%, 100% 0, 100% 100%, 0 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 15px 10px 26px;
+  color: var(--suite-ink);
+}
+.suite-envelope-pocket::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--suite-paper) 60%, transparent);
+  clip-path: polygon(0 100%, 50% 33%, 100% 100%);
+  pointer-events: none;
+}
+.suite-envelope-pocket > span,
+.suite-envelope-pocket > small {
+  position: relative;
+  z-index: 1;
+}
+.suite-envelope-pocket > span {
+  font-family: var(--serif);
+  font-size: clamp(19px, 1.9vw, 28px);
+  margin-bottom: 3px;
+}
+.suite-envelope-pocket > small {
+  font-size: 9px;
+}
+.suite-seal-control {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  padding: 0;
+  perspective: 1000px;
+  color: var(--suite-ink);
+}
+.suite-flap {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 66%;
+  background: var(--suite-paper);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: center top;
+  backface-visibility: hidden;
+  transition:
+    transform 650ms var(--ease),
+    opacity 300ms;
+}
+.suite-wax-seal {
+  position: absolute;
+  top: 40%;
+  left: calc(50% - 36px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--suite-ink);
+  color: var(--suite-paper);
+  outline: 1px solid color-mix(in srgb, var(--suite-paper) 50%, transparent);
+  outline-offset: -8px;
+  box-shadow:
+    inset 2px 3px 5px #001a1f88,
+    2px 4px 5px #1427213b;
+  font-family: var(--serif);
+  font-size: 23px;
+  transition:
+    transform 400ms var(--ease),
+    background 300ms;
+}
+.suite-wax-seal i {
+  font-size: 17px;
+}
+.suite-seal-hint {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -45px;
+  color: #faf2df;
+  font-size: 13px;
+  font-family: var(--serif);
+  font-style: italic;
+  text-align: center;
+  transform: rotate(-5deg);
+}
+.is-open .suite-invitation-paper {
+  transform: translateY(-47%);
+}
+.is-open .suite-flap {
+  transform: rotateX(175deg);
+  opacity: 0;
+}
+.is-open .suite-seal-control {
+  pointer-events: none;
+}
+.is-open .suite-wax-seal {
+  transform: translate(-120%, -8%) rotate(-12deg);
+  pointer-events: auto;
+}
+.hero-mood-picker {
+  position: absolute;
+  z-index: 6;
+  right: 5%;
+  bottom: 39px;
+  width: 43%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.hero-mood-heading > span {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.3;
+}
+.hero-mood-heading > small {
+  display: block;
+  font-size: 10px;
+  margin-top: 7px;
+  color: #dedacb;
+}
+.hero-mood-options {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid #e4ddc54d;
+  background: #182c25a8;
+}
+.hero-mood-options button {
+  min-height: 44px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #f8efdc;
+  transition:
+    background 180ms,
+    color 180ms;
+}
+.hero-mood-options button[aria-pressed="true"] {
+  background: #f2ebd7;
+  color: #263e33;
+}
+.mood-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid #b4bcaa;
+}
+.swatch-riviera {
+  background: #315769;
+}
+.swatch-maison {
+  background: #dfd6c3;
+}
+.swatch-notte {
+  background: #35322f;
+}
+.hero-scene-caption {
+  position: absolute;
+  left: 5%;
+  bottom: 48px;
+  width: 240px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+}
+.hero-scroll-track {
+  display: block;
+  height: 1px;
+  margin-top: 15px;
+  background: #fff4;
+}
+.hero-scroll-progress {
+  display: block;
+  height: 100%;
+  background: #f6e3bc;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.mood-maison {
+  --suite-paper: #f8f3e9;
+  --suite-edge: #d6d0c3;
+  --suite-envelope: #e8e2d6;
+  --suite-ink: #3b3a32;
+}
+.mood-maison .suite-names {
+  font-family: var(--serif);
+}
+.mood-notte {
+  --suite-paper: #282c29;
+  --suite-edge: #171e1b;
+  --suite-envelope: #333a34;
+  --suite-ink: #ede0c3;
+}
+.mood-notte .suite-names {
+  font-family: var(--serif);
+}
+.mood-notte .suite-flower-photo img {
+  filter: saturate(0.15);
+}
+.immersive-landing-hero a:focus-visible,
+.immersive-landing-hero button:focus-visible {
+  outline: 2px solid #fff3cf;
+  outline-offset: 5px;
+}
+.immersive-landing-hero .suite-invitation-paper a:focus-visible {
+  outline-color: var(--suite-ink);
+}
+.marketing .collection-image {
+  animation: collection-arrives 480ms var(--ease);
+}
+@keyframes collection-arrives {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .suite-seal-control:not([aria-expanded="true"]):hover .suite-wax-seal {
+    transform: scale(1.07) rotate(-7deg);
+  }
+  .hero-explore:hover svg,
+  .suite-visit:hover svg {
+    transform: translate(2px, -2px);
+  }
+  .hero-explore svg,
+  .suite-visit svg {
+    transition: transform 180ms ease-out;
+  }
+  .hero-mood-options button:hover {
+    background: #ede7d128;
+  }
+  .hero-mood-options button[aria-pressed="true"]:hover {
+    background: #fff7e4;
+  }
+}
+@media (min-width: 901px) and (max-width: 1190px) {
+  .immersive-landing-hero {
+    padding-inline: 4%;
+    grid-template-columns: 1fr 1fr;
+  }
+  .immersive-hero-copy h1 {
+    font-size: 50px;
+  }
+  .hero-art-stage {
+    height: 490px;
+  }
+  .suite-envelope-drift {
+    left: 15%;
+    width: 74%;
+    top: 51%;
+  }
+  .suite-photo-drift {
+    width: 70%;
+    height: 74%;
+  }
+  .suite-invitation-paper {
+    height: 330px;
+  }
+  .suite-names {
+    font-size: 38px;
+  }
+  .suite-venue-photo figcaption {
+    font-size: 17px;
+  }
+  .suite-flower-photo figcaption {
+    font-size: 12px;
+  }
+  .hero-mood-picker {
+    width: 48%;
+    right: 4%;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hero-mood-heading {
+    display: none;
+  }
+  .immersive-hero-copy .hero-actions {
+    gap: 17px;
+  }
+  .hero-explore {
+    font-size: 11px;
+  }
+  .hero-scene-caption {
+    left: 4%;
+  }
+}
+/* A held invitation: no sticky scroll, a compact stage, and direct touch controls. */
+@media (max-width: 900px) {
+  .hero-scroll-shell {
+    height: auto;
+  }
+  .immersive-landing-hero {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 38px 25px 25px;
+    gap: 0;
+  }
+  .immersive-landing-hero::after {
+    inset: 10px;
+  }
+  .hero-atmosphere {
+    background: linear-gradient(
+      180deg,
+      #102820ed 0%,
+      #142b24bd 42%,
+      #10221973 70%,
+      #12241dd4
+    );
+  }
+  .hero-ambient img {
+    object-position: 72% 55%;
+  }
+  .hero-copy-depth {
+    width: 100%;
+  }
+  .immersive-hero-copy {
+    max-width: 630px;
+    margin: auto;
+  }
+  .immersive-hero-copy .hero-dedication {
+    font-size: 11px;
+    margin-bottom: 20px;
+  }
+  .immersive-hero-copy h1 {
+    font-size: clamp(36px, 6.1vw, 55px);
+    letter-spacing: -0.035em;
+    margin-bottom: 18px;
+    line-height: 1.15;
+  }
+  .immersive-hero-copy .hero-description {
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .immersive-hero-copy .hero-actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 17px;
+    margin-top: 23px;
+  }
+  .immersive-hero-copy .hero-actions .button {
+    font-size: 11px;
+    padding: 13px 15px;
+    gap: 13px;
+  }
+  .hero-explore {
+    font-size: 11px;
+    gap: 9px;
+    white-space: nowrap;
+  }
+  .hero-reassurance {
+    font-size: 9px;
+    margin-top: 13px;
+  }
+  .hero-art-stage {
+    width: 100%;
+    max-width: 560px;
+    height: 425px;
+    margin: 38px auto 30px;
+  }
+  .suite-photo-drift {
+    left: 4%;
+    top: 0;
+    width: 60%;
+    height: 70%;
+  }
+  .suite-venue-photo {
+    padding: 8px 8px 28px;
+    transform: rotate(-9deg);
+  }
+  .suite-venue-photo figcaption {
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  .suite-flower-drift {
+    width: 33%;
+    height: 41%;
+    right: 1%;
+    top: 29%;
+  }
+  .suite-flower-photo {
+    padding: 6px 6px 24px;
+    transform: rotate(10deg);
+  }
+  .suite-flower-photo figcaption {
+    font-size: 11px;
+    margin-top: 4px;
+  }
+  .suite-envelope-drift {
+    width: 65%;
+    left: 19%;
+    top: 48%;
+  }
+  .suite-invitation-paper {
+    height: 290px;
+    padding: 18px 14px 10px;
+  }
+  .suite-names {
+    font-size: 34px;
+  }
+  .suite-letterline {
+    font-size: 12px;
+  }
+  .suite-date {
+    font-size: 8px;
+  }
+  .suite-visit {
+    font-size: 11px;
+    gap: 10px;
+  }
+  .suite-envelope-pocket {
+    padding-bottom: 19px;
+  }
+  .suite-envelope-pocket > span {
+    font-size: 22px;
+  }
+  .suite-envelope-pocket > small {
+    font-size: 8px;
+  }
+  .suite-wax-seal {
+    width: 58px;
+    height: 58px;
+    left: calc(50% - 29px);
+    font-size: 19px;
+    outline-offset: -6px;
+  }
+  .suite-wax-seal i {
+    font-size: 13px;
+  }
+  .suite-seal-hint {
+    font-size: 12px;
+    bottom: -35px;
+  }
+  .is-open .suite-invitation-paper {
+    transform: translateY(-40%);
+  }
+  .hero-mood-picker {
+    position: relative;
+    width: 100%;
+    right: auto;
+    bottom: auto;
+    max-width: 560px;
+    margin: 15px auto 0;
+    padding: 20px 0 5px;
+    border-top: 1px solid #e4ddc536;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .hero-mood-heading {
+    display: flex;
+    gap: 15px;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .hero-mood-heading > span {
+    font-size: 17px;
+  }
+  .hero-mood-heading > small {
+    font-size: 9px;
+    margin: 0;
+  }
+  .hero-mood-options {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .hero-mood-options button {
+    flex: 1;
+  }
+  .hero-scene-caption {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .immersive-landing-hero {
+    padding: 34px 24px 24px;
+  }
+  .immersive-hero-copy h1 {
+    font-size: clamp(31px, 8.6vw, 40px);
+  }
+  .immersive-hero-copy .hero-dedication {
+    font-size: 10px;
+    margin-bottom: 18px;
+  }
+  .immersive-hero-copy .hero-actions {
+    gap: 14px;
+  }
+  .immersive-hero-copy .hero-actions .button {
+    font-size: 11px;
+    padding-inline: 12px;
+    gap: 10px;
+  }
+  .hero-explore {
+    font-size: 11px;
+    gap: 7px;
+  }
+  .hero-art-stage {
+    height: 355px;
+    margin-top: 37px;
+    margin-bottom: 24px;
+  }
+  .suite-photo-drift {
+    width: 62%;
+    height: 73%;
+    left: 3%;
+  }
+  .suite-venue-photo figcaption {
+    font-size: 14px;
+  }
+  .suite-flower-drift {
+    width: 35%;
+    height: 42%;
+    top: 28%;
+    right: -1%;
+  }
+  .suite-envelope-drift {
+    width: 68%;
+    left: 18%;
+    top: 51%;
+  }
+  .suite-invitation-paper {
+    height: 245px;
+    padding: 17px 10px 8px;
+    outline-offset: -7px;
+  }
+  .suite-paper-window {
+    left: 8px;
+    right: 8px;
+  }
+  .suite-names {
+    font-size: 27px;
+  }
+  .suite-letterline {
+    font-size: 11px;
+  }
+  .suite-date {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .suite-visit {
+    font-size: 10px;
+    padding: 7px 9px;
+  }
+  .suite-wax-seal {
+    width: 52px;
+    height: 52px;
+    left: calc(50% - 26px);
+    font-size: 17px;
+    outline-offset: -6px;
+  }
+  .suite-wax-seal i {
+    font-size: 12px;
+  }
+  .suite-envelope-pocket > span {
+    font-size: 19px;
+  }
+  .suite-envelope-pocket > small {
+    font-size: 7px;
+  }
+  .suite-envelope-pocket {
+    padding-bottom: 17px;
+  }
+  .suite-seal-hint {
+    bottom: -31px;
+    font-size: 11px;
+  }
+  .hero-mood-heading > span {
+    font-size: 16px;
+  }
+  .hero-mood-heading > small {
+    font-size: 8px;
+  }
+}
+@media (max-width: 359px) {
+  .immersive-landing-hero {
+    padding-inline: 20px;
+  }
+  .immersive-hero-copy h1 {
+    font-size: 31px;
+  }
+  .hero-art-stage {
+    height: 330px;
+  }
+  .hero-explore {
+    font-size: 9px;
+  }
+  .immersive-hero-copy .hero-actions .button {
+    font-size: 9px;
+    padding-inline: 10px;
+  }
+  .suite-envelope-pocket > span {
+    font-size: 16px;
+  }
+  .suite-venue-photo figcaption {
+    font-size: 12px;
+  }
+  .suite-flower-photo figcaption {
+    font-size: 9px;
+  }
+  .suite-names {
+    font-size: 25px;
+  }
+  .suite-invitation-paper {
+    height: 225px;
+  }
+  .hero-mood-heading {
+    display: block;
+    text-align: center;
+  }
+  .hero-mood-heading > small {
+    display: block;
+    margin-top: 5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-shell {
+    height: auto;
+  }
+  .immersive-landing-hero {
+    position: relative;
+  }
+  .hero-ambient img,
+  .suite-invitation-paper,
+  .suite-flap,
+  .suite-wax-seal,
+  .hero-mood-options button {
+    transition: none;
+  }
+  .marketing .collection-image {
+    animation: none;
+  }
+}

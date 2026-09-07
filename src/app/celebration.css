@@ -7,147 +7,6 @@
   padding-inline: 4.5%;
   height: 82px;
 }
-.marketing .celebration-hero {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  align-items: center;
-  min-height: min(820px, calc(100svh - 82px));
-  max-width: none;
-  margin: 0 20px;
-  padding: 90px 5% 160px;
-  overflow: hidden;
-  color: #fff9e9;
-  background: #17251f;
-}
-.celebration-background {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  height: 100%;
-  object-position: center 57%;
-}
-.celebration-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(
-    90deg,
-    #0d1b17c9 0%,
-    #0d1b175e 48%,
-    #0d1b1700 80%
-  );
-}
-.celebration-hero .hero-copy {
-  max-width: 860px;
-  padding: 0;
-}
-.celebration-hero .hero-dedication {
-  font-size: 13px;
-  margin-bottom: 25px;
-}
-.celebration-hero .hero-copy h1 {
-  font-size: clamp(48px, 5.7vw, 88px);
-  letter-spacing: -0.035em;
-  line-height: 1.14;
-  margin-bottom: 25px;
-}
-.celebration-hero .hero-copy h1 em {
-  color: #f3e3bd;
-}
-.celebration-hero .hero-description {
-  color: #fff9e9;
-  font-size: 14px;
-  line-height: 1.9;
-}
-.celebration-hero .hero-actions {
-  gap: 30px;
-  margin-top: 32px;
-}
-.celebration-hero .hero-actions .button {
-  background: #f7f4e9;
-  color: #263b30;
-  padding: 16px 25px;
-}
-.celebration-hero .text-link {
-  color: #fff9e9;
-}
-.hero-keepsake {
-  position: absolute;
-  bottom: 46px;
-  right: 4.5%;
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  color: #2d4437;
-  background: #f3efdf;
-  padding: 25px 28px;
-  width: 400px;
-  transform: rotate(-3deg);
-  box-shadow: 2px 5px 0 #b8baa88c;
-}
-.hero-keepsake::before {
-  content: "";
-  position: absolute;
-  inset: 9px;
-  border: 1px solid #bac1ad;
-  pointer-events: none;
-}
-.keepsake-seal {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  color: #ece4c8;
-  background: #405347;
-  outline: 1px solid #b4ad88;
-  outline-offset: -7px;
-  box-shadow:
-    inset 1px 2px 5px #172b31b3,
-    1px 3px 3px #142a2633;
-  font-family: var(--serif);
-  font-size: 20px;
-}
-.keepsake-seal i {
-  font-size: 14px;
-}
-.keepsake-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.keepsake-copy small {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-}
-.keepsake-copy strong {
-  font-family: "Italiana", serif;
-  font-size: 26px;
-  font-weight: 400;
-  line-height: 1.15;
-}
-.keepsake-copy > span {
-  font-size: 9px;
-}
-.hero-edition {
-  position: absolute;
-  left: 5%;
-  bottom: 42px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 10px;
-}
-.hero-edition > span:first-child {
-  font-family: var(--serif);
-  font-size: 24px;
-}
 .love-letter {
   max-width: 1440px;
   margin: auto;
@@ -375,22 +234,7 @@
 .marketing .closing em {
   color: #f0dfb7;
 }
-@media (hover: hover) and (pointer: fine) {
-  .hero-keepsake {
-    transition: transform 250ms var(--ease);
-  }
-  .hero-keepsake:hover {
-    transform: rotate(0deg) translateY(-4px);
-  }
-}
 @media (max-width: 1050px) {
-  .marketing .celebration-hero {
-    padding-bottom: 180px;
-    min-height: 760px;
-  }
-  .hero-keepsake {
-    width: 350px;
-  }
   .love-letter {
     gap: 35px;
     grid-template-columns: 0.6fr 2fr;
@@ -411,64 +255,6 @@
 @media (max-width: 700px) {
   .marketing .marketing-nav {
     height: 72px;
-  }
-  .marketing .celebration-hero {
-    margin: 0 10px;
-    min-height: 760px;
-    padding: 60px 25px 230px;
-    align-items: flex-start;
-  }
-  .celebration-background {
-    object-position: 66% center;
-  }
-  .celebration-hero::before {
-    background: linear-gradient(180deg, #0b1b18bd 0%, #0b1b1873 60%, #0b1b181c);
-  }
-  .celebration-hero .hero-copy h1 {
-    font-size: clamp(41px, 7.4vw, 54px);
-    margin-bottom: 22px;
-    letter-spacing: -0.035em;
-  }
-  .celebration-hero .hero-dedication {
-    font-size: 11px;
-    margin-bottom: 22px;
-  }
-  .celebration-hero .hero-description {
-    font-size: 12px;
-  }
-  .celebration-hero .hero-actions {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 19px;
-    margin-top: 25px;
-  }
-  .celebration-hero .hero-actions .button {
-    width: auto;
-  }
-  .hero-keepsake {
-    width: calc(100% - 50px);
-    bottom: 45px;
-    right: 25px;
-    padding: 23px 19px;
-    gap: 15px;
-  }
-  .keepsake-copy strong {
-    font-size: 25px;
-  }
-  .keepsake-seal {
-    width: 55px;
-    height: 55px;
-    font-size: 18px;
-  }
-  .keepsake-copy > span {
-    font-size: 8px;
-  }
-  .hero-keepsake > svg {
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-  .hero-edition {
-    display: none;
   }
   .love-letter {
     padding: 65px 27px;
@@ -561,14 +347,6 @@
     font-size: 55px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .hero-keepsake {
-    transition: none;
-  }
-}
 .marketing .planner-image img {
   object-position: center 60%;
-}
-.celebration-hero a:focus-visible {
-  outline-color: #fff9e9;
 }
