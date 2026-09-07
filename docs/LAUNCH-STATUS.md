@@ -28,7 +28,7 @@ Verified locally on 7 September 2026:
 - Fifteen page/viewport combinations across marketing, Studio, and three guest worlds at 390×844, 768×1024, and 1440×1000 had no document overflow or JavaScript page errors.
 - The review’s hidden-sidebar focus, unnamed modal, and Maison mobile heading overlap findings were fixed and covered by a regression test.
 
-Demo weddings now seed a three-day weekend (welcome gathering, wedding, farewell brunch), seated tables, registry links and varied dietary notes, so a walkthrough shows a populated wedding rather than an empty one. Exhausting the demo allowance for a network redirects to the sign-in page with an explanation instead of returning a server error.
+The Riviera demo is a showcase at demonstration scale: Elena Moretti and Matteo Ricci, 21 August 2027 on Lake Como, with 150 invited across 62 households, 116 attending, 22 awaiting a reply and 12 declined; four events across the weekend, two of them private to different households; five meal choices, four severe allergies, eight children, twenty plus-ones, eight Spanish-speaking guests, 63 shuttle riders, fifteen tables with 100 guests seated, a hotel block and a draft reminder to the households still to reply. Maison and Notte keep the compact three-day seed. The figures are generated deterministically, so a walkthrough tells the same story twice. Exhausting the demo allowance for a network redirects to the sign-in page with an explanation instead of returning a server error.
 
 The hosted release smoke also verified database health, persisted household RSVPs, private photo upload/read/moderation, denial of anonymous photo access, and mobile rendering. This is not certification of untested integrations or production load capacity.
 

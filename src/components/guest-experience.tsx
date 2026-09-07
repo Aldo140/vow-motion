@@ -29,6 +29,8 @@ const copy = {
     journey: "Make a little journey of it.",
     rsvp: "Will you join us?",
     respond: "Your RSVP",
+    attending: "You’re coming",
+    answered: "Your response",
     pass: "Your wedding pass",
     photos: "The moments between.",
     share: "Share a memory",
@@ -66,6 +68,8 @@ const copy = {
     journey: "El viaje también es parte de la historia.",
     rsvp: "¿Nos acompañas?",
     respond: "Tu respuesta",
+    attending: "Nos acompañas",
+    answered: "Tu respuesta enviada",
     pass: "Tu pase de boda",
     photos: "Los pequeños momentos.",
     share: "Comparte un recuerdo",
@@ -111,6 +115,9 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
   const c = copy[locale],
     world = getWorld(data.wedding.world),
     url = "/api/guest?token=" + data.token;
+  // The header reports where this household stands; the dock keeps the action.
+  const answered = data.responses.length > 0,
+    attending = data.guests.some((guest) => guest.status === "attending");
   const refresh = async () => {
     setData(await api(url));
   };
@@ -367,9 +374,13 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             <nav>
               <a href="#programme">{c.details}</a>
               <a href="#travel">{c.travel}</a>
-              <button onClick={() => setModal("rsvp")}>
-                {c.respond}
-                <Arrow diagonal size={14} />
+              <button
+                onClick={() => setModal("rsvp")}
+                className={answered ? "guest-nav-answered" : undefined}
+              >
+                {answered && <CheckIcon size={14} aria-hidden="true" />}
+                {answered ? (attending ? c.attending : c.answered) : c.respond}
+                {!answered && <Arrow diagonal size={14} />}
               </button>
             </nav>
             <button
@@ -1141,6 +1152,11 @@ function RsvpModal({
                                   ? "Choose your meal"
                                   : "Elige tu plato"}
                               </option>
+                              <option value="Beef fillet">
+                                {locale === "en"
+                                  ? "Beef fillet"
+                                  : "Filete de ternera"}
+                              </option>
                               <option value="Sea bass">
                                 {locale === "en" ? "Sea bass" : "Lubina"}
                               </option>
@@ -1148,6 +1164,11 @@ function RsvpModal({
                                 {locale === "en"
                                   ? "Garden risotto (vegetarian)"
                                   : "Risotto de verduras (vegetariano)"}
+                              </option>
+                              <option value="Vegan plate">
+                                {locale === "en"
+                                  ? "Vegan plate"
+                                  : "Plato vegano"}
                               </option>
                               <option value="Children’s meal">
                                 {locale === "en"
