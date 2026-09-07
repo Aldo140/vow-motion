@@ -1,6 +1,6 @@
 # Launch status
 
-Reviewed 7 September 2026. Vow Motion is a persistent, functional launch preview with a tested core flow. It has not been deployed or verified as a fully operated public service. The [master brief](MASTER-BRIEF.md) is the product target, not a statement that every requested feature is complete.
+Reviewed 7 September 2026. Vow Motion is a persistent, functional launch preview with a tested core flow. It is deployed on Vercel with hosted Neon PostgreSQL and private Vercel Blob storage. The hosted core journey has passed a smoke test; live messaging, payments, and operating procedures remain incomplete. The [master brief](MASTER-BRIEF.md) is the product target, not a statement that every requested feature is complete.
 
 ## Implemented
 
@@ -20,14 +20,14 @@ Reviewed 7 September 2026. Vow Motion is a persistent, functional launch preview
 Verified locally on 7 September 2026:
 
 - TypeScript and ESLint checks passed.
-- Five unit tests passed.
-- Eight Playwright tests passed in the final combined run (30.0 seconds), covering the core workflow, verification, privacy, photos, capacity, and keyboard behavior.
+- Eleven unit tests passed.
+- Eleven Playwright tests passed, covering the core workflow, verification, privacy, photos, capacity, keyboard behavior, venue-time editing, message audiences, photo retries, and travel editing.
 - Optimized Next.js production build passed.
 - Production-dependency audit reported zero known vulnerabilities.
 - Fifteen page/viewport combinations across marketing, Studio, and three guest worlds at 390×844, 768×1024, and 1440×1000 had no document overflow or JavaScript page errors.
 - The review’s hidden-sidebar focus, unnamed modal, and Maison mobile heading overlap findings were fixed and covered by a regression test.
 
-These are local development checks, not certification of a deployment or untested integrations.
+The hosted release smoke also verified database health, persisted household RSVPs, private photo upload/read/moderation, denial of anonymous photo access, and mobile rendering. This is not certification of untested integrations or production load capacity.
 
 See [README validation instructions](../README.md#validation) to reproduce the checks. External email/SMS sending, payment settlement, DNS/SSL provisioning, restore procedures, load handling, and a complete accessibility/browser matrix have not been verified in this environment.
 
@@ -35,7 +35,7 @@ See [README validation instructions](../README.md#validation) to reproduce the c
 
 | Area | Limitation and required work |
 | --- | --- |
-| Infrastructure | Local PGlite and filesystem uploads support one persistent application process. Remote PostgreSQL is implemented but requires deployment verification; Private Vercel Blob storage is implemented for serverless or multiple instances; live integration verification is still required. Migration startup now uses a transaction-scoped advisory lock to coordinate replicas. |
+| Infrastructure | Local PGlite and filesystem uploads support one persistent application process. Hosted Neon PostgreSQL and private Vercel Blob have passed the live core-flow smoke test. Backup/restore exercises and multi-instance load tests remain. Migration startup now uses a transaction-scoped advisory lock to coordinate replicas. |
 | Email and SMS | Live delivery requires credentials and approved senders. No delivery/bounce callback processing, unsubscribe link workflow, automatic retries, or recovery of interrupted processing is implemented. The UI's status does not establish recipient delivery or an email open. |
 | Scheduled jobs | A scheduler must call the worker with `CRON_SECRET`; there is no autonomous scheduler or durable queue service. |
 | Payments | Live Checkout and webhook tests remain. Recorded plans do not yet enforce feature entitlements, quotas, refunds, or subscription lifecycle behavior. |
@@ -48,4 +48,4 @@ See [README validation instructions](../README.md#validation) to reproduce the c
 
 ## Review artifacts
 
-Desktop/mobile screenshots are saved in [artifacts/](../artifacts/). [RESEARCH.md](RESEARCH.md) records the primary-source product research; [ASSETS.md](ASSETS.md) records fictional image provenance. Build and test commands are in the [README](../README.md). No production URL is claimed by this document.
+Desktop/mobile screenshots are saved in [artifacts/](../artifacts/). [RESEARCH.md](RESEARCH.md) records the primary-source product research; [ASSETS.md](ASSETS.md) records fictional image provenance. Build and test commands are in the [README](../README.md). The public release URL is https://vow-motion.vercel.app.

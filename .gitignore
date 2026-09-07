@@ -11,3 +11,7 @@ artifacts/
 .codex/
 *.log
 .vercel
+
+# Provider-installed local agent guidance
+.agents/
+skills-lock.json

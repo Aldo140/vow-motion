@@ -1,5 +1,7 @@
 # Vow Motion
 
+[Live application](https://vow-motion.vercel.app) · [Release status](docs/LAUNCH-STATUS.md)
+
 A wedding planning application that connects a private guest list to invitations, event access, RSVP, travel details, seating, and guest photos. The Studio manages the wedding; a personal household link opens the guest experience without a guest account.
 
 This repository is a working launch preview. See [Launch status](docs/LAUNCH-STATUS.md) for implemented behavior, validation evidence, and the work required before public operation. The full product brief is in [docs/MASTER-BRIEF.md](docs/MASTER-BRIEF.md); visual direction and asset provenance are in [DESIGN.md](DESIGN.md) and [docs/ASSETS.md](docs/ASSETS.md).
