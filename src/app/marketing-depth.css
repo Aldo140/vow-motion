@@ -499,3 +499,141 @@
     bottom: 10%;
   }
 }
+
+/* The wardrobe becomes one compact editorial card on a phone. */
+@media (max-width: 768px) {
+  .marketing .collection {
+    padding: 42px 20px 48px;
+  }
+  .marketing .collection .section-heading {
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .marketing .collection .collection-caption {
+    font-size: 17px;
+    margin-bottom: 16px;
+  }
+  .marketing .collection .section-heading h2 {
+    font-size: clamp(30px, 8.5vw, 40px);
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    margin-bottom: 18px;
+  }
+  .marketing .collection .section-heading h2 br {
+    display: none;
+  }
+  .marketing .collection .section-heading h2 em {
+    display: block;
+    margin-top: 5px;
+  }
+  .marketing .collection .section-heading > p {
+    font-size: 12px;
+    line-height: 1.75;
+    margin: 0;
+  }
+  .marketing .collection .world-tabs {
+    gap: 8px;
+    border: 0;
+    margin: 0 0 20px;
+  }
+  .marketing .collection .world-tabs button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 12px 5px;
+    min-height: 46px;
+    border: 1px solid #34483f30;
+    border-radius: 3px;
+    background: #f9f6ed85;
+    font-size: 14px;
+  }
+  .marketing .collection .world-tabs button span {
+    font: 8px var(--sans);
+    margin: 0;
+    opacity: 0.65;
+  }
+  .marketing .collection .world-tabs button[aria-selected="true"] {
+    background: #294239;
+    color: #fff8e9;
+    border-color: #294239;
+  }
+  .marketing .collection .world-tabs button::after {
+    display: none;
+  }
+  .marketing .collection .collection-preview {
+    box-shadow: 0 10px 28px #273b3012;
+  }
+  .marketing .collection .collection-image {
+    min-height: 0;
+    height: clamp(300px, 92vw, 390px);
+  }
+  .marketing .collection .collection-couple {
+    inset: auto 14px 14px;
+    padding: 18px 10px;
+  }
+  .marketing .collection .collection-couple h3 {
+    font-size: clamp(29px, 8.4vw, 39px);
+    margin: 12px 0;
+  }
+  .marketing .collection .collection-note {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px;
+    align-items: start;
+    gap: 8px 16px;
+    padding: 24px 20px;
+  }
+  .marketing .collection .collection-mood-print {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    align-self: center;
+    width: 90px;
+    margin: 0;
+    padding: 5px 5px 12px;
+  }
+  .marketing .collection .collection-mood-print img {
+    height: 100px;
+  }
+  .marketing .collection .collection-mood-print > span {
+    display: none;
+  }
+  .marketing .collection .collection-number {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+    font-size: 8px;
+  }
+  .marketing .collection .collection-note h3 {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.2;
+  }
+  .marketing .collection .collection-note > p {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.65;
+    max-width: none;
+  }
+  .marketing .collection .swatches {
+    grid-column: 1 / -1;
+    margin: 12px 0;
+  }
+  .marketing .collection .collection-note > .button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 48px;
+    justify-content: space-between;
+    margin: 0;
+  }
+  .marketing .collection .collection-note > small {
+    grid-column: 1 / -1;
+    font-size: 9px;
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+}
