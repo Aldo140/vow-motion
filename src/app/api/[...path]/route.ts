@@ -482,13 +482,25 @@ async function handler(request: NextRequest, context: Context) {
         }
         const { password, ...fields } = input;
         const record: Record<string, unknown> = { ...fields };
+        const hasDesign = (await rows("SELECT wedding_id FROM wedding_designs WHERE wedding_id=$1", [weddingId])).length > 0;
+        if (hasDesign) {
+          delete record.world;
+          delete record.opening;
+          delete record.story;
+          if (record.settings) {
+            const settings = { ...record.settings as Record<string, unknown> };
+            delete settings.media;
+            delete settings.identity;
+            record.settings = settings;
+          }
+        }
         if (password) record.password_hash = passwordHash(password);
         if (record.settings) record.settings = JSON.stringify(record.settings);
         const keys = Object.keys(record);
         await (
           await db()
         ).query(
-          `UPDATE weddings SET ${keys.map((k, i) => `${k}=$${i + 1}`).join(",")} WHERE id=$${keys.length + 1}`,
+          `UPDATE weddings SET ${keys.map((k, i) => k === "settings" ? `settings=COALESCE(settings,'{}'::jsonb) || $${i + 1}::jsonb` : `${k}=$${i + 1}`).join(",")} WHERE id=$${keys.length + 1}`,
           [...Object.values(record), weddingId],
         );
         await audit(weddingId, user.id, "Wedding experience settings saved");

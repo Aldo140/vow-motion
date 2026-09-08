@@ -7,8 +7,11 @@ test("setup saves and advances, suggests dates and finds venue timezones", async
   const weddings = await (await page.request.get("/api/weddings")).json();
   const wid = weddings[0].id;
   await page.goto(`/studio/setup?wid=${wid}`);
+  await page.getByRole("button", { name: "Review your design" }).click();
   await page
-    .getByRole("button", { name: "Save your experience and continue" })
+    .getByRole("button", {
+      name: /Update live invitation|Apply design and continue/,
+    })
     .click();
   await expect(
     page.getByRole("progressbar", { name: "Wedding setup progress" }),
@@ -59,6 +62,13 @@ test("setup saves and advances, suggests dates and finds venue timezones", async
 test("declining receives a warm saved confirmation without a celebration animation", async ({
   page,
 }) => {
+  await page.route("**/demo/riviera", async (route) => {
+    const response = await route.fetch({ maxRedirects: 0 });
+    const headers = response.headers();
+    if (headers.location)
+      headers.location = headers.location.replace("0.0.0.0", "localhost");
+    await route.fulfill({ response, headers });
+  });
   await page.goto("/demo/riviera");
   await page.getByRole("button", { name: "Open your invitation" }).click();
   await page

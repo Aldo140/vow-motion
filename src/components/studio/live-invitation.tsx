@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "../wedding-photo";
 import type { Wedding, Event } from "@/lib/types";
 import { getWorld, formatDate, eventTime } from "@/lib/worlds";
 import { identityStyle, weddingIdentity } from "@/lib/identity";
@@ -19,7 +20,7 @@ export function LiveInvitation({
       aria-label="Live invitation preview"
     >
       <span className="eyebrow">YOUR INVITATION, TAKING SHAPE</span>
-      <img src={world.image} alt={`${world.name} invitation setting`} />
+      <WeddingPhoto wedding={wedding} placement="invitation" alt={`${world.name} invitation setting`} />
       <div className="live-invitation-paper">
         <GuestCrest
           names={wedding.names || "Your names"}

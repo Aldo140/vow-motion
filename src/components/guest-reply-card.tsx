@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import { CheckIcon, EnvelopeSimpleIcon } from "@phosphor-icons/react";
 import type { GuestData } from "@/lib/types";
@@ -27,7 +28,7 @@ export default function GuestReplyCard({
       aria-labelledby="reply-title"
     >
       <div className="reply-tabletop" aria-hidden="true">
-        <img src="/images/wedding-details.webp" alt="" loading="lazy" />
+        <WeddingPhoto placement="details" alt="" loading="lazy" />
       </div>
       <div className="reply-presentation">
         <div className="reply-envelope" aria-hidden="true" />

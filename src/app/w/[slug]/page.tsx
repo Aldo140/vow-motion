@@ -1,5 +1,7 @@
 import { rows } from "@/lib/db";
-import { getWorld, formatDate } from "@/lib/worlds";
+import { formatDate } from "@/lib/worlds";
+import WeddingPhoto from "@/components/wedding-photo";
+import type { Wedding } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { Brand } from "@/components/ui";
 import Lookup from "@/components/lookup";
@@ -33,7 +35,7 @@ export default async function Page({
       <Brand />
       {unlocked ? (
         <>
-          <img src={getWorld(String(w.world)).image} alt="A wedding setting" />
+          <WeddingPhoto wedding={w as unknown as Wedding} placement="invitation" alt="Our wedding invitation" />
           <h1>{String(w.names)}</h1>
           <p>
             {formatDate(String(w.date))} · {String(w.location)}

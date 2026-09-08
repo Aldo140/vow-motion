@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import { useEffect, useId, useRef, useState } from "react";
 import {
@@ -53,7 +54,7 @@ export default function GuestKeepsake({
           inert={turned}
           aria-hidden={turned}
         >
-          <img src="/images/wedding-details.webp" alt="" />
+          <WeddingPhoto placement="details" alt="" />
           <span>
             {locale === "en" ? "A little detail for you" : "Un detalle para ti"}
             <ArrowCounterClockwiseIcon size={14} />

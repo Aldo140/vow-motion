@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -124,7 +125,7 @@ export default function GuestMemoryAlbum({
           ) : (
             <>
               <figure className="album-scene-print" aria-hidden="true">
-                <img src="/images/wedding-evening.webp" alt="" loading="lazy" />
+                <WeddingPhoto placement="story" alt="" loading="lazy" />
               </figure>
               <button
                 className="album-first-slot"

@@ -171,8 +171,13 @@ test("pilot notes, guest answers and identity persist with wedding isolation", a
     ).status(),
   ).toBe(400);
   await page.goto(`/studio/experience?wid=${wid}`);
+  await page
+    .getByRole("button", { name: "Personal details", exact: true })
+    .click();
   await expect(page.getByLabel("Couple monogram")).toHaveValue("A+S");
-  await expect(page.locator(".identity-suite article")).toHaveCount(4);
+  await expect(
+    page.locator(".design-navigation").first().getByRole("button"),
+  ).toHaveCount(4);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
@@ -234,11 +239,13 @@ test("guided setup saves reviews and feedback from the active screen", async ({
     page.getByRole("button", { name: "Publish wedding", exact: true }),
   ).toBeDisabled();
   for (let i = 0; i < 4; i++) {
+    if (i === 0)
+      await page.getByRole("button", { name: "Review your design" }).click();
     await page
       .getByRole("button", {
         name:
           i === 0
-            ? "Save your experience and continue"
+            ? "Apply design and continue"
             : i === 1
               ? "Save settings and continue"
               : "Mark reviewed and continue",
@@ -299,13 +306,13 @@ test("guided setup saves reviews and feedback from the active screen", async ({
     })
     .toBe("resolved");
   await page.goto(`/studio/experience?wid=${wid}`);
-  await expect(page.locator(".identity-suite")).toBeVisible();
+  await expect(page.locator(".design-editor")).toBeVisible();
   await page
-    .locator(".identity-editor")
+    .locator(".design-editor")
     .screenshot({ path: testInfo.outputPath("identity-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
   await page
-    .locator(".identity-editor")
+    .locator(".design-editor")
     .screenshot({ path: testInfo.outputPath("identity-mobile.png") });
   await page.goto(`/studio?wid=${wid}`);
   await expect(

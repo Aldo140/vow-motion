@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
@@ -70,9 +71,9 @@ export default function GuestSealGate({
 
   return (
     <main id="main" ref={root} className="invitation-gate sealed-opening">
-      <img
+      <WeddingPhoto
         className="gate-background"
-        src={world.image}
+        placement="invitation"
         alt=""
         fetchPriority="high"
       />

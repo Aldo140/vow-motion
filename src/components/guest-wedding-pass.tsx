@@ -1,8 +1,9 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import { CalendarBlankIcon, MapPinIcon } from "@phosphor-icons/react";
 import type { GuestData } from "@/lib/types";
-import { eventTime, formatDate, getWorld } from "@/lib/worlds";
+import { eventTime, formatDate } from "@/lib/worlds";
 import { Arrow, Modal } from "./ui";
 
 export default function GuestWeddingPass({
@@ -25,7 +26,7 @@ export default function GuestWeddingPass({
     >
       <div className="wedding-pass guest-day-pass">
         <div className="day-pass-cover">
-          <img src={getWorld(data.wedding.world).image} alt="" />
+          <WeddingPhoto placement="invitation" alt="" />
           <span>
             {locale === "en"
               ? "All the lovely details. One little pass."

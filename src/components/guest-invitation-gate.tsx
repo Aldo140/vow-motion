@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -63,9 +64,9 @@ export default function GuestInvitationGate({
 
   return (
     <main id="main" ref={root} className="invitation-gate crafted-opening">
-      <img
+      <WeddingPhoto
         className="gate-background"
-        src={world.image}
+        placement="invitation"
         alt=""
         fetchPriority="high"
       />
@@ -82,7 +83,7 @@ export default function GuestInvitationGate({
       <p className="opening-dedication">{voice.arrival}</p>
       <div className="envelope-composition">
         <figure className="envelope-photograph" aria-hidden="true">
-          <img src={world.image} alt="" />
+          <WeddingPhoto placement="invitation" alt="" />
           <figcaption>{data.wedding.location}</figcaption>
         </figure>
         <div className="invitation-envelope">

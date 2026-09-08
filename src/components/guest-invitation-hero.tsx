@@ -1,4 +1,5 @@
 "use client";
+import WeddingPhoto from "./wedding-photo";
 
 import {
   ArrowDownIcon,
@@ -82,9 +83,14 @@ export default function GuestInvitationHero({
         </div>
         <div className="hero-image-frame">
           <div className="guest-hero-photo">
-            <img
-              src={world.image}
-              alt={`${data.wedding.location}, ${locale === "en" ? "the setting for our celebration" : "el lugar de nuestra celebración"}`}
+            <WeddingPhoto
+              editControl
+              placement="invitation"
+              alt={
+                locale === "en"
+                  ? "Our invitation photograph"
+                  : "Nuestra fotografía de invitación"
+              }
               fetchPriority="high"
             />
           </div>

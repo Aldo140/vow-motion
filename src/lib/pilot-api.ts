@@ -16,6 +16,8 @@ export async function pilotAction(
 ) {
   const connection = await db();
   if (action === "identity" && method === "PATCH") {
+    if ((await connection.query("SELECT wedding_id FROM wedding_designs WHERE wedding_id=$1", [weddingId])).rows.length)
+      throw new HttpError(409, "Use Your experience to save identity choices in your design draft.");
     const identity = identitySchema.parse(input);
     await connection.query(
       "UPDATE weddings SET settings=COALESCE(settings,'{}'::jsonb) || jsonb_build_object('identity',$2::jsonb) WHERE id=$1",

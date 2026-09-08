@@ -28,7 +28,12 @@ test("a couple chooses how the invitation arrives, and both openings lead in", a
   // Choosing the sealed envelope in the Studio changes what a guest meets.
   await page.goto(`/studio/experience?wid=${wid}`);
   await page.getByRole("button", { name: /The sealed envelope/ }).click();
-  await page.getByRole("button", { name: /Save your experience/ }).click();
+  await page.getByRole("button", { name: "Review your design" }).click();
+  await page
+    .getByRole("button", {
+      name: /Update live invitation|Apply design and continue/,
+    })
+    .click();
   await expect
     .poll(async () => {
       const studio = await (
