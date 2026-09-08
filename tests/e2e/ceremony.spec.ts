@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the weekend reads as an order of the day and the wait counts down", async ({
   page,

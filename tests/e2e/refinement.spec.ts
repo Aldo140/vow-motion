@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("couples edit venue times, review message audiences, and navigate without a document reload", async ({
   page,

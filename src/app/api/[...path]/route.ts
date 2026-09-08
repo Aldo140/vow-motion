@@ -85,6 +85,93 @@ async function handler(request: NextRequest, context: Context) {
       if (!action && method === "GET") return json(await studioData(weddingId));
       if (action === "export") {
         const data = await studioData(weddingId);
+        const sheet = request.nextUrl.searchParams.get("sheet") ?? "guests";
+        const table = (guest: { table_name?: string | null }) =>
+          guest.table_name || "Not yet seated";
+        const download = (name: string, rows: unknown[][]) =>
+          new NextResponse(
+            rows.map((r) => r.map(csvCell).join(",")).join("\r\n"),
+            {
+              headers: {
+                "Content-Type": "text/csv; charset=utf-8",
+                "Content-Disposition": `attachment; filename="${name}.csv"`,
+                "Cache-Control": "no-store",
+              },
+            },
+          );
+
+        // The documents a planner otherwise rebuilds by hand the week before.
+        if (sheet === "kitchen") {
+          const attending = data.guests.filter((g) => g.status === "attending");
+          const meals = [...new Set(attending.map((g) => g.meal || "Not chosen"))].sort();
+          const counts: unknown[][] = [
+            ["Kitchen sheet", data.wedding.names, data.wedding.date],
+            [],
+            ["Meal", "Covers"],
+            ...meals.map((meal) => [
+              meal,
+              attending.filter((g) => (g.meal || "Not chosen") === meal).length,
+            ]),
+            ["Total covers", attending.length],
+            [],
+            ["Dietary requirements", "", "", ""],
+            ["Guest", "Table", "Meal", "Requirement"],
+            ...attending
+              .filter((g) => g.dietary)
+              .sort((a, b) => table(a).localeCompare(table(b)))
+              .map((g) => [g.name, table(g), g.meal, g.dietary]),
+            [],
+            ["Covers by table", ""],
+            ["Table", "Covers"],
+            ...data.tables.map((t) => [
+              t.name,
+              attending.filter((g) => g.table_name === t.name).length,
+            ]),
+          ];
+          return download("kitchen-sheet", counts);
+        }
+
+        if (sheet === "shuttle") {
+          // Shuttle answers are stored against the question's own id.
+          const question = data.questions.find((q) =>
+            /shuttle|transport|coach|bus/i.test(q.label),
+          );
+          const riders = question
+            ? await rows<{ name: string; household: string; answer: string }>(
+                `SELECT DISTINCT g.name, h.name household, r.answers->>$2 answer
+                 FROM guest_event_responses r
+                 JOIN guests g ON g.id=r.guest_id
+                 JOIN households h ON h.id=g.household_id
+                 WHERE g.wedding_id=$1 AND r.attending=true
+                   AND COALESCE(r.answers->>$2,'') <> ''
+                   AND r.answers->>$2 NOT ILIKE 'no%'
+                 ORDER BY h.name, g.name`,
+                [weddingId, question.id],
+              )
+            : [];
+          return download("shuttle-manifest", [
+            ["Shuttle manifest", data.wedding.names, data.wedding.date],
+            [question?.label ?? "No shuttle question has been asked", ""],
+            [],
+            ["Guest", "Household", "Answer"],
+            ...riders.map((r) => [r.name, r.household, r.answer]),
+            [],
+            ["Seats required", riders.length],
+          ]);
+        }
+
+        if (sheet === "placecards") {
+          const attending = [...data.guests]
+            .filter((g) => g.status === "attending")
+            .sort((a, b) => a.name.localeCompare(b.name));
+          return download("place-cards", [
+            ["Place cards", data.wedding.names, data.wedding.date],
+            [],
+            ["Guest", "Table", "Meal", "Dietary"],
+            ...attending.map((g) => [g.name, table(g), g.meal, g.dietary]),
+          ]);
+        }
+
         const header = [
           "Name",
           "Email",

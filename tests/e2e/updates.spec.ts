@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("private invitation updates publish once and respect their scheduled time", async ({
   page,

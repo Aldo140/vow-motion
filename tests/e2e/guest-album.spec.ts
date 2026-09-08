@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import sharp from "sharp";
 
 test("the reply card opens the RSVP and the album keeps private photos readable and keyboard accessible", async ({

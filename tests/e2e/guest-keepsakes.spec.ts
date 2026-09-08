@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the invitation opens by keyboard and the keepsake leads to the authorized plans", async ({
   page,

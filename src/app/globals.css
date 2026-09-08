@@ -5418,3 +5418,54 @@ td:last-child {
   border-radius: 47% 53% 51% 49% / 50% 47% 53% 50%;
   background: var(--olive);
 }
+
+/* The documents a planner hands to suppliers, named by who receives them. */
+.day-documents {
+  margin: 34px 0 40px;
+}
+.day-documents h2 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+.day-document-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+.day-document {
+  display: block;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: border-color 0.2s var(--ease);
+}
+.day-document:hover {
+  border-color: var(--olive);
+}
+.day-document-for {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--olive);
+}
+.day-document h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 7px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 19px;
+}
+.day-document p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}

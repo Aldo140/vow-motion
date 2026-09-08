@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the invitation contents lead through the celebration, RSVP and wedding pass", async ({
   page,

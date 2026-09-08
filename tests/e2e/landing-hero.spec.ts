@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the hero seal reveals an accessible invitation and the selected mood opens the matching wedding", async ({
   page,

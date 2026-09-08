@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import sharp from "sharp";
 
 test("password story is private until unlock; photos require moderation and authorized access", async ({

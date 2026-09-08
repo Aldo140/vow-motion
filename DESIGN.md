@@ -103,3 +103,11 @@ Every wedding answers the same handful of questions by hand: can I bring someone
 Guests meet them as an engraved index rather than a support page. The crest opens the section, the questions sit on hairlines, and a drawn cross turns into a minus as an answer appears. Only one answer is open at a time, which the native exclusive `details` grouping handles rather than any script, so it survives with JavaScript disabled and keeps keyboard behaviour the browser already provides. Spanish answers replace English ones rather than sitting beside them, and the section is reachable from the invitation's contents, which offers it only once a couple has answered something.
 
 In the Studio the section sits under the world and the opening, because it belongs to what a guest meets. Six starters carry drafted answers, since most couples will edit a sentence and few will write one from nothing; each starter disappears once its question exists. The showcase wedding answers all six, in both languages, with the shuttle time and the reply deadline it actually holds.
+
+## The documents a planner hands to suppliers
+
+A planner exports the guest list and then rebuilds the same three documents by hand the week before every wedding. The Studio now builds them from the replies it already holds, and names each one by the supplier who receives it rather than by its format.
+
+The kitchen sheet gives the caterer covers by meal, then every dietary requirement carried beside the table it must reach, then covers per table so the room can be plated. The shuttle manifest gives the transport company each rider by household and the number of seats required, read from the answers guests actually gave rather than a separate list. The place cards give the calligrapher and the venue every attending guest alphabetically, with table, meal and dietary note.
+
+They are CSV because that is what a supplier can open, and the existing guest report is untouched. A test reconciles all three against the guest list they came from: covers must equal the people who said yes, every dietary line must name a table, the seat count must match the riders listed, and the place cards must name everyone attending.

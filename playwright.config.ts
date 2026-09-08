@@ -7,7 +7,8 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL: "http://localhost:3000",
-    // Isolate repeated local runs from each other while retaining real rate limits.
+    // A baseline address for the run; tests/e2e/fixtures.ts gives each test its
+    // own, so a long suite does not exhaust one visitor's demo allowance.
     extraHTTPHeaders: {
       "x-forwarded-for": `198.18.${process.pid % 256}.${Date.now() % 256}`,
     },

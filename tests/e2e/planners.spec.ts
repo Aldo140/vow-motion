@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the planner page pairs each Studio capability with its guest outcome", async ({
   page,

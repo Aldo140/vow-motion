@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 const WORLDS = [
   "riviera",
@@ -66,9 +66,8 @@ test("a world's voice carries into Spanish and into the sealed opening", async (
 }) => {
   await page.request.post("/api/demo");
   const weddings = await (await page.request.get("/api/weddings")).json();
-  const notte = weddings.find(
-    (w: { world: string }) => w.world === "notte",
-  ) as { id: string } | undefined;
+  const notte = weddings.find((w: { world: string }) => w.world === "notte") as
+    { id: string } | undefined;
   const wid = (notte ?? weddings[0]).id;
   const studio = await (
     await page.request.get(`/api/studio?wedding=${wid}`)

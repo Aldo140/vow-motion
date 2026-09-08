@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 
 async function scrollPage(page: Page, browserName: string) {
   // Playwright's mobile WebKit does not expose mouse-wheel input.

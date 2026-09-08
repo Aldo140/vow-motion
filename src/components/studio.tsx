@@ -786,6 +786,53 @@ function Insights({ data }: PanelProps) {
           Export guest report <Arrow diagonal />
         </a>
       </PageHeading>
+      {/* The documents a planner otherwise rebuilds by hand for each vendor. */}
+      <section className="day-documents">
+        <div>
+          <h2>Day-of documents</h2>
+          <p className="muted-copy">
+            Built from the replies you already have, in the form each supplier
+            asks for. They open in any spreadsheet.
+          </p>
+        </div>
+        <div className="day-document-list">
+          {(
+            [
+              [
+                "kitchen",
+                "Kitchen sheet",
+                "Covers by meal, every dietary requirement with its table, and covers per table.",
+                "For the caterer",
+              ],
+              [
+                "shuttle",
+                "Shuttle manifest",
+                "Everyone who asked for a seat, by household, with the number of seats required.",
+                "For the transport company",
+              ],
+              [
+                "placecards",
+                "Place cards",
+                "Every attending guest alphabetically, with table, meal and dietary note.",
+                "For the calligrapher and the venue",
+              ],
+            ] as const
+          ).map(([sheet, title, description, audience]) => (
+            <a
+              key={sheet}
+              className="day-document"
+              href={`/api/studio/export?wedding=${data.wedding.id}&sheet=${sheet}`}
+            >
+              <span className="day-document-for">{audience}</span>
+              <h3>
+                {title}
+                <Arrow diagonal size={15} />
+              </h3>
+              <p>{description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
       <div className="insight-grid">
         <section>
           <h2>Attendance</h2>

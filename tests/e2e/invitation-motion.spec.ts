@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("invitation layers respond to scroll, reduce motion, and keep the calendar and RSVP accessible", async ({
   page,

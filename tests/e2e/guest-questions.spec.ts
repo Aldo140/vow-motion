@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("guests read the answers, one at a time, in their own language", async ({
   page,

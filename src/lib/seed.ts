@@ -700,18 +700,27 @@ export async function createShowcaseWedding(ownerId: string) {
       );
     }
 
-    for (const q of [
+    // Answers are stored against a question's own id, so the shuttle question
+    // needs its id before any response is written against it.
+    const shuttleQuestionId = id();
+    for (const [questionId, q] of [
       [
-        "Do you need the shuttle?",
-        "¿Necesitas el transporte?",
-        "select",
-        ["No, thank you", "Yes, from the hotel"],
+        shuttleQuestionId,
+        [
+          "Do you need the shuttle?",
+          "¿Necesitas el transporte?",
+          "select",
+          ["No, thank you", "Yes, from the hotel"],
+        ],
       ],
-      ["A song for the dance floor", "Una canción para bailar", "text", []],
-    ])
+      [
+        id(),
+        ["A song for the dance floor", "Una canción para bailar", "text", []],
+      ],
+    ] as [string, [string, string, string, string[]]][])
       await c.query(
         "INSERT INTO rsvp_questions(id,wedding_id,label,label_es,type,options) VALUES($1,$2,$3,$4,$5,$6)",
-        [id(), weddingId, q[0], q[1], q[2], JSON.stringify(q[3])],
+        [questionId, weddingId, q[0], q[1], q[2], JSON.stringify(q[3])],
       );
 
     // Meals for the 116 who are coming, including the eight children.
@@ -807,7 +816,7 @@ export async function createShowcaseWedding(ownerId: string) {
                 meal,
                 dietary,
                 JSON.stringify(
-                  shuttle ? { shuttle: "Yes, from the hotel" } : {},
+                  shuttle ? { [shuttleQuestionId]: "Yes, from the hotel" } : {},
                 ),
               ],
             );
