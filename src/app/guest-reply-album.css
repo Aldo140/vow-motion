@@ -47,7 +47,7 @@
   padding: 0;
   outline: none;
   text-align: left;
-  transform: rotate(1deg);
+  transform: none;
   box-shadow: 2px 6px 8px #0003;
 }
 .reply-cover {
@@ -87,6 +87,7 @@
   font-weight: 400;
   line-height: 1.35;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .reply-letter {
   padding: 45px 48px 35px;
@@ -497,7 +498,7 @@
   }
   .immersive-invitation .rsvp-stationery.reply-suite {
     display: block;
-    transform: rotate(0.5deg);
+    transform: none;
   }
   .reply-cover {
     display: grid;

@@ -185,7 +185,7 @@ export default function Marketing() {
         <FirstSteps />
         <section
           className="platform-story section-pad"
-          id="experience"
+          id="studio"
           tabIndex={-1}
         >
           <div className="platform-title">
@@ -248,8 +248,8 @@ export default function Marketing() {
                   "Households, plus-ones, and every little dietary detail. Import once and keep everything connected.",
                 ],
                 [
-                  "An RSVP that feels personal.",
-                  "A private invitation for each household. Guests see their events and respond without creating an account.",
+                  "Ready for your next decision.",
+                  "See who still needs to reply and bring confirmed attendance and meal choices into your seating plan.",
                 ],
                 [
                   "Before, during, and long after.",

@@ -29,9 +29,7 @@ export default function GuestReplyCard({
       <div className="reply-tabletop" aria-hidden="true">
         <img src="/images/wedding-details.webp" alt="" loading="lazy" />
       </div>
-      <div className="reply-envelope" aria-hidden="true">
-        <span>{data.wedding.names}</span>
-      </div>
+      <div className="reply-envelope" aria-hidden="true" />
       <div className="rsvp-stationery reply-suite">
         <div className="reply-cover">
           <GuestCrest

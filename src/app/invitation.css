@@ -413,7 +413,7 @@
   position: relative;
   background: var(--depth-paper);
   color: var(--guest-ink);
-  padding: 12px 12px 55px;
+  padding: 12px;
   transform: rotate(-4deg);
   box-shadow: 1px 6px 8px var(--depth-shadow);
 }
@@ -421,6 +421,10 @@
   height: 390px;
 }
 .immersive-invitation .travel-postcard > span {
+  position: static;
+  display: block;
+  margin: 14px 12px 6px;
+  line-height: 1.4;
   left: 24px;
   bottom: 19px;
   background: none;
@@ -926,7 +930,7 @@
     inset: 0 0 20px 20px;
   }
   .immersive-invitation .travel-postcard {
-    padding: 9px 9px 47px;
+    padding: 9px;
   }
   .immersive-invitation .travel-postcard > img {
     height: 310px;
