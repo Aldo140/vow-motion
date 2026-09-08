@@ -459,6 +459,18 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             </section>
             <section className="guest-programme" id="programme" tabIndex={-1}>
               <div className="programme-intro">
+                <div className="programme-detail-print" aria-hidden="true">
+                  <img
+                    src="/images/wedding-details.webp"
+                    alt=""
+                    loading="lazy"
+                  />
+                  <span>
+                    {locale === "en"
+                      ? "The little things, with love."
+                      : "Los detalles, con amor."}
+                  </span>
+                </div>
                 <GuestCrest
                   monogram={weddingIdentity(data.wedding.settings).monogram}
                   names={data.wedding.names}
@@ -619,6 +631,18 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             </section>
             <section className="guest-travel" id="travel">
               <div className="travel-photo-stack">
+                <div className="travel-postmark" aria-hidden="true">
+                  <span>{locale === "en" ? "WITH LOVE" : "CON AMOR"}</span>
+                  <b>
+                    {formatDate(data.wedding.date, locale, {
+                      day: "2-digit",
+                      month: "short",
+                    })}
+                  </b>
+                  <svg viewBox="0 0 100 28" fill="none">
+                    <path d="M0 4Q25 -3 50 4T100 4M0 14Q25 7 50 14T100 14M0 24Q25 17 50 24T100 24" />
+                  </svg>
+                </div>
                 <div className="travel-card-back" aria-hidden="true">
                   <span>
                     {locale === "en" ? "Meet us here." : "Nos vemos aquí."}
@@ -673,6 +697,13 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 )}
               </div>
             </section>
+            <div className="guest-reply-thread" aria-hidden="true">
+              <span />
+              <svg viewBox="0 0 140 60" fill="none">
+                <path d="M8 48Q65 50 132 10M38 42Q15 17 19 10Q43 10 38 42M59 35Q37 8 45 5Q68 16 59 35M80 26Q90 54 102 49Q107 32 80 26M107 15Q120 36 130 29Q126 15 107 15" />
+              </svg>
+              <span />
+            </div>
             <GuestReplyCard
               data={data}
               locale={locale}

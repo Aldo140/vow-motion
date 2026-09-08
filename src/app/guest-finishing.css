@@ -1,0 +1,120 @@
+/* Keepsakes use each invitation's palette and remain outside functional copy. */
+.programme-detail-print {
+  width: min(240px, 85%);
+  margin: 0 auto 36px;
+  padding: 8px 8px 13px;
+  background: var(--depth-paper);
+  color: var(--guest-ink);
+  box-shadow: 2px 7px 16px var(--depth-shadow);
+  rotate: -5deg;
+}
+.programme-detail-print img {
+  width: 100%;
+  height: 145px;
+  object-fit: cover;
+  object-position: center 65%;
+}
+.programme-detail-print > span {
+  display: block;
+  padding-top: 10px;
+  font: italic 15px/1.4 var(--serif);
+  text-align: center;
+}
+.travel-postmark {
+  position: absolute;
+  right: 2%;
+  top: -25px;
+  width: 88px;
+  height: 88px;
+  z-index: 3;
+  border: 1px solid var(--guest-accent);
+  border-radius: 50%;
+  outline: 1px solid var(--guest-line);
+  outline-offset: -6px;
+  background: var(--guest-bg);
+  color: var(--guest-accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  rotate: 12deg;
+  pointer-events: none;
+}
+.travel-postmark > span {
+  font-size: 7px;
+  letter-spacing: 1.5px;
+}
+.travel-postmark b {
+  font: 16px var(--serif);
+}
+.travel-postmark svg {
+  position: absolute;
+  width: 65px;
+  height: 25px;
+  right: 62px;
+  top: 31px;
+}
+.travel-postmark path {
+  stroke: var(--guest-accent);
+  stroke-width: 1;
+}
+.guest-reply-thread {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 0 8% 42px;
+  color: var(--guest-accent);
+}
+.guest-reply-thread > span {
+  height: 1px;
+  width: min(20vw, 200px);
+  background: var(--guest-line);
+}
+.guest-reply-thread svg {
+  width: 115px;
+  height: 55px;
+}
+.guest-reply-thread path {
+  stroke: currentColor;
+  stroke-width: 1;
+}
+.world-modernist .programme-detail-print,
+.world-modernist .travel-postmark {
+  rotate: none;
+}
+@media (max-width: 768px) {
+  .programme-detail-print {
+    width: 190px;
+    margin-bottom: 28px;
+  }
+  .programme-detail-print img {
+    height: 115px;
+  }
+  .programme-detail-print > span {
+    font-size: 13px;
+  }
+  .travel-postmark {
+    width: 72px;
+    height: 72px;
+    right: 4%;
+    top: -16px;
+  }
+  .travel-postmark b {
+    font-size: 14px;
+  }
+  .travel-postmark svg {
+    width: 48px;
+    right: 53px;
+    top: 24px;
+  }
+  .guest-reply-thread {
+    padding-bottom: 28px;
+    gap: 16px;
+  }
+  .guest-reply-thread svg {
+    width: 90px;
+    height: 45px;
+  }
+}
