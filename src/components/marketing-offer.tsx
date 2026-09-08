@@ -41,6 +41,37 @@ export function FirstSteps({ planner = false }: { planner?: boolean }) {
           ? "See the fit before the commitment."
           : "From a first look to your first invitation."}
       </h2>
+      {!planner && (
+        <div className="invitation-editorial" aria-hidden="true">
+          <figure className="editorial-print editorial-setting depth-drift">
+            <img src="/images/heritage.webp" alt="" loading="lazy" />
+            <figcaption>The place.</figcaption>
+          </figure>
+          <div className="editorial-letter depth-drift">
+            <span className="editorial-monogram">
+              V <i>&amp;</i> M
+            </span>
+            <span>A note for your favourite people.</span>
+            <strong>
+              Come for the love.
+              <br />
+              <i>Stay for the memories.</i>
+            </strong>
+            <span className="editorial-rule" />
+            <small>THE BEGINNING OF SOMETHING BEAUTIFUL</small>
+          </div>
+          <figure className="editorial-print editorial-evening depth-drift">
+            <img src="/images/wedding-evening.webp" alt="" loading="lazy" />
+            <figcaption>The people. The feeling.</figcaption>
+          </figure>
+          <img
+            className="editorial-ribbon"
+            src="/images/invitation-silk.webp"
+            alt=""
+            loading="lazy"
+          />
+        </div>
+      )}
       <ol className="offer-steps">
         {steps.map(([title, copy], index) => (
           <li key={title}>

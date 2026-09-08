@@ -20,6 +20,22 @@ export default function Marketing() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.utils.toArray<HTMLElement>(".depth-drift").forEach((element) => {
+          gsap.fromTo(
+            element,
+            { y: 18 },
+            {
+              y: -18,
+              ease: "none",
+              scrollTrigger: {
+                trigger: element.parentElement,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: true,
+              },
+            },
+          );
+        });
         gsap.from(".journey-phone-invite", {
           y: 24,
           ease: "none",
@@ -146,6 +162,23 @@ export default function Marketing() {
               </div>
             </div>
             <div className="collection-note">
+              <div
+                className="collection-mood-print depth-drift"
+                aria-hidden="true"
+              >
+                <img
+                  src={
+                    active === "riviera"
+                      ? "/images/riviera.webp"
+                      : active === "maison"
+                        ? "/images/hero-maison.webp"
+                        : "/images/wedding-details.webp"
+                  }
+                  alt=""
+                  loading="lazy"
+                />
+                <span>A feeling, down to the details.</span>
+              </div>
               <span className="collection-number">
                 0{worlds.indexOf(world) + 1} / 06
               </span>
@@ -173,6 +206,11 @@ export default function Marketing() {
               alt="Garden roses, silk ribbon and wedding bands, thoughtfully arranged"
               loading="lazy"
             />
+            <div className="planner-venue-print depth-drift" aria-hidden="true">
+              <img src="/images/hero-maison.webp" alt="" loading="lazy" />
+              <span>Every detail, considered.</span>
+              <b className="depth-paper-seal">V &amp; M</b>
+            </div>
           </div>
           <div>
             <p className="collection-caption">For the people behind the day</p>
@@ -195,19 +233,31 @@ export default function Marketing() {
           id="pricing"
           tabIndex={-1}
         >
-          <div className="beginning-invitation" aria-hidden="true">
-            <span>Save the date</span>
-            <div>
-              Your names
-              <br />
-              <i>go here.</i>
+          <div className="beginning-still-life" aria-hidden="true">
+            <div className="beginning-photo depth-drift">
+              <img src="/images/garden.webp" alt="" loading="lazy" />
+              <span>For all the moments to come.</span>
             </div>
-            <small>
-              A day like no other.
-              <br />
-              An invitation like no one else’s.
-            </small>
-            <span className="beginning-monogram">V M</span>
+            <div className="beginning-invitation">
+              <span>Save the date</span>
+              <div>
+                Your names
+                <br />
+                <i>go here.</i>
+              </div>
+              <small>
+                A day like no other.
+                <br />
+                An invitation like no one else’s.
+              </small>
+              <span className="beginning-monogram">V M</span>
+            </div>
+            <img
+              className="beginning-silk depth-drift"
+              src="/images/invitation-silk.webp"
+              alt=""
+              loading="lazy"
+            />
           </div>
           <div className="beginning-copy">
             <p className="collection-caption">Your wedding, all together</p>

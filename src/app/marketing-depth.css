@@ -1,0 +1,237 @@
+/* Photographic objects stay inside their own columns, clear of copy and controls. */
+.marketing .invitation-editorial {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr 1.15fr;
+  align-items: center;
+  position: relative;
+  isolation: isolate;
+  padding: 40px 20px 65px;
+  margin: 24px 0 12px;
+}
+.editorial-print {
+  margin: 0;
+  background: #faf5e9;
+  padding: 10px 10px 17px;
+  box-shadow: 3px 15px 25px #29372d26;
+}
+.editorial-print img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+.editorial-print figcaption {
+  padding: 13px 5px 0;
+  font: italic 18px/1.4 var(--serif);
+  color: #35463a;
+}
+.editorial-setting {
+  rotate: -7deg;
+  margin-right: -20px;
+}
+.editorial-evening {
+  rotate: 6deg;
+  margin-left: -20px;
+}
+.editorial-evening img {
+  height: 250px;
+}
+.editorial-letter {
+  position: relative;
+  z-index: 1;
+  padding: 35px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 23px;
+  background: #e5e5d5;
+  color: #31483b;
+  outline: 1px solid #acb19a;
+  outline-offset: -10px;
+  box-shadow: 1px 10px 18px #29372d25;
+  rotate: -2deg;
+  text-align: center;
+}
+.editorial-monogram {
+  font: 28px var(--serif);
+}
+.editorial-letter > span:not(.editorial-monogram) {
+  font: italic 15px/1.5 var(--serif);
+}
+.editorial-letter strong {
+  font: 28px/1.25 var(--serif);
+  font-weight: 400;
+}
+.editorial-letter small {
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+.editorial-rule {
+  width: 36px;
+  height: 1px;
+  background: #a4ad97;
+}
+.editorial-ribbon {
+  position: absolute;
+  width: 130px;
+  right: 0;
+  bottom: 10px;
+  rotate: -20deg;
+  pointer-events: none;
+}
+@media (max-width: 768px) {
+  .marketing .invitation-editorial {
+    grid-template-columns: 1fr 1fr;
+    padding: 24px 8px 45px;
+  }
+  .editorial-print img {
+    height: 220px;
+  }
+  .editorial-letter {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    padding: 26px 16px;
+    gap: 20px;
+  }
+  .editorial-letter strong {
+    font-size: 23px;
+  }
+  .editorial-evening {
+    grid-column: 1;
+    margin: -20px -15px 0 0;
+  }
+  .editorial-evening img {
+    height: 135px;
+  }
+  .editorial-print figcaption {
+    font-size: 13px;
+  }
+  .editorial-ribbon {
+    width: 90px;
+    right: -4px;
+    bottom: 25px;
+  }
+}
+.collection-mood-print {
+  width: min(100%, 230px);
+  margin: 0 0 26px;
+  padding: 7px 7px 10px;
+  background: #faf6eb;
+  box-shadow: 2px 7px 18px #273c3020;
+  rotate: 4deg;
+}
+.collection-mood-print img {
+  width: 100%;
+  height: 112px;
+  object-fit: cover;
+}
+.collection-mood-print > span,
+.planner-venue-print > span,
+.beginning-photo > span {
+  display: block;
+  padding-top: 9px;
+  font: italic 13px/1.5 var(--serif);
+  color: #34483f;
+  text-align: center;
+}
+.marketing .planner-image {
+  position: relative;
+  overflow: hidden;
+}
+.planner-venue-print {
+  position: absolute;
+  width: 46%;
+  right: 8%;
+  bottom: 11%;
+  padding: 10px 10px 16px;
+  background: #f7f1e3;
+  box-shadow: 4px 18px 35px #142b3245;
+  rotate: -7deg;
+}
+.marketing .planner-venue-print img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+.depth-paper-seal {
+  position: absolute;
+  right: -18px;
+  top: -22px;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  outline: 1px solid #e0c899;
+  outline-offset: -6px;
+  background: #743b37;
+  color: #f6e4c4;
+  font: 14px var(--serif);
+  box-shadow: 0 5px 12px #20171030;
+}
+.beginning-still-life {
+  position: relative;
+  min-width: 0;
+  padding: 80px 36px 30px 0;
+  isolation: isolate;
+}
+.beginning-photo {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 90px 20%;
+  rotate: 7deg;
+  padding: 10px 10px 16px;
+  background: #f9f4e8;
+  box-shadow: 3px 10px 25px #25352b25;
+}
+.beginning-photo img {
+  width: 100%;
+  height: calc(100% - 34px);
+  object-fit: cover;
+}
+.beginning-photo > span {
+  visibility: hidden;
+}
+.beginning-still-life .beginning-invitation {
+  position: relative;
+  width: 85%;
+  margin-inline: 0;
+}
+.beginning-silk {
+  position: absolute;
+  right: -5px;
+  bottom: 10px;
+  width: 125px;
+  height: auto;
+  rotate: -12deg;
+  pointer-events: none;
+}
+@media (max-width: 768px) {
+  .collection-mood-print {
+    width: 180px;
+    margin-bottom: 14px;
+    align-self: flex-end;
+  }
+  .beginning-still-life {
+    width: min(100%, 420px);
+    margin: auto;
+    padding: 65px 20px 25px 8px;
+  }
+  .beginning-photo {
+    right: 16px;
+  }
+  .editorial-setting figcaption {
+    visibility: hidden;
+  }
+  .beginning-still-life .beginning-invitation {
+    width: 85%;
+  }
+  .beginning-silk {
+    width: 90px;
+    right: 0;
+  }
+  .planner-venue-print {
+    width: 42%;
+    bottom: 10%;
+  }
+}
