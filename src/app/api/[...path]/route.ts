@@ -33,6 +33,7 @@ import { savePhoto, readPhoto, deletePhoto } from "@/lib/photo-storage";
 import { readJson } from "@/lib/request-body";
 import sharp from "sharp";
 import QRCode from "qrcode";
+import { pilotAction } from "@/lib/pilot-api";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ path: string[] }> };
@@ -83,6 +84,25 @@ async function handler(request: NextRequest, context: Context) {
       if (!weddingId) throw new HttpError(400, "Choose a wedding.");
       const { user, role } = await access(weddingId, method !== "GET");
       if (!action && method === "GET") return json(await studioData(weddingId));
+      if (
+        ["identity", "setup", "publish", "feedback", "requests"].includes(
+          action,
+        )
+      ) {
+        if (method === "GET")
+          throw new HttpError(405, "This action is unavailable.");
+        return json(
+          await pilotAction(
+            action,
+            item,
+            method,
+            weddingId,
+            user.id,
+            role,
+            await body(),
+          ),
+        );
+      }
       if (action === "export") {
         const data = await studioData(weddingId);
         const sheet = request.nextUrl.searchParams.get("sheet") ?? "guests";
@@ -103,7 +123,9 @@ async function handler(request: NextRequest, context: Context) {
         // The documents a planner otherwise rebuilds by hand the week before.
         if (sheet === "kitchen") {
           const attending = data.guests.filter((g) => g.status === "attending");
-          const meals = [...new Set(attending.map((g) => g.meal || "Not chosen"))].sort();
+          const meals = [
+            ...new Set(attending.map((g) => g.meal || "Not chosen")),
+          ].sort();
           const counts: unknown[][] = [
             ["Kitchen sheet", data.wedding.names, data.wedding.date],
             [],
@@ -208,7 +230,10 @@ async function handler(request: NextRequest, context: Context) {
           },
         );
       }
-      if (action === "invitations" && method === "POST") {
+      if (
+        (action === "invitations" || action === "preview") &&
+        method === "POST"
+      ) {
         const input = z
           .object({ household_id: z.string(), revoke: z.boolean().optional() })
           .parse(await body());
@@ -221,15 +246,20 @@ async function handler(request: NextRequest, context: Context) {
           ).length
         )
           throw new HttpError(404, "Household not found.");
-        if (input.revoke)
+        if (input.revoke && action !== "preview")
           await (
             await db()
           ).query(
             "UPDATE invitation_tokens SET revoked=true WHERE household_id=$1",
             [input.household_id],
           );
-        const raw = await issueToken(weddingId, input.household_id);
-        await audit(weddingId, user.id, "Personal invitation link created");
+        const raw = await issueToken(
+          weddingId,
+          input.household_id,
+          action === "preview",
+        );
+        if (action !== "preview")
+          await audit(weddingId, user.id, "Personal invitation link created");
         return json({
           url: `${process.env.APP_URL || new URL(request.url).protocol + "//" + request.headers.get("host")}/i/${raw}`,
         });
@@ -605,9 +635,9 @@ async function handler(request: NextRequest, context: Context) {
           item &&
           ["travel", "registry", "faqs"].includes(action)
         ) {
-          const fields = schemas[action as "travel" | "registry" | "faqs"].parse(
-            await body(),
-          );
+          const fields = schemas[
+            action as "travel" | "registry" | "faqs"
+          ].parse(await body());
           const keys = Object.keys(fields);
           const updated = await (
             await db()
@@ -645,11 +675,29 @@ async function handler(request: NextRequest, context: Context) {
       const raw = request.nextUrl.searchParams.get("token") || "";
       const data = await guestData(raw);
       const weddingId = data.wedding.id;
+      if (data.preview && method !== "GET")
+        throw new HttpError(
+          403,
+          "This is a preview. Guest information cannot be changed.",
+        );
+      if (action === "requests" && method === "POST") {
+        await rateLimit("guest-question:" + hash(raw), 20);
+        const { question } = z
+          .object({ question: z.string().trim().min(5).max(2000) })
+          .parse(await body());
+        await (
+          await db()
+        ).query(
+          "INSERT INTO guest_requests(id,wedding_id,household_id,question) VALUES($1,$2,$3,$4)",
+          [id(), weddingId, data.guests[0].household_id, question],
+        );
+        return json({ ok: true });
+      }
       if (!action && method === "GET") {
         await (
           await db()
         ).query(
-          "UPDATE invitation_tokens SET opened_at=COALESCE(opened_at,now()) WHERE token_hash=$1",
+          "UPDATE invitation_tokens SET opened_at=COALESCE(opened_at,now()) WHERE token_hash=$1 AND preview=false",
           [hash(raw)],
         );
         return json(data);

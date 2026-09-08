@@ -6,6 +6,8 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import type { GuestData } from "@/lib/types";
 import { formatDate, getWorld } from "@/lib/worlds";
+import { weddingIdentity } from "@/lib/identity";
+import { useHydrated } from "./use-hydrated";
 
 gsap.registerPlugin(useGSAP);
 
@@ -25,16 +27,19 @@ export default function GuestSealGate({
   onOpen: () => void;
 }) {
   const root = useRef<HTMLElement>(null);
+  const hydrated = useHydrated();
   const opening = useRef(false);
   const [busy, setBusy] = useState(false);
   const patternId = useId();
   const world = getWorld(data.wedding.world),
     voice = world.voice[locale];
-  const initials = data.wedding.names
-    .split(" & ")
-    .map((name) => name.trim()[0])
-    .filter(Boolean)
-    .join("");
+  const initials =
+    weddingIdentity(data.wedding.settings).monogram ||
+    data.wedding.names
+      .split(" & ")
+      .map((name) => name.trim()[0])
+      .filter(Boolean)
+      .join("");
 
   const { contextSafe } = useGSAP(() => {}, { scope: root });
 
@@ -74,6 +79,7 @@ export default function GuestSealGate({
       <div className="gate-top">
         <Link href="/">VOW MOTION</Link>
         <button
+          disabled={!hydrated}
           onClick={onLocaleChange}
           aria-label={locale === "en" ? "Ver en español" : "View in English"}
         >
@@ -122,7 +128,7 @@ export default function GuestSealGate({
         <button
           className="envelope-open seal-break"
           onClick={(event) => open(event.detail !== 0)}
-          disabled={busy}
+          disabled={busy || !hydrated}
           aria-label={
             locale === "en" ? "Open your invitation" : "Abre tu invitación"
           }

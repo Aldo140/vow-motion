@@ -98,6 +98,27 @@ export type Photo = {
   filename: string;
 };
 export type StudioData = {
+  feedback?: {
+    id: string;
+    screen: string;
+    body: string;
+    status: "open" | "in-progress" | "resolved";
+    created_at: string;
+  }[];
+  guestRequests?: {
+    id: string;
+    household_id: string;
+    question: string;
+    answer: string;
+    created_at: string;
+  }[];
+  responses?: {
+    guest_id: string;
+    event_id: string;
+    attending: boolean;
+    meal: string;
+    answers: Record<string, string>;
+  }[];
   capabilities: {
     email: boolean;
     sms: boolean;
@@ -129,6 +150,13 @@ export type StudioData = {
   };
 };
 export type GuestData = {
+  preview?: boolean;
+  guestRequests?: {
+    id: string;
+    question: string;
+    answer: string;
+    created_at: string;
+  }[];
   updates: Pick<
     Message,
     "id" | "subject" | "body" | "created_at" | "scheduled_at"

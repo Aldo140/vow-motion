@@ -5,6 +5,7 @@ test("the invitation opens by keyboard and the keepsake leads to the authorized 
 }) => {
   await page.goto("/demo/riviera");
   const open = page.getByRole("button", { name: "Open your invitation" });
+  await expect(open).toBeEnabled();
   await open.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".guest-hero h1")).toBeFocused();

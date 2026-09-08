@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useHydrated } from "./use-hydrated";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -48,6 +49,7 @@ const moods = [
 ];
 
 export default function LandingHero() {
+  const ready = useHydrated();
   const root = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState(0);
   const [opened, setOpened] = useState(false);
@@ -292,6 +294,7 @@ export default function LandingHero() {
                   </div>
                   <button
                     className="suite-seal-control"
+                    disabled={!ready}
                     onClick={() => setOpened(!opened)}
                     aria-expanded={opened}
                     aria-controls="hero-invitation-preview"

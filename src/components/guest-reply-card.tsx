@@ -5,6 +5,7 @@ import type { GuestData } from "@/lib/types";
 import { formatDate } from "@/lib/worlds";
 import GuestCrest from "./guest-crest";
 import { Arrow } from "./ui";
+import { weddingIdentity } from "@/lib/identity";
 
 export default function GuestReplyCard({
   data,
@@ -34,6 +35,7 @@ export default function GuestReplyCard({
       <div className="rsvp-stationery reply-suite">
         <div className="reply-cover">
           <GuestCrest
+            monogram={weddingIdentity(data.wedding.settings).monogram}
             names={data.wedding.names}
             world={data.wedding.world}
             size={80}

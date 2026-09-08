@@ -2440,7 +2440,8 @@ td:last-child {
   outline-offset: 2px;
 }
 /* The guests' world */
-.guest-experience {
+.guest-experience,
+.identity-suite {
   --guest-bg: oklch(96% 0.024 88);
   --guest-ink: oklch(35% 0.04 220);
   --guest-accent: oklch(43% 0.064 223);
@@ -2449,34 +2450,39 @@ td:last-child {
   background: var(--guest-bg);
   color: var(--guest-ink);
 }
-.guest-experience.world-maison {
+.guest-experience.world-maison,
+.identity-suite.world-maison {
   --guest-bg: oklch(97% 0.007 90);
   --guest-ink: oklch(24% 0.007 80);
   --guest-accent: oklch(32% 0.012 80);
   --guest-line: oklch(83% 0.015 90);
   --guest-display: "Bodoni Moda", serif;
 }
-.guest-experience.world-notte {
+.guest-experience.world-notte,
+.identity-suite.world-notte {
   --guest-bg: oklch(19% 0.006 80);
   --guest-ink: oklch(87% 0.03 80);
   --guest-accent: oklch(80% 0.042 83);
   --guest-line: oklch(38% 0.02 80);
   --guest-display: "Bodoni Moda", serif;
 }
-.guest-experience.world-heritage {
+.guest-experience.world-heritage,
+.identity-suite.world-heritage {
   --guest-bg: oklch(94% 0.025 85);
   --guest-ink: oklch(35% 0.043 105);
   --guest-accent: oklch(39% 0.055 95);
   --guest-display: "Libre Baskerville", serif;
 }
-.guest-experience.world-modernist {
+.guest-experience.world-modernist,
+.identity-suite.world-modernist {
   --guest-bg: oklch(95% 0.006 240);
   --guest-ink: oklch(35% 0.15 265);
   --guest-accent: oklch(40% 0.19 265);
   --guest-display: "Manrope", sans-serif;
   --guest-line: oklch(78% 0.04 265);
 }
-.guest-experience.world-garden {
+.guest-experience.world-garden,
+.identity-suite.world-garden {
   --guest-bg: oklch(95% 0.024 120);
   --guest-ink: oklch(34% 0.05 135);
   --guest-accent: oklch(42% 0.065 135);

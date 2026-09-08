@@ -48,6 +48,7 @@ test("a couple chooses how the invitation arrives, and both openings lead in", a
 
   // Whichever opening a couple picks, the guest lands on the same invitation.
   const seal = page.getByRole("button", { name: "Open your invitation" });
+  await expect(seal).toBeEnabled();
   await seal.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".guest-hero h1")).toBeFocused();

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { Arrow, Brand } from "./ui";
+import { useHydrated } from "./use-hydrated";
 
 const links = [
   { href: "#worlds", label: "The design collection" },
@@ -12,6 +13,7 @@ const links = [
 ];
 
 export default function MarketingNavigation() {
+  const ready = useHydrated();
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -105,6 +107,7 @@ export default function MarketingNavigation() {
           aria-controls={menuId}
           aria-haspopup="dialog"
           aria-label="Open menu"
+          disabled={!ready}
         >
           <ListIcon size={24} aria-hidden="true" />
         </button>

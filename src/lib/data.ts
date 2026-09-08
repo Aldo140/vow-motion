@@ -21,6 +21,9 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     domains,
     deliveries,
     activity,
+    feedback,
+    guestRequests,
+    responses,
   ] = await Promise.all([
     listWeddings(user.id),
     rows(
@@ -53,6 +56,18 @@ export async function studioData(weddingId: string): Promise<StudioData> {
       "SELECT id,action,created_at FROM audit_log WHERE wedding_id=$1 ORDER BY created_at DESC LIMIT 12",
       [weddingId],
     ),
+    rows(
+      "SELECT id,screen,body,status,created_at FROM pilot_feedback WHERE wedding_id=$1 ORDER BY created_at DESC",
+      [weddingId],
+    ),
+    rows(
+      "SELECT id,household_id,question,answer,created_at FROM guest_requests WHERE wedding_id=$1 ORDER BY created_at DESC",
+      [weddingId],
+    ),
+    rows(
+      "SELECT r.guest_id,r.event_id,r.attending,r.meal,r.answers FROM guest_event_responses r JOIN guests g ON g.id=r.guest_id WHERE g.wedding_id=$1",
+      [weddingId],
+    ),
   ]);
   return {
     user,
@@ -74,6 +89,9 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     activity,
     role,
     capabilities: serviceCapabilities(),
+    feedback,
+    guestRequests,
+    responses,
   } as unknown as StudioData;
 }
 export async function guestData(rawToken: string): Promise<GuestData> {
@@ -140,6 +158,11 @@ export async function guestData(rawToken: string): Promise<GuestData> {
   ]);
   return {
     wedding: weddings[0],
+    preview: invitation.preview === true,
+    guestRequests: await rows(
+      "SELECT id,question,answer,created_at FROM guest_requests WHERE wedding_id=$1 AND household_id=$2 ORDER BY created_at DESC",
+      [weddingId, householdId],
+    ),
     guests,
     events,
     questions,

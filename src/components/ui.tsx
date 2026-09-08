@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useHydrated } from "./use-hydrated";
 import {
   useEffect,
   useRef,
@@ -119,12 +120,19 @@ export function Modal({
 export function Submit({
   children,
   pending = false,
+  disabled = false,
 }: {
   children: ReactNode;
   pending?: boolean;
+  disabled?: boolean;
 }) {
+  const ready = useHydrated();
   return (
-    <button className="button primary" type="submit" disabled={pending}>
+    <button
+      className="button primary"
+      type="submit"
+      disabled={!ready || pending || disabled}
+    >
       {pending ? (
         <>
           <CircleNotchIcon className="spin" size={18} /> Saving…
@@ -190,13 +198,14 @@ export function DemoButton({
   children?: ReactNode;
   className?: string;
 }) {
+  const ready = useHydrated();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   return (
     <>
       <button
         className={className}
-        disabled={busy}
+        disabled={!ready || busy}
         onClick={async () => {
           setBusy(true);
           try {

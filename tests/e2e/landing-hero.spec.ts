@@ -8,6 +8,7 @@ test("the hero seal reveals an accessible invitation and the selected mood opens
     name: "Break the seal to open the sample invitation",
   });
   await expect(page.getByRole("link", { name: "Step inside" })).toHaveCount(0);
+  await expect(seal).toBeEnabled();
   await seal.focus();
   await page.keyboard.press("Enter");
   const visit = page.getByRole("link", { name: "Step inside" });

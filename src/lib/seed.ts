@@ -352,13 +352,17 @@ export async function createDemo() {
   }
   return userId;
 }
-export async function issueToken(weddingId: string, householdId: string) {
+export async function issueToken(
+  weddingId: string,
+  householdId: string,
+  preview = false,
+) {
   const raw = token();
   await (
     await db()
   ).query(
-    "INSERT INTO invitation_tokens(id,wedding_id,household_id,token_hash,expires_at) VALUES($1,$2,$3,$4,now()+interval '2 years')",
-    [id(), weddingId, householdId, hash(raw)],
+    "INSERT INTO invitation_tokens(id,wedding_id,household_id,token_hash,expires_at,preview) VALUES($1,$2,$3,$4,now()+CASE WHEN $5 THEN interval '1 hour' ELSE interval '2 years' END,$5)",
+    [id(), weddingId, householdId, hash(raw), preview],
   );
   return raw;
 }

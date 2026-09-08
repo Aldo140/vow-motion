@@ -8,11 +8,13 @@ export default function GuestCrest({
   world,
   className = "",
   size = 132,
+  monogram = "",
 }: {
   names: string;
   world: World;
   className?: string;
   size?: number;
+  monogram?: string;
 }) {
   const initials = names
     .split(" & ")
@@ -24,16 +26,39 @@ export default function GuestCrest({
       className={"guest-crest " + (plain ? "crest-plain " : "") + className}
       style={{ width: size, height: (size * 260) / 200 }}
     >
-      <svg viewBox="0 0 200 260" fill="none" aria-hidden="true" focusable="false">
+      <svg
+        viewBox="0 0 200 260"
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+      >
         {plain ? (
           <>
-            <rect className="crest-line" x="30" y="34" width="140" height="192" />
-            <rect className="crest-line crest-inner" x="39" y="43" width="122" height="174" />
+            <rect
+              className="crest-line"
+              x="30"
+              y="34"
+              width="140"
+              height="192"
+            />
+            <rect
+              className="crest-line crest-inner"
+              x="39"
+              y="43"
+              width="122"
+              height="174"
+            />
           </>
         ) : (
           <>
             <ellipse className="crest-line" cx="100" cy="130" rx="70" ry="96" />
-            <ellipse className="crest-line crest-inner" cx="100" cy="130" rx="61" ry="86" />
+            <ellipse
+              className="crest-line crest-inner"
+              cx="100"
+              cy="130"
+              rx="61"
+              ry="86"
+            />
             {/* Crown and base scrolls, mirrored about the centre line. */}
             <path
               className="crest-line crest-ornament"
@@ -56,10 +81,21 @@ export default function GuestCrest({
         )}
       </svg>
       <span className="crest-initials" aria-hidden="true">
-        {initials.length > 1 ? (
+        {monogram ? (
+          <b
+            style={{
+              fontSize: Math.min(
+                size * 0.26,
+                (size * 0.8) / Math.max(1, monogram.length),
+              ),
+            }}
+          >
+            {monogram}
+          </b>
+        ) : initials.length > 1 ? (
           <>
             <b>{initials[0]}</b>
-            <i>&</i>
+            <i>{plain ? "+" : "&"}</i>
             <b>{initials.slice(1).join("")}</b>
           </>
         ) : (

@@ -7,6 +7,8 @@ import { useGSAP } from "@gsap/react";
 import type { GuestData } from "@/lib/types";
 import { formatDate, getWorld } from "@/lib/worlds";
 import { Arrow } from "./ui";
+import { weddingIdentity } from "@/lib/identity";
+import { useHydrated } from "./use-hydrated";
 
 gsap.registerPlugin(useGSAP);
 
@@ -22,14 +24,17 @@ export default function GuestInvitationGate({
   onOpen: () => void;
 }) {
   const root = useRef<HTMLElement>(null);
+  const hydrated = useHydrated();
   const opening = useRef(false);
   const [busy, setBusy] = useState(false);
   const world = getWorld(data.wedding.world),
     voice = world.voice[locale];
-  const initials = data.wedding.names
-    .split(" & ")
-    .map((name) => name[0])
-    .join(" & ");
+  const initials =
+    weddingIdentity(data.wedding.settings).monogram ||
+    data.wedding.names
+      .split(" & ")
+      .map((name) => name[0])
+      .join(" & ");
   const { contextSafe } = useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -98,6 +103,7 @@ export default function GuestInvitationGate({
       <div className="gate-top">
         <Link href="/">VOW MOTION</Link>
         <button
+          disabled={!hydrated}
           onClick={onLocaleChange}
           aria-label={locale === "en" ? "Ver en español" : "View in English"}
         >
@@ -123,7 +129,7 @@ export default function GuestInvitationGate({
           <button
             className="envelope-open"
             onClick={(event) => open(event.detail !== 0)}
-            disabled={busy}
+            disabled={busy || !hydrated}
             aria-label={
               locale === "en" ? "Open your invitation" : "Abre tu invitación"
             }

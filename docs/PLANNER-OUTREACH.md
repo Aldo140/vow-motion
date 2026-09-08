@@ -1,5 +1,15 @@
 # Planner outreach
 
+## Do not contact
+
+Designs by Lindy (`designsbylindy@gmail.com`) replied “STOP” on September 6, 2026. Exclude this address from every future outreach batch and follow-up. Do not send another sales reply.
+
+## Replies prepared September 8, 2026
+
+Unsent Gmail reply drafts are saved in the existing threads for Maren at Bow Valley Weddings, Sheena at Champagne & Roses, and Cathy at Creative Weddings. Maren’s draft still needs two actual meeting times in Mountain Time. The drafts make no commitment to an integration or completed pilot.
+
+Prioritize a short household walkthrough with Maren and feedback from Sheena. Cathy declined because of her existing planning workflow. No pilot or paid customer has been confirmed.
+
 The goal of every message here is one thing: get a planner to watch a ten-minute
 walkthrough. Not to explain the product, and not to sell a subscription.
 

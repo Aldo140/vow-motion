@@ -6,6 +6,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   use: {
+    channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
     baseURL: "http://localhost:3000",
     // A baseline address for the run; tests/e2e/fixtures.ts gives each test its
     // own, so a long suite does not exhaust one visitor's demo allowance.
@@ -20,7 +21,7 @@ export default defineConfig({
   // Embedded PGlite allows a single process, so reuse a running server when one
   // is already serving the workspace and start one only when it is absent.
   webServer: {
-    command: "npm run dev",
+    command: "npx next dev --hostname 127.0.0.1",
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 180000,

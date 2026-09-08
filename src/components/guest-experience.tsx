@@ -1,113 +1,37 @@
 "use client";
-import Link from "next/link";
-import GuestInvitationGate from "./guest-invitation-gate";
-import GuestSealGate from "./guest-seal-gate";
-import GuestInvitationHero from "./guest-invitation-hero";
-import GuestNavigation from "./guest-navigation";
-import GuestCountdown from "./guest-countdown";
-import GuestCrest from "./guest-crest";
-import GuestWeddingPass from "./guest-wedding-pass";
-import GuestReplyCard from "./guest-reply-card";
-import GuestMemoryAlbum from "./guest-memory-album";
-import { preparePhoto } from "@/lib/prepare-photo";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { identityStyle, weddingIdentity } from "@/lib/identity";
+import type { GuestData } from "@/lib/types";
+import { eventTime, formatDate, getWorld } from "@/lib/worlds";
 import { useGSAP } from "@gsap/react";
 import {
+  CalendarBlankIcon,
   ChampagneIcon,
-  HeartIcon,
-  MusicNotesIcon,
   CoffeeIcon,
   ForkKnifeIcon,
-  CheckIcon,
-  CalendarBlankIcon,
-  UploadSimpleIcon,
+  HeartIcon,
+  MusicNotesIcon,
 } from "@phosphor-icons/react";
-import type { GuestData } from "@/lib/types";
-import { getWorld, formatDate, eventTime } from "@/lib/worlds";
-import { Arrow, Modal, Field, Submit, Notice, api } from "./ui";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import GuestCountdown from "./guest-countdown";
+import GuestCrest from "./guest-crest";
+import GuestInvitationGate from "./guest-invitation-gate";
+import GuestInvitationHero from "./guest-invitation-hero";
+import GuestMemoryAlbum from "./guest-memory-album";
+import GuestNavigation from "./guest-navigation";
+import GuestReplyCard from "./guest-reply-card";
+import GuestRequests from "./guest-requests";
+import GuestSealGate from "./guest-seal-gate";
+import GuestWeddingPass from "./guest-wedding-pass";
+import { ContactModal } from "./guest/contact-modal";
+import { copy } from "./guest/copy";
+import { RsvpModal } from "./guest/rsvp-modal";
+import { UploadModal } from "./guest/upload-modal";
+import { Arrow, api } from "./ui";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
-const copy = {
-  en: {
-    invited: "Together with our families",
-    open: "Open your invitation",
-    personal: "A little something, just for you.",
-    celebrate: "WE WOULD LOVE YOU TO CELEBRATE WITH US",
-    story: "Some things are meant to be.",
-    programme: "A weekend to remember.",
-    journey: "Make a little journey of it.",
-    rsvp: "Will you join us?",
-    respond: "Your RSVP",
-    attending: "You’re coming",
-    answered: "Your response",
-    pass: "Your wedding pass",
-    photos: "The moments between.",
-    share: "Share a memory",
-    yes: "With pleasure",
-    no: "Sadly, I can’t",
-    next: "A few little details",
-    save: "Save our response",
-    saved: "A place in our story.",
-    savedDesc:
-      "Your response is safely with us. You can return to this invitation to update it before the deadline.",
-    update: "Update our response",
-    calendar: "Add to calendar",
-    directions: "Find your way",
-    details: "The details",
-    travel: "Travel & stay",
-    contact: "Your contact details",
-    meal: "What should we prepare?",
-    dietary: "Anything we should know about?",
-    dietHint: "Allergies or dietary requirements",
-    name: "Your name",
-    close: "Back to the celebration",
-    gifts: "Your presence is the present.",
-    uploadNote:
-      "JPG, PNG or WebP, up to 10 MB. Your hosts review photos before sharing.",
-    envelope: "FOR OUR FAVOURITE PEOPLE",
-    day: "The day, in your pocket.",
-  },
-  es: {
-    invited: "Junto con nuestras familias",
-    open: "Abre tu invitación",
-    personal: "Un pequeño detalle, solo para ti.",
-    celebrate: "NOS ENCANTARÍA CELEBRAR CONTIGO",
-    story: "Hay historias que están destinadas a ser.",
-    programme: "Un fin de semana para recordar.",
-    journey: "El viaje también es parte de la historia.",
-    rsvp: "¿Nos acompañas?",
-    respond: "Tu respuesta",
-    attending: "Nos acompañas",
-    answered: "Tu respuesta enviada",
-    pass: "Tu pase de boda",
-    photos: "Los pequeños momentos.",
-    share: "Comparte un recuerdo",
-    yes: "Con mucho gusto",
-    no: "Lo siento, no puedo",
-    next: "Unos pequeños detalles",
-    save: "Guardar nuestra respuesta",
-    saved: "Un lugar en nuestra historia.",
-    savedDesc:
-      "Hemos guardado tu respuesta. Puedes volver a esta invitación para actualizarla antes de la fecha límite.",
-    update: "Actualizar nuestra respuesta",
-    calendar: "Añadir al calendario",
-    directions: "Cómo llegar",
-    details: "Los detalles",
-    travel: "Viaje y alojamiento",
-    contact: "Tus datos de contacto",
-    meal: "¿Qué te preparamos?",
-    dietary: "¿Algo que debamos saber?",
-    dietHint: "Alergias o necesidades alimentarias",
-    name: "Tu nombre",
-    close: "Volver a la celebración",
-    gifts: "Tu presencia es nuestro regalo.",
-    uploadNote:
-      "JPG, PNG o WebP, hasta 10 MB. Los anfitriones revisarán las fotos antes de compartirlas.",
-    envelope: "PARA NUESTRAS PERSONAS FAVORITAS",
-    day: "Todo el día, en tu bolsillo.",
-  },
-};
+
 const MOMENT_ICONS: [RegExp, typeof HeartIcon][] = [
   [/welcome|aperitivo|bienvenid|drinks|c[oó]ctel|cocktail/i, ChampagneIcon],
   [/ceremon|vows|boda|wedding/i, HeartIcon],
@@ -141,7 +65,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
   const refresh = async () => {
     setData(await api(url));
   };
-  const openedKey = `vow-opened-${data.wedding.id}-${data.guests[0]?.household_id}`;
+  const openedKey = `vow-opened-${data.preview ? "preview-" : ""}${data.wedding.id}-${data.guests[0]?.household_id}`;
   useEffect(() => {
     try {
       if (localStorage.getItem(openedKey) === "yes") setOpened(true);
@@ -412,8 +336,19 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
     <div
       ref={root}
       className={"guest-experience immersive-invitation world-" + world.id}
+      style={identityStyle(data.wedding.settings, world.id === "notte")}
       lang={locale}
     >
+      {data.preview && (
+        <div className="guest-preview-banner" role="status">
+          {locale === "en"
+            ? `Read-only preview · ${data.household} · expires in one hour`
+            : `Vista previa de solo lectura · ${data.household} · caduca en una hora`}
+          <a href={`/studio/setup?wid=${data.wedding.id}`}>
+            {locale === "en" ? "Return to Studio" : "Volver al Studio"}
+          </a>
+        </div>
+      )}
       {!opened ? (
         // Both openings hand the guest to the same invitation; the couple
         // chooses which one arrives.
@@ -525,6 +460,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             <section className="guest-programme" id="programme" tabIndex={-1}>
               <div className="programme-intro">
                 <GuestCrest
+                  monogram={weddingIdentity(data.wedding.settings).monogram}
                   names={data.wedding.names}
                   world={data.wedding.world}
                   className="programme-crest"
@@ -629,6 +565,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               <section className="guest-faqs" id="faqs" tabIndex={-1}>
                 <div className="faqs-intro">
                   <GuestCrest
+                    monogram={weddingIdentity(data.wedding.settings).monogram}
                     names={data.wedding.names}
                     world={data.wedding.world}
                     className="faqs-crest"
@@ -810,7 +747,15 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 ))}
               </div>
             </section>
+            <GuestRequests data={data} locale={locale} refresh={refresh} />
             <footer className="guest-footer">
+              {weddingIdentity(data.wedding.settings).showPlanner &&
+                weddingIdentity(data.wedding.settings).plannerName && (
+                  <p>
+                    {locale === "en" ? "Planned by" : "Organizado por"}{" "}
+                    {weddingIdentity(data.wedding.settings).plannerName}
+                  </p>
+                )}
               <h2>{data.wedding.names}</h2>
               <p>
                 {formatDate(data.wedding.date, locale)} ·{" "}
@@ -869,643 +814,5 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
         />
       )}
     </div>
-  );
-}
-function RsvpModal({
-  data,
-  locale,
-  onClose,
-  onSaved,
-  onPass,
-}: {
-  data: GuestData;
-  locale: "en" | "es";
-  onClose: () => void;
-  onSaved: () => Promise<void>;
-  onPass: () => void;
-}) {
-  const c = copy[locale],
-    [step, setStep] = useState(0),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
-  type Response = {
-    guest_id: string;
-    event_id: string;
-    attending: boolean;
-    meal: string;
-    dietary: string;
-    name?: string;
-    answers: Record<string, string>;
-  };
-  const key = "vow-rsvp-" + data.token;
-  const initial: Response[] = useMemo(
-    () =>
-      data.guests.flatMap((g) =>
-        data.events
-          .filter((e) => e.rsvp_required)
-          .map((e) => {
-            const saved = data.responses.find(
-              (r) => r.guest_id === g.id && r.event_id === e.id,
-            );
-            return {
-              guest_id: g.id,
-              event_id: e.id,
-              attending: saved?.attending ?? true,
-              meal: saved?.meal || "",
-              dietary: saved?.dietary || "",
-              answers: saved?.answers || {},
-            };
-          }),
-      ),
-    [data.guests, data.events, data.responses],
-  );
-  const [responses, setResponses] = useState<Response[]>(initial);
-  useEffect(() => {
-    try {
-      const draft = sessionStorage.getItem(key);
-      if (draft) {
-        const parsed = JSON.parse(draft);
-        if (
-          Array.isArray(parsed) &&
-          parsed.length === initial.length &&
-          initial.every((expected) =>
-            parsed.some(
-              (r) =>
-                r.guest_id === expected.guest_id &&
-                r.event_id === expected.event_id &&
-                typeof r.attending === "boolean" &&
-                typeof r.meal === "string" &&
-                typeof r.dietary === "string" &&
-                r.answers &&
-                typeof r.answers === "object",
-            ),
-          )
-        )
-          setResponses(
-            initial.map((expected) =>
-              parsed.find(
-                (r) =>
-                  r.guest_id === expected.guest_id &&
-                  r.event_id === expected.event_id,
-              ),
-            ),
-          );
-      }
-    } catch {}
-  }, [key, initial]);
-  const update = (index: number, patch: Partial<Response>) => {
-    setResponses((prev) => {
-      const next = prev.map((r, i) => (i === index ? { ...r, ...patch } : r));
-      try {
-        sessionStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-  const questionUpdate = (
-    guestId: string,
-    questionId: string,
-    value: string,
-    household = false,
-  ) => {
-    setResponses((prev) => {
-      const next = prev.map((r) =>
-        household || r.guest_id === guestId
-          ? { ...r, answers: { ...r.answers, [questionId]: value } }
-          : r,
-      );
-      try {
-        sessionStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-  return (
-    <Modal
-      title={step === 2 ? c.saved : c.rsvp}
-      onClose={onClose}
-      wide
-      className="guest-paper-dialog reply-dialog"
-    >
-      {step === 2 ? (
-        <div className="rsvp-success">
-          <span className="success-mark">
-            <CheckIcon size={30} />
-          </span>
-          <h3>
-            {locale === "en"
-              ? "Thank you, " + data.guests[0].name.split(" ")[0] + "."
-              : "Gracias, " + data.guests[0].name.split(" ")[0] + "."}
-          </h3>
-          <p>
-            {responses.some((r) => r.attending)
-              ? c.savedDesc
-              : locale === "en"
-                ? "We’ll miss you. Your reply has been shared with the couple—thank you for letting them know."
-                : "Te echaremos de menos. Hemos compartido tu respuesta con la pareja. Gracias por avisarnos."}
-          </p>
-          {responses.some((r) => r.attending) && (
-            <a
-              className="button primary"
-              href={"/api/guest/calendar?token=" + data.token}
-            >
-              {c.calendar}
-              <Arrow />
-            </a>
-          )}
-          <button className="button pass-next-action" onClick={onPass}>
-            {c.pass}
-            <Arrow />
-          </button>
-          <button className="text-link" onClick={onClose}>
-            {c.close}
-          </button>
-        </div>
-      ) : (
-        <>
-          <p className="dialog-dedication">{data.wedding.names}</p>
-          <div className="rsvp-progress">
-            <span className={step === 0 ? "current" : ""}>
-              {locale === "en" ? "Your plans" : "Tus planes"}
-            </span>
-            <span className={step === 1 ? "current" : ""}>
-              {locale === "en" ? "The little details" : "Los detalles"}
-            </span>
-          </div>
-          {error && <Notice error>{error}</Notice>}
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (step === 0) {
-                setStep(1);
-                return;
-              }
-              setBusy(true);
-              setError("");
-              try {
-                await api("/api/guest/rsvp?token=" + data.token, "POST", {
-                  responses,
-                });
-                try {
-                  sessionStorage.removeItem(key);
-                } catch {}
-                await onSaved();
-                setStep(2);
-              } catch (e) {
-                setError((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            {step === 0 ? (
-              <div className="attendance-questions">
-                {data.events
-                  .filter((e) => e.rsvp_required)
-                  .map((event) => (
-                    <section key={event.id}>
-                      <h3>
-                        {locale === "es" && event.title_es
-                          ? event.title_es
-                          : event.title}
-                      </h3>
-                      <p>
-                        {formatDate(event.starts_at, locale, {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          timeZone: event.timezone,
-                        })}{" "}
-                        · {eventTime(event.starts_at, event.timezone)}
-                      </p>
-                      {data.guests.map((g) => {
-                        const index = responses.findIndex(
-                          (r) => r.guest_id === g.id && r.event_id === event.id,
-                        );
-                        return (
-                          <fieldset className="attendance-person" key={g.id}>
-                            <legend>{g.name}</legend>
-                            <label
-                              className={
-                                responses[index]?.attending ? "selected" : ""
-                              }
-                            >
-                              <input
-                                type="radio"
-                                name={g.id + event.id}
-                                checked={responses[index]?.attending}
-                                onChange={() =>
-                                  update(index, { attending: true })
-                                }
-                              />
-                              {c.yes}
-                            </label>
-                            <label
-                              className={
-                                !responses[index]?.attending ? "selected" : ""
-                              }
-                            >
-                              <input
-                                type="radio"
-                                name={g.id + event.id}
-                                checked={!responses[index]?.attending}
-                                onChange={() =>
-                                  update(index, { attending: false })
-                                }
-                              />
-                              {c.no}
-                            </label>
-                          </fieldset>
-                        );
-                      })}
-                    </section>
-                  ))}
-              </div>
-            ) : (
-              <div className="meal-questions">
-                <div className="reply-review">
-                  <span className="eyebrow">
-                    {locale === "en"
-                      ? "YOUR REPLY, AT A GLANCE"
-                      : "TU RESPUESTA, EN RESUMEN"}
-                  </span>
-                  {data.events
-                    .filter((event) => event.rsvp_required)
-                    .map((event) => (
-                      <div key={event.id}>
-                        <strong>
-                          {locale === "es" && event.title_es
-                            ? event.title_es
-                            : event.title}
-                        </strong>
-                        <p>
-                          {responses
-                            .filter((r) => r.event_id === event.id)
-                            .map(
-                              (r) =>
-                                `${data.guests.find((g) => g.id === r.guest_id)?.name}: ${r.attending ? (locale === "en" ? "attending" : "asistirá") : locale === "en" ? "unable to attend" : "no asistirá"}`,
-                            )
-                            .join(" · ")}
-                        </p>
-                      </div>
-                    ))}
-                  <small>
-                    {locale === "en"
-                      ? "Need to change a plan? Go back. Nothing is sent until you save."
-                      : "¿Cambio de planes? Vuelve atrás. Nada se envía hasta que guardes."}
-                  </small>
-                </div>
-                {responses.map(
-                  (r, index) =>
-                    r.attending && (
-                      <section key={r.guest_id + r.event_id}>
-                        <h3>
-                          {data.guests.find((g) => g.id === r.guest_id)?.name}
-                        </h3>
-                        <small>
-                          {data.events.find((e) => e.id === r.event_id)?.title}
-                        </small>
-                        {data.guests.find((g) => g.id === r.guest_id)
-                          ?.is_plus_one && (
-                          <Field label={c.name}>
-                            <input
-                              required
-                              value={r.name || ""}
-                              onChange={(e) =>
-                                update(index, { name: e.target.value })
-                              }
-                            />
-                          </Field>
-                        )}
-                        <div className="form-grid">
-                          <Field label={c.meal}>
-                            <select
-                              required
-                              value={r.meal}
-                              onChange={(e) =>
-                                update(index, { meal: e.target.value })
-                              }
-                            >
-                              <option value="">
-                                {locale === "en"
-                                  ? "Choose your meal"
-                                  : "Elige tu plato"}
-                              </option>
-                              <option value="Beef fillet">
-                                {locale === "en"
-                                  ? "Beef fillet"
-                                  : "Filete de ternera"}
-                              </option>
-                              <option value="Sea bass">
-                                {locale === "en" ? "Sea bass" : "Lubina"}
-                              </option>
-                              <option value="Garden risotto">
-                                {locale === "en"
-                                  ? "Garden risotto (vegetarian)"
-                                  : "Risotto de verduras (vegetariano)"}
-                              </option>
-                              <option value="Vegan plate">
-                                {locale === "en"
-                                  ? "Vegan plate"
-                                  : "Plato vegano"}
-                              </option>
-                              <option value="Children’s meal">
-                                {locale === "en"
-                                  ? "Children’s meal"
-                                  : "Menú infantil"}
-                              </option>
-                            </select>
-                          </Field>
-                          <Field label={c.dietary}>
-                            <input
-                              value={r.dietary}
-                              onChange={(e) =>
-                                update(index, { dietary: e.target.value })
-                              }
-                              placeholder={c.dietHint}
-                            />
-                          </Field>
-                        </div>
-                      </section>
-                    ),
-                )}
-                {data.questions.map((q) => {
-                  const targets =
-                    q.scope === "household" ? [data.guests[0]] : data.guests;
-                  return targets.map((g) => {
-                    const relevant = responses.filter(
-                      (r) => q.scope === "household" || r.guest_id === g.id,
-                    );
-                    if (
-                      q.condition === "attending" &&
-                      !relevant.some((r) => r.attending)
-                    )
-                      return null;
-                    const value = relevant[0]?.answers[q.id] || "";
-                    return (
-                      <Field
-                        label={
-                          (q.scope === "person" ? g.name + " · " : "") +
-                          (locale === "es" && q.label_es ? q.label_es : q.label)
-                        }
-                        key={q.id + g.id}
-                      >
-                        {q.type === "select" || q.type === "yes-no" ? (
-                          <select
-                            required={q.required}
-                            value={value}
-                            onChange={(e) =>
-                              questionUpdate(
-                                g.id,
-                                q.id,
-                                e.target.value,
-                                q.scope === "household",
-                              )
-                            }
-                          >
-                            <option value="">
-                              {locale === "en"
-                                ? "Please choose"
-                                : "Elige una opción"}
-                            </option>
-                            {(q.type === "yes-no"
-                              ? ["Yes", "No"]
-                              : q.options
-                            ).map((o) => (
-                              <option key={o}>{o}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            required={q.required}
-                            type={q.type === "number" ? "number" : "text"}
-                            value={value}
-                            onChange={(e) =>
-                              questionUpdate(
-                                g.id,
-                                q.id,
-                                e.target.value,
-                                q.scope === "household",
-                              )
-                            }
-                          />
-                        )}
-                      </Field>
-                    );
-                  });
-                })}
-                {!responses.some((r) => r.attending) && (
-                  <p>
-                    {locale === "en"
-                      ? "We’ll miss you. Thank you for letting us know."
-                      : "Te echaremos de menos. Gracias por avisarnos."}
-                  </p>
-                )}
-              </div>
-            )}
-            <div className="form-actions">
-              {step === 1 && (
-                <button
-                  type="button"
-                  className="button outline"
-                  onClick={() => setStep(0)}
-                >
-                  {locale === "en" ? "Back" : "Volver"}
-                </button>
-              )}
-              <Submit pending={busy}>
-                {step === 0 ? c.next : c.save}
-                <Arrow />
-              </Submit>
-            </div>
-            <p className="form-note">
-              {locale === "en"
-                ? "Your draft is kept in this browser tab until you save."
-                : "Tu borrador se conserva en esta pestaña hasta que lo guardes."}
-            </p>
-          </form>
-        </>
-      )}
-    </Modal>
-  );
-}
-function UploadModal({
-  data,
-  locale,
-  onClose,
-  onSaved,
-}: {
-  data: GuestData;
-  locale: "en" | "es";
-  onClose: () => void;
-  onSaved: () => Promise<void>;
-}) {
-  const [busy, setBusy] = useState(false),
-    [message, setMessage] = useState(""),
-    [error, setError] = useState(false),
-    c = copy[locale];
-  const uploaded = useRef(new Set<string>());
-  const [progress, setProgress] = useState("");
-  return (
-    <Modal title={c.share} onClose={onClose}>
-      {message && <Notice error={error}>{message}</Notice>}
-      {progress && <p role="status">{progress}</p>}
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setMessage("");
-          const formElement = e.currentTarget;
-          const form = new FormData(formElement);
-          try {
-            const files = form.getAll("file") as File[];
-            for (const file of files) {
-              if (
-                !file.size ||
-                file.size > 10 * 1024 * 1024 ||
-                !["image/jpeg", "image/png", "image/webp"].includes(file.type)
-              )
-                throw new Error(
-                  locale === "en"
-                    ? `${file.name}: choose a JPG, PNG or WebP photo under 10 MB.`
-                    : `${file.name}: elige una foto JPG, PNG o WebP de menos de 10 MB.`,
-                );
-            }
-            for (const [index, file] of files.entries()) {
-              const signature = `${file.name}-${file.size}-${file.lastModified}`;
-              if (uploaded.current.has(signature)) continue;
-              setProgress(
-                locale === "en"
-                  ? `Sharing photo ${index + 1} of ${files.length}…`
-                  : `Compartiendo foto ${index + 1} de ${files.length}…`,
-              );
-              const body = new FormData();
-              body.set("file", await preparePhoto(file));
-              body.set("caption", String(form.get("caption") || ""));
-              const response = await fetch(
-                "/api/guest/photos?token=" + data.token,
-                { method: "POST", body },
-              );
-              const result = await response.json();
-              if (!response.ok) throw Error(result.error);
-              uploaded.current.add(signature);
-            }
-            await onSaved();
-            formElement.reset();
-            setError(false);
-            setMessage(
-              locale === "en"
-                ? "Your memories are with your hosts, ready for review."
-                : "Tus recuerdos están con los anfitriones, listos para revisar.",
-            );
-          } catch (e) {
-            setError(true);
-            setMessage((e as Error).message);
-          } finally {
-            setBusy(false);
-            setProgress("");
-          }
-        }}
-      >
-        <Field
-          label={locale === "en" ? "Choose your photos" : "Elige tus fotos"}
-          hint={c.uploadNote}
-        >
-          <input
-            type="file"
-            name="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            required
-          />
-        </Field>
-        <Field
-          label={
-            locale === "en"
-              ? "A little caption (optional)"
-              : "Una descripción (opcional)"
-          }
-        >
-          <textarea name="caption" maxLength={300} />
-        </Field>
-        <Submit pending={busy}>
-          {c.share}
-          <UploadSimpleIcon size={17} />
-        </Submit>
-      </form>
-    </Modal>
-  );
-}
-function ContactModal({
-  data,
-  locale,
-  onClose,
-  onSaved,
-}: {
-  data: GuestData;
-  locale: "en" | "es";
-  onClose: () => void;
-  onSaved: () => Promise<void>;
-}) {
-  const [selected, setSelected] = useState(data.guests[0].id),
-    [message, setMessage] = useState("");
-  const guest = data.guests.find((g) => g.id === selected)!;
-  return (
-    <Modal title={copy[locale].contact} onClose={onClose}>
-      {message && <Notice>{message}</Notice>}
-      <Field label={locale === "en" ? "Guest" : "Invitado"}>
-        <select value={selected} onChange={(e) => setSelected(e.target.value)}>
-          {data.guests.map((g) => (
-            <option value={g.id} key={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <form
-        key={selected}
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const f = new FormData(e.currentTarget);
-          try {
-            await api("/api/guest/contact?token=" + data.token, "POST", {
-              ...Object.fromEntries(f),
-              guest_id: selected,
-              consent: f.has("consent"),
-            });
-            await onSaved();
-            setMessage(
-              locale === "en" ? "Contact details saved." : "Datos guardados.",
-            );
-          } catch (e) {
-            setMessage((e as Error).message);
-          }
-        }}
-      >
-        <Field label="Email">
-          <input name="email" type="email" defaultValue={guest.email} />
-        </Field>
-        <Field label={locale === "en" ? "Phone" : "Teléfono"}>
-          <input name="phone" type="tel" defaultValue={guest.phone} />
-        </Field>
-        <Field label={locale === "en" ? "Postal address" : "Dirección postal"}>
-          <textarea name="address" defaultValue={guest.address} />
-        </Field>
-        <label className="check-label">
-          <input
-            type="checkbox"
-            name="consent"
-            defaultChecked={guest.consent}
-          />
-          {locale === "en"
-            ? "I agree to receive wedding updates by email or SMS. I can turn this off here at any time."
-            : "Acepto recibir novedades de la boda por email o SMS. Puedo desactivarlo aquí cuando quiera."}
-        </label>
-        <Submit>
-          {locale === "en" ? "Save details" : "Guardar datos"}
-          <CheckIcon size={17} />
-        </Submit>
-      </form>
-    </Modal>
   );
 }
