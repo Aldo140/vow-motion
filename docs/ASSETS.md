@@ -4,6 +4,9 @@ Generated with the built-in image-generation tool. These are fictional editorial
 - `public/images/riviera.webp`
 - `public/images/maison.webp`
 - `public/images/notte.webp`
+- `public/images/heritage.webp`
+- `public/images/modernist.webp`
+- `public/images/garden.webp`
 
 Final prompts:
 
@@ -15,5 +18,16 @@ Photorealistic original editorial image for fictional Maison wedding web design.
 
 ## Notte
 Photorealistic original editorial image for fictional Notte black-tie wedding website. Portrait 1024x1536. Intimate New York historic ballroom seen through dark doorway, a long elegant dinner table with white linen, tall taper candles glowing warmly, crystal coupe glasses, dark burgundy floral arrangement, champagne glow on black surroundings, subtle photographic film grain, cinematic fashion campaign composition, dramatic dark negative space upper portion. No people, text, logos or watermark.
+
+## Heritage
+Original portrait editorial image of a Cotswolds honey-stone manor doorway, worn steps, ivory roses, olive foliage and wrought iron gates in soft English afternoon light. Muted parchment, olive and antique gold. No people or text.
+
+## Modernist
+Original portrait editorial image of a Copenhagen gallery wedding reception with sculptural steel furniture, pale concrete, cobalt vases, burnt-orange calla lilies and geometric daylight. No people or text.
+
+## Garden
+Original portrait editorial image of a linen wedding table beneath mature olive trees in a Tuscan walled garden, white cosmos, terracotta pots and dappled afternoon light. No people or text.
+
+The six worlds have distinct images, shared across marketing, signup, studio and guest experiences through `src/lib/worlds.ts`.
 
 Optimized with Sharp to WebP. Fonts are self-hosted through Fontsource packages; see their package licenses. Icons use the Phosphor family. No fabricated social proof.
