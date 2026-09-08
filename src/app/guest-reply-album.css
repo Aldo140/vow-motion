@@ -16,11 +16,17 @@
   height: 100%;
   object-position: 32% 70%;
 }
+.reply-presentation {
+  position: relative;
+  max-width: 960px;
+  margin: auto;
+  isolation: isolate;
+}
 .reply-envelope {
   position: absolute;
-  inset: 64px max(calc((100% - 1000px) / 2), 8%) 80px;
+  inset: -18px -12px;
   z-index: -1;
-  transform: rotate(-5deg);
+  transform: rotate(-3deg);
   background: color-mix(in srgb, var(--guest-bg) 80%, var(--guest-accent));
   box-shadow: 0 6px 8px #0002;
 }
@@ -66,6 +72,15 @@
 .reply-cover .guest-crest {
   flex-shrink: 0;
   color: inherit;
+}
+.reply-cover .crest-initials b {
+  font-size: 20px;
+}
+.reply-cover .crest-initials i {
+  font-size: 11px;
+}
+.reply-cover .crest-initials {
+  gap: 2px;
 }
 .reply-cover-title {
   font-family: var(--guest-display);
@@ -490,8 +505,8 @@
     opacity: 0.32;
   }
   .reply-envelope {
-    inset: 40px 19px 95px;
-    transform: rotate(-4deg);
+    inset: -12px -6px;
+    transform: rotate(-2deg);
   }
   .reply-envelope > span {
     display: none;

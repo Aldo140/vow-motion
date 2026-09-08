@@ -132,6 +132,7 @@
   height: clamp(480px, 40vw, 580px);
 }
 .atelier-invitation .atelier-photo-caption {
+  visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -150,10 +151,10 @@
 .atelier-silk {
   position: absolute;
   z-index: 5;
-  width: clamp(130px, 15vw, 215px);
+  width: clamp(95px, 10vw, 145px);
   height: auto;
-  left: -6%;
-  top: 12%;
+  left: -8%;
+  top: 3%;
   transform: rotate(14deg);
   pointer-events: none;
   user-select: none;
@@ -257,8 +258,8 @@
     width: 170px;
   }
   .atelier-invitation .atelier-silk {
-    left: -7%;
-    top: 19%;
+    left: -9%;
+    top: 3%;
   }
   .atelier-invitation .hero-medallion {
     width: 76px;
