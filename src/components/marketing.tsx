@@ -8,6 +8,7 @@ import MarketingNavigation from "./marketing-navigation";
 import ProductShowcase from "./product-showcase";
 import ProductStory from "./product-story";
 import PlannerAtelier from "./planner-atelier";
+import StudioStory from "./studio-story";
 import { useGSAP } from "@gsap/react";
 import { CheckIcon } from "@phosphor-icons/react";
 import { Arrow, Brand } from "./ui";
@@ -241,7 +242,7 @@ export default function Marketing() {
           </div>
         </section>
         <FirstSteps />
-        <ProductStory variant="studio" />
+        <StudioStory />
         <PlannerAtelier />
         <section
           className="beginning-section section-pad"
