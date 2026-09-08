@@ -29,8 +29,10 @@ function PhoneFrame({
 export default function ProductShowcase() {
   return (
     <section
+      id="experience"
       className="product-showcase section-pad"
       aria-labelledby="journey-title"
+      tabIndex={-1}
     >
       <div className="journey-heading">
         <p className="collection-caption">What your guests actually receive</p>
