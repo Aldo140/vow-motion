@@ -158,7 +158,7 @@
   font: 9px/1.8 var(--sans, sans-serif);
   margin-top: 8px;
 }
-.invitation-envelope {
+.film-invitation-envelope {
   position: absolute;
   inset: 0;
   background: #ede5d4;
@@ -175,7 +175,7 @@
   background: #e0d5bf;
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
-.invitation-envelope > span {
+.film-invitation-envelope > span {
   margin-top: 30px;
   font-family: var(--serif);
   font-style: italic;
@@ -196,7 +196,7 @@
   font: 18px var(--serif);
   box-shadow: 0 7px 15px #46251d30;
 }
-.invitation-envelope > small {
+.film-invitation-envelope > small {
   font-size: 10px;
 }
 .product-feature-rsvp {
@@ -543,7 +543,7 @@
   .product-film-art *::after {
     animation: none !important;
   }
-  .invitation-envelope {
+  .film-invitation-envelope {
     display: none;
   }
   .preview-choice,

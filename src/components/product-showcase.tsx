@@ -97,7 +97,7 @@ export default function ProductShowcase() {
                   <b>Welcome dinner · Ceremony · Celebration</b>
                 </div>
               </div>
-              <div className="invitation-envelope">
+              <div className="film-invitation-envelope">
                 <div className="invitation-flap" />
                 <span>For Sophie &amp; James</span>
                 <b className="invitation-wax">E &amp; M</b>

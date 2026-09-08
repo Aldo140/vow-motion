@@ -121,6 +121,9 @@
   backface-visibility: hidden;
 }
 .envelope-open {
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
   position: absolute;
   z-index: 4;
   top: 87px;
@@ -156,6 +159,13 @@
   transition: transform 180ms var(--ease);
 }
 .envelope-open > span:last-child {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--guest-ink) 30%, transparent);
+  border-radius: 20px;
+  background: var(--guest-bg);
+  color: var(--guest-ink);
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -570,7 +580,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .envelope-open:hover .opening-wax-seal {
-    transform: translateY(-3px) rotate(-5deg);
+    filter: brightness(1.12);
   }
   .keepsake-front:hover > span {
     text-decoration: underline;

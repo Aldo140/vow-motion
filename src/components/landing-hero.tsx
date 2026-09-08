@@ -137,40 +137,6 @@ export default function LandingHero() {
           });
         },
       );
-      mm.add(
-        "(min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
-        () => {
-          const stage =
-            root.current?.querySelector<HTMLElement>(".hero-art-stage");
-          const assembly = root.current?.querySelector<HTMLElement>(
-            ".suite-pointer-plane",
-          );
-          if (!stage || !assembly) return;
-          const x = gsap.quickTo(assembly, "rotationX", {
-            duration: 0.9,
-            ease: "power3.out",
-          });
-          const y = gsap.quickTo(assembly, "rotationY", {
-            duration: 0.9,
-            ease: "power3.out",
-          });
-          const move = (event: PointerEvent) => {
-            const rect = stage.getBoundingClientRect();
-            x((0.5 - (event.clientY - rect.top) / rect.height) * 5);
-            y(((event.clientX - rect.left) / rect.width - 0.5) * 7);
-          };
-          const reset = () => {
-            x(0);
-            y(0);
-          };
-          stage.addEventListener("pointermove", move);
-          stage.addEventListener("pointerleave", reset);
-          return () => {
-            stage.removeEventListener("pointermove", move);
-            stage.removeEventListener("pointerleave", reset);
-          };
-        },
-      );
       return () => mm.revert();
     },
     { scope: root },
@@ -307,11 +273,16 @@ export default function LandingHero() {
                       {mood.initials[1]}
                     </span>
                   </button>
-                  <span className="suite-seal-hint" aria-hidden="true">
-                    {opened
-                      ? "A little preview of forever."
-                      : "Go on. Break the seal."}
-                  </span>
+                  <button
+                    type="button"
+                    className="suite-seal-hint"
+                    disabled={!ready}
+                    onClick={() => setOpened(!opened)}
+                    aria-expanded={opened}
+                    aria-controls="hero-invitation-preview"
+                  >
+                    {opened ? "Close preview" : "Open your invitation →"}
+                  </button>
                 </div>
               </div>
             </div>

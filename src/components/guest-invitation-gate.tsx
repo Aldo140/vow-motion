@@ -35,38 +35,7 @@ export default function GuestInvitationGate({
       .split(" & ")
       .map((name) => name[0])
       .join(" & ");
-  const { contextSafe } = useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add(
-        "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
-        () => {
-          const suite = root.current?.querySelector<HTMLElement>(
-            ".envelope-composition",
-          );
-          if (!suite) return;
-          const tilt = gsap.quickTo(suite, "rotationY", {
-            duration: 0.6,
-            ease: "power3.out",
-          });
-          const move = (event: PointerEvent) => {
-            if (opening.current) return;
-            const box = suite.getBoundingClientRect();
-            tilt(((event.clientX - box.left) / box.width - 0.5) * 5);
-          };
-          const reset = () => tilt(0);
-          suite.addEventListener("pointermove", move);
-          suite.addEventListener("pointerleave", reset);
-          return () => {
-            suite.removeEventListener("pointermove", move);
-            suite.removeEventListener("pointerleave", reset);
-          };
-        },
-      );
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
+  const { contextSafe } = useGSAP(() => {}, { scope: root });
 
   const open = contextSafe((animate: boolean) => {
     if (opening.current) return;
