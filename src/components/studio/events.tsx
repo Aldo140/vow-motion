@@ -10,6 +10,7 @@ import {
   PencilSimpleIcon,
   PlusIcon,
 } from "@phosphor-icons/react";
+import { TimezoneField } from "@/components/timezone-field";
 import { useState } from "react";
 
 export function EventsManager({ data, mutate, notify }: PanelProps) {
@@ -143,7 +144,23 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
           >
             <div className="form-grid">
               <Field label="Event title">
-                <input name="title" defaultValue={editing?.title} required />
+                <input
+                  name="title"
+                  list="event-title-ideas"
+                  defaultValue={editing?.title}
+                  required
+                />
+                <datalist id="event-title-ideas">
+                  {[
+                    "Wedding ceremony",
+                    "Reception",
+                    "Welcome drinks",
+                    "Rehearsal dinner",
+                    "Farewell brunch",
+                  ].map((title) => (
+                    <option key={title}>{title}</option>
+                  ))}
+                </datalist>
               </Field>
               <Field label="Spanish title">
                 <input name="title_es" defaultValue={editing?.title_es} />
@@ -175,29 +192,19 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
                   required
                 />
               </Field>
-              <Field
+              <TimezoneField
                 label="Venue timezone"
-                hint="Changing this keeps the times you entered in the selected timezone."
-              >
-                <input
-                  name="timezone"
-                  list="event-timezones"
-                  defaultValue={editing?.timezone || data.wedding.timezone}
-                  required
-                />
-              </Field>
-              <datalist id="event-timezones">
-                {Intl.supportedValuesOf("timeZone").map((zone) => (
-                  <option key={zone} value={zone} />
-                ))}
-              </datalist>
+                defaultValue={editing?.timezone || data.wedding.timezone}
+              />
               <Field label="Capacity">
                 <input
                   name="capacity"
                   type="number"
                   min={1}
                   max={10000}
-                  defaultValue={editing?.capacity || 200}
+                  defaultValue={
+                    editing?.capacity || Math.max(1, data.guests.length || 100)
+                  }
                   required
                 />
               </Field>
@@ -205,7 +212,10 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
                 <input name="venue" defaultValue={editing?.venue} required />
               </Field>
               <Field label="Address">
-                <input name="address" defaultValue={editing?.address} />
+                <input
+                  name="address"
+                  defaultValue={editing?.address ?? data.wedding.location}
+                />
               </Field>
             </div>
             <Field label="The details">
@@ -215,7 +225,24 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
               />
             </Field>
             <Field label="Dress code">
-              <input name="dress_code" defaultValue={editing?.dress_code} />
+              <input
+                name="dress_code"
+                list="dress-code-ideas"
+                defaultValue={editing?.dress_code}
+                placeholder="Choose a suggestion or write your own"
+              />
+              <datalist id="dress-code-ideas">
+                {[
+                  "Black tie",
+                  "Formal",
+                  "Cocktail attire",
+                  "Garden party",
+                  "Smart casual",
+                  "Come as you feel comfortable",
+                ].map((code) => (
+                  <option key={code}>{code}</option>
+                ))}
+              </datalist>
             </Field>
             <Field label="Who is invited?">
               <select

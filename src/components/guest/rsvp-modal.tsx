@@ -122,7 +122,14 @@ export function RsvpModal({
       className="guest-paper-dialog reply-dialog"
     >
       {step === 2 ? (
-        <div className="rsvp-success">
+        <div
+          className={
+            "rsvp-success reply-keepsake " +
+            (responses.some((r) => r.attending)
+              ? "reply-accepted"
+              : "reply-declined")
+          }
+        >
           <span className="success-mark">
             <CheckIcon size={30} />
           </span>
@@ -131,12 +138,26 @@ export function RsvpModal({
               ? "Thank you, " + data.guests[0].name.split(" ")[0] + "."
               : "Gracias, " + data.guests[0].name.split(" ")[0] + "."}
           </h3>
+          <p className="reply-keepsake-line">
+            {responses.some((r) => r.attending)
+              ? locale === "en"
+                ? "A place in the celebration. A date to look forward to."
+                : "Un lugar en la celebración. Una fecha para recordar."
+              : locale === "en"
+                ? "Sent with love. Received with understanding."
+                : "Enviado con cariño. Recibido con comprensión."}
+          </p>
           <p>
             {responses.some((r) => r.attending)
               ? c.savedDesc
               : locale === "en"
                 ? "We’ll miss you. Your reply has been shared with the couple—thank you for letting them know."
                 : "Te echaremos de menos. Hemos compartido tu respuesta con la pareja. Gracias por avisarnos."}
+          </p>
+          <p className="reply-saved-note">
+            {locale === "en"
+              ? "Your reply is saved. If your plans change, you can update it here."
+              : "Tu respuesta está guardada. Si tus planes cambian, puedes actualizarla aquí."}
           </p>
           {responses.some((r) => r.attending) && (
             <a

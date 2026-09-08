@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { TimezoneField } from "./timezone-field";
 import { useState } from "react";
 import { Brand, Arrow, Field, Submit, Notice, DemoButton, api } from "./ui";
 import { worlds } from "@/lib/worlds";
@@ -159,18 +160,7 @@ export default function AuthForm({
                     />
                   </Field>
                 </div>
-                <Field label="Wedding timezone">
-                  <select name="timezone">
-                    <option>Europe/Rome</option>
-                    <option>Europe/Paris</option>
-                    <option>Europe/London</option>
-                    <option>America/Edmonton</option>
-                    <option>America/Toronto</option>
-                    <option>America/New_York</option>
-                    <option>America/Mexico_City</option>
-                    <option>Asia/Kolkata</option>
-                  </select>
-                </Field>
+                <TimezoneField label="Wedding timezone" />
                 <fieldset className="world-pick">
                   <legend>Choose your design world</legend>
                   {worlds.map((w) => (

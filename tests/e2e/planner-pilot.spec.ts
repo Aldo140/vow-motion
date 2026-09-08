@@ -235,7 +235,15 @@ test("guided setup saves reviews and feedback from the active screen", async ({
   ).toBeDisabled();
   for (let i = 0; i < 4; i++) {
     await page
-      .getByRole("button", { name: "Mark reviewed and continue", exact: true })
+      .getByRole("button", {
+        name:
+          i === 0
+            ? "Save your experience and continue"
+            : i === 1
+              ? "Save settings and continue"
+              : "Mark reviewed and continue",
+        exact: true,
+      })
       .click();
     await expect(
       page.getByRole("region", { name: "Wedding setup" }),

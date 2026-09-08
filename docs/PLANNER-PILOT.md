@@ -2,6 +2,12 @@
 
 The Studio now has a Wedding setup route that walks through world selection, wedding details, events, guest import, and household preview. Review states persist per wedding. Publishing from this flow requires all five reviews and owner/partner access; planners prepare the wedding for the couple to publish.
 
+Setup now shows a five-chapter progress trail, contextual guidance and a small milestone acknowledgement for newly completed chapters. Saving the experience or essentials also completes that review and advances, with keyboard focus returned to the chapter heading. Completed reviews persist when returning later. The guided essentials screen leaves domain, billing and publishing controls in Settings and preserves existing privacy settings.
+
+Timezone choices are searchable by city/country or IANA name across registration, wedding settings and event editing, with an explicit device-timezone shortcut. RSVP deadlines offer four-, six- and eight-week shortcuts using calendar-date arithmetic. Event titles and dress codes offer editable suggestions, new event capacity starts from the guest count, and the wedding location pre-fills the address. An empty guest list includes a downloadable sample spreadsheet with household guidance.
+
+Guest RSVP confirmation acknowledges both acceptance and decline warmly, confirms that the reply was saved, and explains that plans can be updated. Acceptance adds a brief visual flourish; decline uses a quiet acknowledgement. Motion respects reduced-motion preferences. Milestones reflect actual completed reviews; there are no streak penalties, fake urgency or recurring engagement requirements.
+
 CSV import retains column mapping, household grouping and export. The review now shows household assignments, trims mapped values, flags repeated email addresses within a file, and requires an explicit decision about possible duplicates. Uploading an invalid replacement file clears the earlier preview.
 
 Guest preview allows household selection and shows included and excluded event counts. It creates a separate, one-hour preview token. Preview tokens use the normal server-side household visibility rules, reject all guest mutations, and do not record invitation opens.

@@ -2,17 +2,30 @@
 import { PageHeading, type PanelProps } from "@/components/studio/shared";
 import { Arrow, Field, Notice, Submit } from "@/components/ui";
 import { ArrowUpRightIcon, CheckIcon, PlusIcon } from "@phosphor-icons/react";
+import { TimezoneField } from "@/components/timezone-field";
+import { suggestedDeadline } from "@/lib/setup-assist";
 import { useState } from "react";
 
-export function SettingsManager({ data, mutate, notify }: PanelProps) {
+export function SettingsManager({
+  data,
+  mutate,
+  notify,
+  onSaved,
+}: PanelProps & { onSaved?: () => Promise<void> }) {
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [privacy, setPrivacy] = useState(data.wedding.privacy);
+  const [date, setDate] = useState(data.wedding.date);
+  const [deadline, setDeadline] = useState(data.wedding.rsvp_deadline);
   return (
     <>
       <PageHeading
         title="The details behind the day."
-        description="Your wedding essentials, privacy, and publishing controls."
+        description={
+          onSaved
+            ? "Just the essentials. You can fine-tune everything later."
+            : "Your wedding essentials, privacy, and publishing controls."
+        }
       />
       {error && <Notice error>{error}</Notice>}
       <form
@@ -29,7 +42,8 @@ export function SettingsManager({ data, mutate, notify }: PanelProps) {
               { ...data.wedding, ...form, privacy },
               "PATCH",
             );
-            notify("Wedding settings saved.");
+            if (!onSaved) notify("Wedding settings saved.");
+            await onSaved?.();
           } catch (e) {
             setError((e as Error).message);
           } finally {
@@ -51,18 +65,41 @@ export function SettingsManager({ data, mutate, notify }: PanelProps) {
                 <input
                   name="date"
                   type="date"
-                  defaultValue={data.wedding.date}
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                   required
                 />
               </Field>
-              <Field label="RSVP deadline">
+              <Field
+                label="RSVP deadline"
+                hint="Give yourself time to confirm meals and seating. Check your venue’s final-count deadline."
+              >
                 <input
                   name="rsvp_deadline"
                   type="date"
-                  defaultValue={data.wedding.rsvp_deadline}
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  max={date}
                   required
                 />
               </Field>
+            </div>
+            <div
+              className="setup-shortcuts"
+              aria-label="RSVP deadline suggestions"
+            >
+              <span>Set the reply deadline:</span>
+              {[4, 6, 8].map((weeks) => (
+                <button
+                  type="button"
+                  className="button outline small"
+                  key={weeks}
+                  disabled={!date}
+                  onClick={() => setDeadline(suggestedDeadline(date, weeks))}
+                >
+                  {weeks} weeks before
+                </button>
+              ))}
             </div>
             <Field label="Location">
               <input
@@ -71,13 +108,7 @@ export function SettingsManager({ data, mutate, notify }: PanelProps) {
                 required
               />
             </Field>
-            <Field label="Timezone">
-              <input
-                name="timezone"
-                defaultValue={data.wedding.timezone}
-                required
-              />
-            </Field>
+            <TimezoneField defaultValue={data.wedding.timezone} />
             <Field label="Default guest language">
               <select name="locale" defaultValue={data.wedding.locale}>
                 <option value="en">English</option>
@@ -86,145 +117,157 @@ export function SettingsManager({ data, mutate, notify }: PanelProps) {
             </Field>
           </div>
         </section>
-        <section>
-          <div>
-            <h2>Privacy & publishing</h2>
-            <p>
-              Personal events always require a guest invitation, even when your
-              story is public.
-            </p>
-          </div>
-          <div>
-            <Field label="Who can see your wedding story?">
-              <select
-                value={privacy}
-                onChange={(e) => setPrivacy(e.target.value)}
-              >
-                <option value="invite-only">
-                  Only guests with a personal link
-                </option>
-                <option value="public">
-                  Public story, private guest details
-                </option>
-                <option value="password">Password-protected story</option>
-              </select>
-            </Field>
-            {privacy === "password" && (
-              <Field
-                label="Wedding password"
-                hint="At least 8 characters. Leave blank to keep an existing password."
-              >
-                <input
-                  name="password"
-                  type="password"
-                  minLength={8}
-                  autoComplete="new-password"
-                />
+        {!onSaved && (
+          <section>
+            <div>
+              <h2>Privacy & publishing</h2>
+              <p>
+                Personal events always require a guest invitation, even when
+                your story is public.
+              </p>
+            </div>
+            <div>
+              <Field label="Who can see your wedding story?">
+                <select
+                  value={privacy}
+                  onChange={(e) => setPrivacy(e.target.value)}
+                >
+                  <option value="invite-only">
+                    Only guests with a personal link
+                  </option>
+                  <option value="public">
+                    Public story, private guest details
+                  </option>
+                  <option value="password">Password-protected story</option>
+                </select>
               </Field>
-            )}
-            <Field label="Experience mode">
-              <select name="status" defaultValue={data.wedding.status}>
-                <option value="draft">Draft</option>
-                <option value="published">
-                  Published · Before the wedding
-                </option>
-                <option value="memories">Memories · After the wedding</option>
-              </select>
-            </Field>
-            <p className="muted-copy">
-              Your story address:{" "}
-              <a href={"/w/" + data.wedding.slug}>
-                {"/w/" + data.wedding.slug} <ArrowUpRightIcon size={13} />
-              </a>
-            </p>
-          </div>
-        </section>
+              {privacy === "password" && (
+                <Field
+                  label="Wedding password"
+                  hint="At least 8 characters. Leave blank to keep an existing password."
+                >
+                  <input
+                    name="password"
+                    type="password"
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                </Field>
+              )}
+              <Field label="Experience mode">
+                <select name="status" defaultValue={data.wedding.status}>
+                  <option value="draft">Draft</option>
+                  <option value="published">
+                    Published · Before the wedding
+                  </option>
+                  <option value="memories">Memories · After the wedding</option>
+                </select>
+              </Field>
+              <p className="muted-copy">
+                Your story address:{" "}
+                <a href={"/w/" + data.wedding.slug}>
+                  {"/w/" + data.wedding.slug} <ArrowUpRightIcon size={13} />
+                </a>
+              </p>
+            </div>
+          </section>
+        )}
+        {onSaved && (
+          <p className="muted-copy">
+            Your existing privacy settings are kept. Publishing comes after your
+            household preview; domains and billing can wait.
+          </p>
+        )}
         <div className="form-actions">
           <Submit pending={busy}>
-            Save settings
+            {onSaved ? "Save settings and continue" : "Save settings"}
             <CheckIcon size={17} />
           </Submit>
         </div>
       </form>
-      <section className="settings-extra">
-        <div>
-          <h2>A name of your own.</h2>
-          <p className="muted-copy">
-            Connect a custom domain when deployed. DNS verification and SSL are
-            managed through your hosting provider.
-          </p>
-        </div>
-        <div>
-          {data.domains.map((d) => (
-            <div className="report-line" key={d.id}>
-              <b>{d.hostname}</b>
-              <span className="status pending">
-                {d.status === "pending" ? "Awaiting DNS setup" : d.status}
-              </span>
+      {!onSaved && (
+        <>
+          <section className="settings-extra">
+            <div>
+              <h2>A name of your own.</h2>
+              <p className="muted-copy">
+                Connect a custom domain when deployed. DNS verification and SSL
+                are managed through your hosting provider.
+              </p>
             </div>
-          ))}
-          <form
-            className="inline-form"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              try {
-                await mutate(
-                  "domains",
-                  Object.fromEntries(new FormData(e.currentTarget)),
-                );
-                notify(
-                  "Domain saved. See deployment instructions for DNS setup.",
-                );
-              } catch (e) {
-                notify((e as Error).message);
-              }
-            }}
-          >
-            <input
-              name="hostname"
-              aria-label="Custom domain"
-              placeholder="elenaandmatteo.com"
-              required
-            />
-            <button className="button outline">
-              Add domain
-              <PlusIcon size={16} />
-            </button>
-          </form>
-        </div>
-      </section>
-      <section className="settings-extra">
-        <div>
-          <h2>Your collection</h2>
-          <p className="muted-copy">
-            {data.capabilities.billing
-              ? "No card data is stored here. Checkout opens securely with Stripe."
-              : "Your wedding tools are available without checkout in this release. No card is required and no charge will be made."}
-          </p>
-        </div>
-        <div className="billing-buttons">
-          {data.capabilities.billing &&
-            ["essential", "signature", "bespoke"].map((plan) => (
-              <button
-                key={plan}
-                className="button outline"
-                onClick={async () => {
+            <div>
+              {data.domains.map((d) => (
+                <div className="report-line" key={d.id}>
+                  <b>{d.hostname}</b>
+                  <span className="status pending">
+                    {d.status === "pending" ? "Awaiting DNS setup" : d.status}
+                  </span>
+                </div>
+              ))}
+              <form
+                className="inline-form"
+                onSubmit={async (e) => {
+                  e.preventDefault();
                   try {
-                    const r = (await mutate("checkout", { plan })) as {
-                      url: string;
-                    };
-                    window.location.href = r.url;
+                    await mutate(
+                      "domains",
+                      Object.fromEntries(new FormData(e.currentTarget)),
+                    );
+                    notify(
+                      "Domain saved. See deployment instructions for DNS setup.",
+                    );
                   } catch (e) {
                     notify((e as Error).message);
                   }
                 }}
               >
-                {plan}
-                <Arrow diagonal size={16} />
-              </button>
-            ))}
-        </div>
-      </section>
+                <input
+                  name="hostname"
+                  aria-label="Custom domain"
+                  placeholder="elenaandmatteo.com"
+                  required
+                />
+                <button className="button outline">
+                  Add domain
+                  <PlusIcon size={16} />
+                </button>
+              </form>
+            </div>
+          </section>
+          <section className="settings-extra">
+            <div>
+              <h2>Your collection</h2>
+              <p className="muted-copy">
+                {data.capabilities.billing
+                  ? "No card data is stored here. Checkout opens securely with Stripe."
+                  : "Your wedding tools are available without checkout in this release. No card is required and no charge will be made."}
+              </p>
+            </div>
+            <div className="billing-buttons">
+              {data.capabilities.billing &&
+                ["essential", "signature", "bespoke"].map((plan) => (
+                  <button
+                    key={plan}
+                    className="button outline"
+                    onClick={async () => {
+                      try {
+                        const r = (await mutate("checkout", { plan })) as {
+                          url: string;
+                        };
+                        window.location.href = r.url;
+                      } catch (e) {
+                        notify((e as Error).message);
+                      }
+                    }}
+                  >
+                    {plan}
+                    <Arrow diagonal size={16} />
+                  </button>
+                ))}
+            </div>
+          </section>
+        </>
+      )}
     </>
   );
 }

@@ -48,6 +48,31 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
           Add guest
         </button>
       </PageHeading>
+      {!data.guests.length && (
+        <section className="pilot-panel">
+          <h2>Start with your first household.</h2>
+          <p>
+            Add guests individually or bring your existing spreadsheet. Guests
+            with the same household name share one invitation.
+          </p>
+          <a
+            className="text-link"
+            download="wedding-guests-template.csv"
+            href={
+              "data:text/csv;charset=utf-8," +
+              encodeURIComponent(
+                "name,email,household,phone\nAlex Example,alex@example.com,Example household,\nSam Example,,Example household,\n",
+              )
+            }
+          >
+            Download a sample guest spreadsheet
+          </a>
+          <p className="muted-copy">
+            Replace the example rows with your guests. You can review columns
+            and duplicates before anything is imported.
+          </p>
+        </section>
+      )}
       <div className="table-toolbar">
         <div className="filter-tabs">
           {[

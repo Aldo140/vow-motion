@@ -39,7 +39,7 @@ test("couples edit venue times, review message audiences, and navigate without a
   await page.getByLabel("Ends", { exact: true }).fill("2027-06-20T01:00");
   await page
     .getByLabel("Venue timezone", { exact: true })
-    .fill("America/New_York");
+    .selectOption("America/New_York");
   await page.getByLabel("Venue", { exact: true }).fill("The Drawing Room");
   await page.screenshot({ path: "artifacts/refined-event-editor.png" });
   await page.getByRole("button", { name: "Save event" }).click();

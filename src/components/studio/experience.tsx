@@ -47,7 +47,9 @@ export const OPENINGS: {
   },
 ];
 
-export function ExperienceManager(props: PanelProps) {
+export function ExperienceManager(
+  props: PanelProps & { onSaved?: () => Promise<void> },
+) {
   const { data, mutate, notify } = props;
   const [selected, setSelected] = useState<World>(data.wedding.world),
     [opening, setOpening] = useState<Opening>(
@@ -73,7 +75,8 @@ export function ExperienceManager(props: PanelProps) {
                 { ...data.wedding, world: selected, opening, story },
                 "PATCH",
               );
-              notify("Your wedding identity is saved.");
+              if (!props.onSaved) notify("Your wedding identity is saved.");
+              await props.onSaved?.();
             } catch (e) {
               notify((e as Error).message);
             } finally {
@@ -81,7 +84,11 @@ export function ExperienceManager(props: PanelProps) {
             }
           }}
         >
-          {busy ? "Saving…" : "Save your experience"}
+          {busy
+            ? "Saving…"
+            : props.onSaved
+              ? "Save your experience and continue"
+              : "Save your experience"}
           <CheckIcon size={17} />
         </button>
       </PageHeading>

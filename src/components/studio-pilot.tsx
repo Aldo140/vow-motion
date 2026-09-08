@@ -6,7 +6,8 @@ import {
 } from "@/components/studio/shared";
 import { planningActions, setupSteps } from "@/lib/pilot";
 import Link from "next/link";
-import { useState } from "react";
+import { setupEncouragement } from "@/lib/setup-assist";
+import { useRef, useState } from "react";
 import { EventsManager, GuestManager } from "./studio-guests";
 import { ExperienceManager, SettingsManager } from "./studio-tools";
 import { Field, Modal, Notice, Submit } from "./ui";
@@ -20,14 +21,35 @@ export function SetupManager(props: PanelProps) {
     ),
   );
   const [busy, setBusy] = useState(false);
+  const [milestone, setMilestone] = useState("");
+  const heading = useRef<HTMLHeadingElement>(null);
   const step = steps[index];
+  const completed = steps.filter((s) => s.done).length;
+  const complete = async () => {
+    await props.mutate("setup", { step: step.id, done: true }, "PATCH");
+    if (!step.done) setMilestone(setupEncouragement[index].reward);
+    setIndex(Math.min(4, index + 1));
+    requestAnimationFrame(() => heading.current?.focus());
+  };
   const reviewed = steps.every((s) => s.done);
   return (
     <>
       <section className="pilot-panel" aria-label="Wedding setup">
-        <h2>Your first wedding, one step at a time.</h2>
+        <span className="eyebrow">YOUR CELEBRATION, TAKING SHAPE</span>
+        <h2 ref={heading} tabIndex={-1}>
+          {reviewed
+            ? "Ready for your people."
+            : setupEncouragement[index].title}
+        </h2>
+        <p>{setupEncouragement[index].hint}</p>
+        <progress
+          className="setup-progress"
+          aria-label="Wedding setup progress"
+          max={steps.length}
+          value={completed}
+        />
         <p>
-          Save your changes in each section, then mark it reviewed.{" "}
+          Your completed steps stay saved. Return whenever it suits you.{" "}
           {steps.filter((s) => s.done).length} of {steps.length} reviewed.
         </p>
         <nav className="setup-steps" aria-label="Setup steps">
@@ -43,9 +65,26 @@ export function SetupManager(props: PanelProps) {
           ))}
         </nav>
       </section>
+      {milestone && (
+        <div className="setup-reward" role="status">
+          <span aria-hidden="true">✧</span>
+          <div>
+            <b>A little closer.</b>
+            <p>{milestone}</p>
+          </div>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Dismiss milestone"
+            onClick={() => setMilestone("")}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div key={step.id}>
-        {index === 0 && <ExperienceManager {...props} />}
-        {index === 1 && <SettingsManager {...props} />}
+        {index === 0 && <ExperienceManager {...props} onSaved={complete} />}
+        {index === 1 && <SettingsManager {...props} onSaved={complete} />}
         {index === 2 && <EventsManager {...props} />}
         {index === 3 && <GuestManager {...props} />}
         {index === 4 && (
@@ -61,33 +100,29 @@ export function SetupManager(props: PanelProps) {
         )}
       </div>
       <section className="pilot-panel setup-completion">
-        <button
-          className="button primary"
-          disabled={
-            busy ||
-            props.data.role === "viewer" ||
-            (index === 2 && !props.data.events.length) ||
-            (index >= 3 && !props.data.guests.length)
-          }
-          onClick={async () => {
-            setBusy(true);
-            try {
-              await props.mutate(
-                "setup",
-                { step: step.id, done: true },
-                "PATCH",
-              );
-              setIndex(Math.min(4, index + 1));
-              props.notify("Step reviewed.");
-            } catch (e) {
-              props.notify((e as Error).message);
-            } finally {
-              setBusy(false);
+        {index >= 2 && (
+          <button
+            className="button primary"
+            disabled={
+              busy ||
+              props.data.role === "viewer" ||
+              (index === 2 && !props.data.events.length) ||
+              (index >= 3 && !props.data.guests.length)
             }
-          }}
-        >
-          Mark reviewed{index < 4 ? " and continue" : ""}
-        </button>
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await complete();
+              } catch (e) {
+                props.notify((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Mark reviewed{index < 4 ? " and continue" : ""}
+          </button>
+        )}
         <p>
           {reviewed
             ? "Your setup review is complete."
