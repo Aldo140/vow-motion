@@ -637,3 +637,53 @@
     margin-top: 4px;
   }
 }
+
+/* Keep the FAQ and its stationery balanced on wide screens. */
+@media (min-width: 1100px) {
+  .marketing .offer-faq {
+    max-width: 1280px;
+    padding: 64px 40px 36px;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 80px;
+    align-items: center;
+  }
+  .marketing .offer-faq h2 {
+    font-size: 43px;
+    line-height: 1.14;
+    max-width: 17ch;
+    margin-bottom: 18px;
+    text-wrap: balance;
+  }
+  .marketing .offer-faq .offer-note {
+    max-width: 36ch;
+    font-size: 13px;
+    margin-top: 0;
+  }
+  .marketing .faq-keepsake {
+    width: 285px;
+    margin: 28px 0 8px;
+    padding: 8px 86px 18px 7px;
+  }
+  .marketing .faq-keepsake > img {
+    height: 170px;
+  }
+  .marketing .faq-paper-note {
+    width: 160px;
+    padding: 19px 15px;
+  }
+  .marketing .faq-paper-note strong {
+    font-size: 20px;
+    white-space: nowrap;
+  }
+  .marketing .offer-questions {
+    border-top: 1px solid var(--line);
+  }
+  .marketing .offer-questions summary {
+    padding-block: 24px;
+    font-size: 15px;
+  }
+  .marketing .memory-bridge {
+    padding-top: 28px;
+    padding-bottom: 40px;
+  }
+}
