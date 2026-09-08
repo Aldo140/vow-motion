@@ -5469,3 +5469,15 @@ td:last-child {
   line-height: 1.6;
   color: var(--muted);
 }
+
+/* The typeset set sits above the spreadsheets, because it is the one a
+   supplier is actually handed. */
+.day-document-set {
+  display: block;
+  margin-top: 22px;
+  border-color: var(--olive);
+  background: var(--olive-light);
+}
+.day-document-set p {
+  max-width: 62ch;
+}

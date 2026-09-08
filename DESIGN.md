@@ -111,3 +111,11 @@ A planner exports the guest list and then rebuilds the same three documents by h
 The kitchen sheet gives the caterer covers by meal, then every dietary requirement carried beside the table it must reach, then covers per table so the room can be plated. The shuttle manifest gives the transport company each rider by household and the number of seats required, read from the answers guests actually gave rather than a separate list. The place cards give the calligrapher and the venue every attending guest alphabetically, with table, meal and dietary note.
 
 They are CSV because that is what a supplier can open, and the existing guest report is untouched. A test reconciles all three against the guest list they came from: covers must equal the people who said yes, every dietary line must name a table, the seat count must match the riders listed, and the place cards must name everyone attending.
+
+## The paperwork, set as paper
+
+The spreadsheets a supplier opens are the right format for a supplier, and the wrong artefact to hand somebody. `/documents/[wedding]` sets the same information as a printed book in the wedding's own type: a cover carrying the crest, the couple and the four figures the rest of the set is built from; the order of the day; the kitchen sheet; the seating plan; the shuttle manifest; the place cards.
+
+On screen the sheets are laid on a grey ground at the proportion of the paper they will be printed on, so a planner sees pages rather than a scrolling report. In print the interface disappears, the ground turns white, each sheet breaks to its own page, table heads repeat across pages, tables and place-card entries refuse to split, and the running foot rejoins the flow so it cannot strand itself mid-page. The world's accent picks out what must not be missed: the allergy, the dress code, the section a sheet belongs to.
+
+Every sheet but the cover carries the couple, the date and the place along its foot, because a loose page on a kitchen pass has to say which wedding it belongs to. Access is the Studio's own: a signed-out visitor holding the link, or somebody with an unrelated account, is sent away rather than shown a guest list.

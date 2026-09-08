@@ -795,6 +795,23 @@ function Insights({ data }: PanelProps) {
             asks for. They open in any spreadsheet.
           </p>
         </div>
+        <a
+          className="day-document day-document-set"
+          href={`/documents/${data.wedding.id}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span className="day-document-for">The whole set, typeset</span>
+          <h3>
+            Print the day-of book
+            <Arrow diagonal size={15} />
+          </h3>
+          <p>
+            Cover, order of the day, kitchen sheet, seating plan, shuttle
+            manifest and place cards, set in your wedding&rsquo;s own type and
+            ready for the printer.
+          </p>
+        </a>
         <div className="day-document-list">
           {(
             [

@@ -19,6 +19,7 @@ import "./guest-reply-album.css";
 import "./guest-continuity.css";
 import "./guest-seal-gate.css";
 import "./guest-faqs.css";
+import "./documents.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

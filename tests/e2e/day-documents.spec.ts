@@ -87,12 +87,16 @@ test("a planner can reach each document from the Studio", async ({ page }) => {
   await page.request.post("/api/demo");
   const weddings = await (await page.request.get("/api/weddings")).json();
   await page.goto(`/studio/analytics?wid=${weddings[0].id}`);
-  const documents = page.locator(".day-document");
-  await expect(documents).toHaveCount(3);
-  // Each is labelled by the supplier who receives it.
-  await expect(page.locator(".day-document-for").first()).toHaveText(
-    "For the caterer",
+  // Three spreadsheets for suppliers, plus the typeset set they come from.
+  await expect(page.locator(".day-document")).toHaveCount(4);
+  await expect(page.locator(".day-document-set")).toHaveAttribute(
+    "href",
+    /^\/documents\//,
   );
+  // Each spreadsheet is labelled by the supplier who receives it.
+  await expect(
+    page.locator(".day-document-list .day-document-for").first(),
+  ).toHaveText("For the caterer");
   for (const sheet of ["kitchen", "shuttle", "placecards"])
     await expect(
       page.locator(`.day-document[href*="sheet=${sheet}"]`),
