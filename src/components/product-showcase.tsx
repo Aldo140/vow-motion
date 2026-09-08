@@ -37,8 +37,7 @@ export default function ProductShowcase() {
       <div className="journey-heading">
         <p className="collection-caption">What your guests actually receive</p>
         <h2 id="journey-title">
-          From the first tap
-          <br />
+          <span>From the first tap</span>
           <em>to the final yes.</em>
         </h2>
         <p>
