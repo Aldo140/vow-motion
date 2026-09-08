@@ -53,6 +53,32 @@
   min-height: 650px;
   perspective: 1400px;
 }
+.journey-playing {
+  position: absolute;
+  z-index: 8;
+  top: 1%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border: 1px solid #f4ecd930;
+  border-radius: 999px;
+  background: #102a22c7;
+  color: #e7ddc8;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+.journey-playing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e2bd84;
+  box-shadow: 0 0 0 4px #e2bd8424;
+  animation: journey-live 2s ease-in-out infinite;
+}
 .journey-photo {
   position: absolute;
   overflow: hidden;
@@ -179,6 +205,13 @@
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  animation: journey-open 12s ease-in-out infinite;
+}
+.phone-open i {
+  display: inline-block;
+  margin-left: 5px;
+  font-style: normal;
+  animation: journey-arrow 12s ease-in-out infinite;
 }
 .phone-events {
   min-height: 100%;
@@ -224,6 +257,24 @@
   padding: 17px 16px;
   border-bottom: 1px solid #bfc4b9;
 }
+.phone-event-row > div {
+  min-width: 0;
+  flex: 1;
+}
+.phone-event-answer {
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #294239;
+  color: #f5efdf;
+  font-size: 6px;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transform: scale(0.75);
+  animation: journey-answer 12s ease-in-out infinite;
+}
+.phone-event-answer-late {
+  animation-delay: 0.65s;
+}
 .phone-event-row b,
 .phone-event-row small {
   display: block;
@@ -238,6 +289,44 @@
   font-size: 7px;
   letter-spacing: 0.04em;
 }
+.phone-meal-question {
+  padding: 13px 16px 15px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: journey-question 12s ease-in-out infinite;
+}
+.phone-meal-question > span,
+.phone-meal-question > b {
+  display: block;
+}
+.phone-meal-question > span {
+  color: #6a776f;
+  font-size: 6px;
+  letter-spacing: 0.13em;
+}
+.phone-meal-question > b {
+  margin: 4px 0 8px;
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 400;
+}
+.phone-meal-question > div {
+  display: flex;
+  gap: 5px;
+}
+.phone-meal-question i {
+  padding: 5px 7px;
+  border: 1px solid #a8afa8;
+  border-radius: 999px;
+  font-size: 6px;
+  font-style: normal;
+}
+.phone-meal-question .phone-meal-selected {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  animation: journey-meal 12s ease-in-out infinite;
+}
 .journey-reply-card {
   position: absolute;
   z-index: 5;
@@ -249,6 +338,7 @@
   color: #294239;
   box-shadow: 0 20px 45px #07191257;
   transform: rotate(4deg);
+  animation: journey-reply 12s ease-in-out infinite;
 }
 .journey-check {
   width: 40px;
@@ -259,6 +349,7 @@
   border-radius: 50%;
   background: #294239;
   color: #f1eadb;
+  animation: journey-check 12s ease-in-out infinite;
 }
 .journey-reply-card small {
   font-size: 7px;
@@ -273,6 +364,24 @@
 .journey-reply-card p {
   font-size: 9px;
   line-height: 1.6;
+}
+.journey-synced {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #29423924;
+  color: #66766f;
+  font-size: 7px;
+  letter-spacing: 0.04em;
+}
+.journey-synced i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4b806c;
+  box-shadow: 0 0 0 3px #4b806c1f;
 }
 .journey-seal {
   position: absolute;
@@ -320,6 +429,13 @@
 }
 .journey-steps > div {
   padding: 24px 30px 0 0;
+  animation: journey-step 12s ease-in-out infinite;
+}
+.journey-steps > div:nth-child(2) {
+  animation-delay: 0.8s;
+}
+.journey-steps > div:nth-child(3) {
+  animation-delay: 1.6s;
 }
 .journey-steps span {
   display: block;
@@ -338,6 +454,126 @@
   color: #d8d0c1;
   font-size: 11px;
   line-height: 1.65;
+}
+@keyframes journey-live {
+  50% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 7px #e2bd8408;
+  }
+}
+@keyframes journey-open {
+  0%,
+  8%,
+  100% {
+    background: transparent;
+    color: #274038;
+  }
+  13%,
+  24% {
+    background: #294239;
+    color: #f5efdf;
+  }
+}
+@keyframes journey-arrow {
+  0%,
+  8%,
+  100% {
+    transform: translateX(0);
+  }
+  13%,
+  24% {
+    transform: translateX(4px);
+  }
+}
+@keyframes journey-answer {
+  0%,
+  27%,
+  100% {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  34%,
+  84% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  92% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes journey-question {
+  0%,
+  39%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  47%,
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  92% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+@keyframes journey-meal {
+  0%,
+  50%,
+  100% {
+    background: transparent;
+    color: #294239;
+  }
+  57%,
+  85% {
+    border-color: #294239;
+    background: #294239;
+    color: #f5efdf;
+  }
+}
+@keyframes journey-reply {
+  0%,
+  57%,
+  100% {
+    opacity: 0;
+    clip-path: inset(100% 0 0 0);
+  }
+  66%,
+  87% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  94% {
+    opacity: 0;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes journey-check {
+  0%,
+  62%,
+  100% {
+    transform: scale(0.65) rotate(-12deg);
+  }
+  68%,
+  87% {
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes journey-step {
+  0%,
+  100% {
+    opacity: 0.58;
+  }
+  12%,
+  42% {
+    opacity: 1;
+  }
+  55%,
+  88% {
+    opacity: 0.7;
+  }
 }
 @media (hover: hover) and (pointer: fine) {
   .journey-phone,
@@ -437,6 +673,9 @@
     padding: 11px;
     gap: 8px;
   }
+  .phone-meal-question {
+    padding: 9px 11px 11px;
+  }
   .journey-reply-card {
     right: 0;
     bottom: 3%;
@@ -480,5 +719,25 @@
   .journey-phone,
   .journey-reply-card {
     transition: none;
+  }
+  .journey-playing span,
+  .phone-open,
+  .phone-open i,
+  .phone-event-answer,
+  .phone-meal-question,
+  .phone-meal-selected,
+  .journey-reply-card,
+  .journey-check {
+    animation: none;
+  }
+  .journey-steps > div {
+    animation: none;
+  }
+  .phone-event-answer,
+  .phone-meal-question,
+  .journey-reply-card {
+    opacity: 1;
+    clip-path: none;
+    transform: none;
   }
 }

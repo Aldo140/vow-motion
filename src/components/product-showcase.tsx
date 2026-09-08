@@ -44,11 +44,18 @@ export default function ProductShowcase() {
           reply made for their household.
         </p>
         <Link href="/demo/riviera" className="text-link">
-          Try the guest journey <ArrowUpRightIcon size={17} />
+          Try the RSVP yourself <ArrowUpRightIcon size={17} />
         </Link>
       </div>
 
-      <div className="journey-collage">
+      <div
+        className="journey-collage"
+        role="img"
+        aria-label="An animated preview of the guest experience"
+      >
+        <div className="journey-playing" aria-hidden="true">
+          <span /> Live guest preview
+        </div>
         <div className="journey-photo journey-photo-primary">
           <Image
             src="/images/hero-riviera.webp"
@@ -74,7 +81,9 @@ export default function ProductShowcase() {
               Matteo
             </h3>
             <p>19 · 06 · 27</p>
-            <span className="phone-open">Open your invitation</span>
+            <span className="phone-open">
+              Open your invitation <i aria-hidden="true">→</i>
+            </span>
           </div>
         </PhoneFrame>
 
@@ -99,12 +108,26 @@ export default function ProductShowcase() {
                 <b>Welcome dinner</b>
                 <small>Friday · 7:00 PM</small>
               </div>
+              <span className="phone-event-answer">Going</span>
             </div>
             <div className="phone-event-row">
               <MapPinIcon size={15} />
               <div>
                 <b>The ceremony</b>
                 <small>Villa Balbianello</small>
+              </div>
+              <span className="phone-event-answer phone-event-answer-late">
+                Going
+              </span>
+            </div>
+            <div className="phone-meal-question">
+              <span>DINNER</span>
+              <b>Choose a meal</b>
+              <div>
+                <i>Garden</i>
+                <i className="phone-meal-selected">
+                  Seabass <CheckIcon size={9} weight="bold" />
+                </i>
               </div>
             </div>
           </div>
@@ -117,6 +140,9 @@ export default function ProductShowcase() {
           <small>REPLY RECEIVED</small>
           <h3>We’ll be there.</h3>
           <p>Sophie and James are attending the ceremony and dinner.</p>
+          <span className="journey-synced">
+            <i aria-hidden="true" /> Synced to your Studio
+          </span>
         </div>
 
         <div className="journey-seal" aria-hidden="true">
@@ -143,7 +169,7 @@ export default function ProductShowcase() {
         <div>
           <span>03</span>
           <b>They reply</b>
-          <p>Attendance, meals and notes return to your Studio.</p>
+          <p>Attendance, meals and notes arrive organized in your Studio.</p>
         </div>
       </div>
     </section>
