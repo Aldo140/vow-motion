@@ -6,9 +6,10 @@ import LandingHero from "./landing-hero";
 import { FirstSteps, OfferQuestions } from "./marketing-offer";
 import MarketingNavigation from "./marketing-navigation";
 import ProductShowcase from "./product-showcase";
+import ProductStory from "./product-story";
 import { useGSAP } from "@gsap/react";
-import { CheckIcon, ArrowDownIcon } from "@phosphor-icons/react";
-import { Brand, Arrow, DemoButton } from "./ui";
+import { CheckIcon } from "@phosphor-icons/react";
+import { Arrow, Brand } from "./ui";
 import { worlds } from "@/lib/worlds";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 export default function Marketing() {
@@ -19,20 +20,37 @@ export default function Marketing() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.fromTo(
-          ".letter-mark",
-          { rotation: -12 },
-          {
-            rotation: 12,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".love-letter",
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1,
-            },
+        gsap.from(".journey-phone-invite", {
+          y: 24,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".journey-collage",
+            start: "top bottom",
+            end: "bottom center",
+            scrub: true,
           },
-        );
+        });
+        gsap.from(".journey-phone-events", {
+          y: 45,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".journey-collage",
+            start: "top bottom",
+            end: "bottom center",
+            scrub: true,
+          },
+        });
+        gsap.from(".journey-reply-card", {
+          opacity: 0,
+          y: 20,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".journey-collage",
+            start: "center 80%",
+            end: "bottom 70%",
+            scrub: true,
+          },
+        });
         gsap.fromTo(
           ".beginning-invitation",
           { rotation: -7, y: 35 },
@@ -44,21 +62,10 @@ export default function Marketing() {
               trigger: ".beginning-section",
               start: "top bottom",
               end: "bottom top",
-              scrub: 1,
+              scrub: true,
             },
           },
         );
-        gsap.from(".studio-specimen", {
-          y: 25,
-          rotation: -4,
-          duration: 0.9,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: ".platform-layout",
-            start: "top 80%",
-            once: true,
-          },
-        });
       });
       return () => mm.revert();
     },
@@ -69,32 +76,7 @@ export default function Marketing() {
       <MarketingNavigation />
       <main id="main">
         <LandingHero />
-        <section className="love-letter">
-          <div className="letter-mark" aria-hidden="true">
-            V<i>&</i>M
-          </div>
-          <div>
-            <p className="letter-salutation">Dear almost-married,</p>
-            <h2>
-              You’re inviting them
-              <br />
-              into <em>your story.</em>
-            </h2>
-            <p>
-              Give them that first flutter of excitement. A place that feels
-              like the two of you, with every thoughtful detail already waiting.
-            </p>
-          </div>
-          <div className="letter-aside">
-            <span>
-              A lovely first impression.
-              <br />A much easier everything after.
-            </span>
-            <a href="#worlds" className="text-link">
-              Find your feeling <ArrowDownIcon size={18} />
-            </a>
-          </div>
-        </section>
+        <ProductStory variant="invitation" />
         <ProductShowcase />
         <section className="collection section-pad" id="worlds" tabIndex={-1}>
           <div className="section-heading">
@@ -183,91 +165,7 @@ export default function Marketing() {
           </div>
         </section>
         <FirstSteps />
-        <section
-          className="platform-story section-pad"
-          id="studio"
-          tabIndex={-1}
-        >
-          <div className="platform-title">
-            <p className="collection-caption">
-              Behind every effortless celebration
-            </p>
-            <h2>
-              A lot goes into a wedding.
-              <br />
-              <em>Let this part be easy.</em>
-            </h2>
-          </div>
-          <div className="platform-layout">
-            <div className="studio-specimen">
-              <div className="mini-nav">
-                <Brand />
-                <span>YOUR WEDDING STUDIO</span>
-              </div>
-              <div className="mini-body">
-                <div className="mini-sidebar">
-                  <b>Overview</b>
-                  <span>Guest list</span>
-                  <span>Your experience</span>
-                  <span>Invitations</span>
-                  <span>Seating</span>
-                </div>
-                <div className="mini-main">
-                  <small>YOUR PEOPLE, ALL IN ONE PLACE</small>
-                  <h3>Room for everyone.</h3>
-                  <div className="mini-stat">
-                    <strong>24</strong>
-                    <span>demo guests</span>
-                    <strong>14</strong>
-                    <span>ready to celebrate</span>
-                  </div>
-                  {["Isabella Rossi", "James Bennett", "Sophie Chen"].map(
-                    (n) => (
-                      <div className="mini-row" key={n}>
-                        <span className="avatar">
-                          {n
-                            .split(" ")
-                            .map((s) => s[0])
-                            .join("")}
-                        </span>
-                        {n}
-                        <span className="status attending">Attending</span>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-              <span className="specimen-label">
-                A glimpse inside your Studio · Demo data
-              </span>
-            </div>
-            <div className="platform-features">
-              {[
-                [
-                  "Your people. One guest list.",
-                  "Households, plus-ones, and every little dietary detail. Import once and keep everything connected.",
-                ],
-                [
-                  "Ready for your next decision.",
-                  "See who still needs to reply and bring confirmed attendance and meal choices into your seating plan.",
-                ],
-                [
-                  "Before, during, and long after.",
-                  "Travel plans, table assignments, a wedding-day pass, and a shared place for all those memories.",
-                ],
-              ].map(([title, copy], i) => (
-                <div className="feature-row" key={title}>
-                  <span>0{i + 1}</span>
-                  <div>
-                    <h3>{title}</h3>
-                    <p>{copy}</p>
-                  </div>
-                </div>
-              ))}
-              <DemoButton className="text-link" />
-            </div>
-          </div>
-        </section>
+        <ProductStory variant="studio" />
         <section className="planner-section" id="planners" tabIndex={-1}>
           <div className="planner-image">
             <img

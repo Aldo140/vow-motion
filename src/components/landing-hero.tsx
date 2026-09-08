@@ -72,24 +72,6 @@ export default function LandingHero() {
         (context) => {
           if (!context.conditions?.motion) return;
           const wide = context.conditions.wide;
-          const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
-          intro
-            .from(
-              ".immersive-hero-copy > *",
-              { y: 18, duration: 0.8, stagger: 0.07, clearProps: "transform" },
-              0,
-            )
-            .from(
-              ".suite-photo-layer",
-              { y: 40, rotation: -4, duration: 1.25 },
-              0.05,
-            )
-            .from(".suite-envelope-layer", { y: 65, duration: 1.15 }, 0.1)
-            .from(
-              ".suite-flower-layer",
-              { y: 55, rotation: 6, duration: 1.3 },
-              0.15,
-            );
           const scene = gsap.timeline({
             scrollTrigger: {
               trigger: root.current,
