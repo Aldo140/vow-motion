@@ -69,3 +69,11 @@ Not taken from the references: an ambient soundtrack, which appears in most of t
 `guest-memory-album.tsx` composes two facing album pages with a shaded binding. Desktop places the written invitation on the left and photographic prints on the right. Mobile reads as title, photographs, then sharing action, in the same DOM and keyboard order. The empty album pairs decorative reception photography with a working first-photo slot. Once guests upload, real authorized images replace that composition, preserving pending-review labels. Every thumbnail and the browse action open a native dialog with full-size imagery, captions, previous/next controls, arrow-key navigation and focus restoration. Additional photos remain reachable through that viewer beyond the four-print preview.
 
 `guest-reply-album.css` scopes the new layouts across all six worlds. Existing world colours and typefaces carry through; the crest inherits the cover's contrasting ink. English and Spanish actions, 320px layouts, reduced motion, real photo upload, and private-photo viewing are checked before release.
+
+## One invitation, from opening to arrival
+
+The desktop suite remains the compositional reference. Mobile removes the extra medallion, draws the ribbon back to a corner, shortens the name card's margins, and gives the venue print more visible area. The opening settles the photograph and letter at different times; the smaller keepsakes arrive last. Reduced motion leaves the complete composition static.
+
+`guest-navigation.tsx` replaces the website-style link bar with a monogram that opens the invitation's contents. A native popover handles light dismissal and Escape; section links transfer focus to their destination, and opening a dialog restores focus to the monogram on return. Replay is a quiet secondary action. The fixed controls read as a folded index slip, keeping explicit text labels and touch targets.
+
+`guest-continuity.css` carries the same paper, ink, typography and short settling motion into RSVP and the wedding pass. The response form retains native controls and its existing draft, validation and persistence logic. Confirmation offers a direct next step into the pass, completing the contents → celebration → RSVP → pass journey without sending the guest back to search for another control.

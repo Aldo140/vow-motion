@@ -2,6 +2,7 @@
 import Link from "next/link";
 import GuestInvitationGate from "./guest-invitation-gate";
 import GuestInvitationHero from "./guest-invitation-hero";
+import GuestNavigation from "./guest-navigation";
 import GuestCountdown from "./guest-countdown";
 import GuestCrest from "./guest-crest";
 import GuestWeddingPass from "./guest-wedding-pass";
@@ -136,8 +137,6 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
     world = getWorld(data.wedding.world),
     url = "/api/guest?token=" + data.token;
   // The header reports where this household stands; the dock keeps the action.
-  const answered = data.responses.length > 0,
-    attending = data.guests.some((guest) => guest.status === "attending");
   const refresh = async () => {
     setData(await api(url));
   };
@@ -215,11 +214,14 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
           });
           gsap.from(".atelier-letter", {
             x: desktop ? -24 : -12,
+            y: desktop ? 0 : 22,
+            delay: desktop ? 0 : 0.12,
             duration: 1.1,
             ease: "power3.out",
           });
           gsap.from(".hero-image-frame", {
-            y: 28,
+            y: desktop ? 28 : 48,
+            scale: desktop ? 1 : 0.98,
             duration: 1.3,
             ease: "power3.out",
           });
@@ -227,7 +229,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             rotation: -11,
             y: 45,
             duration: 1.25,
-            delay: 0.15,
+            delay: desktop ? 0.15 : 0.45,
             ease: "power3.out",
           });
           gsap.to(".guest-hero-photo > img", {
@@ -420,32 +422,14 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
         />
       ) : (
         <>
-          <header className="guest-nav">
-            <a href="#main" className="guest-monogram">
-              {data.wedding.names
-                .split(" & ")
-                .map((s) => s[0])
-                .join(" & ")}
-            </a>
-            <nav>
-              <a href="#programme">{c.details}</a>
-              <a href="#travel">{c.travel}</a>
-              <button
-                onClick={() => setModal("rsvp")}
-                className={answered ? "guest-nav-answered" : undefined}
-              >
-                {answered && <CheckIcon size={14} aria-hidden="true" />}
-                {answered ? (attending ? c.attending : c.answered) : c.respond}
-                {!answered && <Arrow diagonal size={14} />}
-              </button>
-            </nav>
-            <button
-              className="language-switch"
-              onClick={() => setLocale(locale === "en" ? "es" : "en")}
-            >
-              {locale === "en" ? "ES" : "EN"}
-            </button>
-          </header>
+          <GuestNavigation
+            names={data.wedding.names}
+            location={data.wedding.location}
+            locale={locale}
+            onLocale={() => setLocale(locale === "en" ? "es" : "en")}
+            onRsvp={() => setModal("rsvp")}
+            onPass={() => setModal("pass")}
+          />
           <main id="main">
             <GuestInvitationHero
               data={data}
@@ -803,6 +787,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
           locale={locale}
           onClose={() => setModal(null)}
           onSaved={refresh}
+          onPass={() => setModal("pass")}
         />
       )}
       {modal === "pass" && (
@@ -836,11 +821,13 @@ function RsvpModal({
   locale,
   onClose,
   onSaved,
+  onPass,
 }: {
   data: GuestData;
   locale: "en" | "es";
   onClose: () => void;
   onSaved: () => Promise<void>;
+  onPass: () => void;
 }) {
   const c = copy[locale],
     [step, setStep] = useState(0),
@@ -939,7 +926,12 @@ function RsvpModal({
     });
   };
   return (
-    <Modal title={step === 2 ? c.saved : c.rsvp} onClose={onClose} wide>
+    <Modal
+      title={step === 2 ? c.saved : c.rsvp}
+      onClose={onClose}
+      wide
+      className="guest-paper-dialog reply-dialog"
+    >
       {step === 2 ? (
         <div className="rsvp-success">
           <span className="success-mark">
@@ -966,18 +958,23 @@ function RsvpModal({
               <Arrow />
             </a>
           )}
+          <button className="button pass-next-action" onClick={onPass}>
+            {c.pass}
+            <Arrow />
+          </button>
           <button className="text-link" onClick={onClose}>
             {c.close}
           </button>
         </div>
       ) : (
         <>
+          <p className="dialog-dedication">{data.wedding.names}</p>
           <div className="rsvp-progress">
             <span className={step === 0 ? "current" : ""}>
-              01 · {locale === "en" ? "Your plans" : "Tus planes"}
+              {locale === "en" ? "Your plans" : "Tus planes"}
             </span>
             <span className={step === 1 ? "current" : ""}>
-              02 · {locale === "en" ? "The little details" : "Los detalles"}
+              {locale === "en" ? "The little details" : "Los detalles"}
             </span>
           </div>
           {error && <Notice error>{error}</Notice>}

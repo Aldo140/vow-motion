@@ -1,0 +1,297 @@
+/* Navigation is the contents of the invitation, not a second visual header. */
+.immersive-invitation .guest-nav.invitation-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 6%;
+  border-bottom: 0;
+}
+.invitation-navigation .invitation-menu-trigger {
+  display: inline-flex;
+  gap: 15px;
+  align-items: center;
+  padding: 0;
+  background: none;
+  color: var(--guest-ink);
+}
+.invitation-menu-trigger > span {
+  font-family: var(--guest-display);
+  font-size: 24px;
+}
+.invitation-nav-location {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-style: italic;
+}
+.invitation-navigation .language-switch {
+  justify-content: center;
+  min-width: 44px;
+}
+.invitation-contents {
+  inset: 68px auto auto 6%;
+  margin: 0;
+  width: min(345px, calc(100vw - 40px));
+  max-height: calc(100dvh - 90px);
+  overflow: auto;
+  padding: 26px;
+  color: var(--guest-ink);
+  background: var(--depth-paper);
+  border: none;
+  box-shadow: 0 5px 8px var(--depth-shadow);
+  outline: 1px solid var(--guest-line);
+  outline-offset: -8px;
+}
+.invitation-contents::backdrop {
+  background: color-mix(in srgb, var(--guest-ink) 8%, transparent);
+}
+.invitation-contents > p {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-style: italic;
+  margin: 0 0 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--guest-line);
+  overflow-wrap: anywhere;
+}
+.immersive-invitation .invitation-contents nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.immersive-invitation .invitation-contents nav a,
+.immersive-invitation .invitation-contents nav button {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 48px;
+  padding: 9px 0;
+  background: none;
+  color: var(--guest-ink);
+  font-family: var(--guest-display);
+  font-size: 23px;
+  text-align: left;
+  border: 0;
+}
+.invitation-contents nav svg {
+  flex-shrink: 0;
+}
+.immersive-invitation .invitation-contents nav a[href="#travel"] {
+  display: flex;
+}
+.invitation-contents > small {
+  display: block;
+  margin-top: 20px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.invitation-replay {
+  font-size: 10px;
+  gap: 6px;
+}
+.invitation-replay > svg {
+  width: 13px;
+}
+/* The persistent controls read as a folded index slip. Keep their full labels
+   and hit areas; visual restraint must not conceal the guest's next action. */
+.immersive-invitation .guest-dock {
+  border-radius: 0;
+  padding: 5px;
+  gap: 0;
+  background: var(--depth-paper);
+  box-shadow: 0 4px 8px var(--depth-shadow);
+  outline: 1px solid var(--guest-line);
+  outline-offset: -4px;
+}
+.immersive-invitation .guest-dock button {
+  min-height: 45px;
+  padding: 10px 18px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-style: italic;
+  gap: 10px;
+  border-radius: 0;
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.2;
+  justify-content: center;
+}
+.guest-dock button svg {
+  flex-shrink: 0;
+}
+.immersive-invitation .guest-dock button:last-child {
+  color: var(--guest-ink);
+  background: none;
+  border-left: 1px solid var(--guest-line);
+}
+/* Reply and day pass belong to the same paper suite. */
+.immersive-invitation .modal.guest-paper-dialog {
+  border-radius: 0;
+  background: var(--depth-paper);
+  box-shadow: 0 8px 8px #0003;
+}
+.guest-paper-dialog::backdrop {
+  background: color-mix(in srgb, var(--guest-ink) 64%, transparent);
+}
+.immersive-invitation .guest-paper-dialog .modal-heading {
+  background: var(--depth-paper);
+  padding-top: 25px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--guest-line);
+}
+.guest-paper-dialog .modal-heading h2 {
+  font-family: var(--guest-display);
+  font-weight: 400;
+  font-size: clamp(28px, 3.5vw, 43px);
+  line-height: 1.15;
+}
+.dialog-dedication {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 21px;
+  text-align: center;
+  margin: 4px 0 26px;
+}
+.guest-paper-dialog .rsvp-progress {
+  justify-content: center;
+  gap: 28px;
+  border: 0;
+  margin-bottom: 30px;
+}
+.guest-paper-dialog .rsvp-progress > span {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-style: italic;
+  padding: 0 0 9px;
+}
+.guest-paper-dialog .rsvp-progress > span.current {
+  color: var(--guest-ink);
+  border-bottom: 1px solid var(--guest-accent);
+}
+.guest-paper-dialog .attendance-questions > section {
+  padding-block: 18px 28px;
+  border-bottom: 1px solid var(--guest-line);
+}
+.guest-paper-dialog .attendance-questions h3 {
+  font-family: var(--guest-display);
+  font-size: 30px;
+  font-weight: 400;
+}
+.guest-paper-dialog .attendance-person {
+  gap: 10px;
+}
+.guest-paper-dialog .attendance-person legend {
+  font-family: var(--serif);
+  font-size: 19px;
+}
+.guest-paper-dialog .attendance-person label {
+  border-radius: 0;
+  min-height: 44px;
+  padding: 12px;
+  background: transparent;
+  font-size: 12px;
+}
+.guest-paper-dialog .attendance-person label.selected {
+  background: color-mix(in srgb, var(--guest-accent) 8%, var(--depth-paper));
+  color: var(--guest-ink);
+  border-color: var(--guest-accent);
+}
+.guest-paper-dialog input:not([type="radio"]):not([type="checkbox"]),
+.guest-paper-dialog select,
+.guest-paper-dialog textarea {
+  border-radius: 0;
+  background: var(--depth-paper);
+}
+.guest-paper-dialog .button {
+  border-radius: 0;
+  min-height: 48px;
+}
+.guest-paper-dialog .rsvp-success {
+  padding: 15px 0 25px;
+}
+.guest-paper-dialog .pass-next-action {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  margin-block: 14px;
+  border: 1px solid var(--guest-line);
+  font-family: var(--serif);
+  font-size: 20px;
+}
+.guest-paper-dialog .day-pass-ticket {
+  border-bottom-style: dashed;
+}
+@media (max-width: 768px) {
+  .immersive-invitation .guest-nav.invitation-navigation {
+    padding: 10px 24px;
+  }
+  .invitation-nav-location {
+    display: none;
+  }
+  .invitation-contents {
+    left: 20px;
+    top: 62px;
+  }
+  .atelier-heading {
+    justify-content: flex-end;
+    padding-bottom: 17px;
+  }
+  .immersive-invitation .atelier-invitation .hero-medallion {
+    display: none;
+  }
+  .immersive-invitation .atelier-invitation .atelier-silk {
+    width: 84px;
+    right: -17px;
+    top: -2px;
+  }
+  .immersive-invitation .atelier-invitation .guest-hero-title.atelier-letter {
+    padding-block: 22px;
+  }
+  .immersive-invitation .atelier-invitation .guest-hero-title h1 {
+    margin-block: 12px 17px;
+  }
+  .immersive-invitation .atelier-invitation .hero-image-frame {
+    margin-top: 130px;
+  }
+  .immersive-invitation .atelier-invitation .guest-hero-photo {
+    height: clamp(320px, 94vw, 470px);
+  }
+  .immersive-invitation .guest-dock {
+    max-width: calc(100vw - 32px);
+  }
+  .immersive-invitation .guest-dock button {
+    font-size: 14px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .guest-dock button:first-child > svg {
+    display: none;
+  }
+  .guest-paper-dialog .modal-heading h2 {
+    font-size: 30px;
+  }
+  .guest-paper-dialog .rsvp-progress {
+    gap: 20px;
+  }
+  .guest-paper-dialog .rsvp-progress > span {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .guest-paper-dialog[open],
+  .invitation-contents:popover-open {
+    animation: invitation-paper-arrival 240ms cubic-bezier(0.22, 1, 0.36, 1)
+      both;
+  }
+  @keyframes invitation-paper-arrival {
+    from {
+      opacity: 0;
+      transform: translateY(14px) rotate(-0.5deg);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) rotate(0);
+    }
+  }
+}

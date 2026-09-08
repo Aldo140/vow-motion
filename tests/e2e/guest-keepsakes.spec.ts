@@ -31,7 +31,7 @@ test("the invitation opens by keyboard and the keepsake leads to the authorized 
   await page.reload();
   await expect(open).toHaveCount(0);
   await expect(page.locator(".guest-hero h1")).toBeVisible();
-  await page.getByRole("button", { name: "Open the envelope again" }).click();
+  await page.getByRole("button", { name: "Replay invitation" }).click();
   await expect(open).toBeFocused();
   await expect(open).toBeInViewport();
   await page.keyboard.press("Enter");
@@ -170,8 +170,24 @@ test("the save-the-date action clears the floating dock and the print caption st
     ),
   ).toBe(true);
 
+  // The layered hero re-lays itself after a viewport change, and a tween can
+  // hold one value briefly, so require the position to stay put for a while
+  // rather than merely match the previous sample.
+  const settled = async () => {
+    let previous = -1,
+      stable = 0;
+    for (let attempt = 0; attempt < 60 && stable < 4; attempt++) {
+      const top = await page
+        .locator(".date-keepsake-action")
+        .evaluate((el) => Math.round(el.getBoundingClientRect().top));
+      stable = top === previous ? stable + 1 : 0;
+      previous = top;
+      await page.waitForTimeout(120);
+    }
+  };
+
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(400);
+  await settled();
   expect(await reachable(".date-keepsake-action")).toBe(true);
 
   // The dock is fixed to the foot of the viewport while the invitation sits at
@@ -181,7 +197,7 @@ test("the save-the-date action clears the floating dock and the print caption st
   for (const height of [850, 900, 950, 1000]) {
     await page.setViewportSize({ width: 1440, height });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-    await page.waitForTimeout(250);
+    await settled();
     let cleared = await reachable(".date-keepsake-action");
     for (const top of [40, 80, 120, 200]) {
       if (cleared) break;

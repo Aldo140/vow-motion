@@ -16,6 +16,7 @@ import "./guest-atelier.css";
 import "./planners.css";
 import "./guest-ceremony.css";
 import "./guest-reply-album.css";
+import "./guest-continuity.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

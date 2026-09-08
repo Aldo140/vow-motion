@@ -39,9 +39,7 @@ export default function GuestInvitationHero({
         </span>
         <button className="invitation-replay" onClick={onReplay}>
           <ArrowCounterClockwiseIcon size={15} aria-hidden="true" />
-          {locale === "en"
-            ? "Open the envelope again"
-            : "Volver a abrir el sobre"}
+          {locale === "en" ? "Replay invitation" : "Repetir invitación"}
         </button>
       </div>
       <div className="hero-depth-scene atelier-suite">

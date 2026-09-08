@@ -21,6 +21,7 @@ export default function GuestWeddingPass({
     <Modal
       title={locale === "en" ? "Your wedding pass" : "Tu pase de boda"}
       onClose={onClose}
+      className="guest-paper-dialog pass-dialog"
     >
       <div className="wedding-pass guest-day-pass">
         <div className="day-pass-cover">
