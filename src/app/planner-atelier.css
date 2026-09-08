@@ -1,0 +1,367 @@
+.planner-atelier {
+  background: #ede9df;
+  color: #263d33;
+  padding: 34px max(5%, calc((100% - 1320px) / 2)) 32px;
+  position: relative;
+  overflow: clip;
+}
+.atelier-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #263d332b;
+}
+.atelier-section-label > span:first-child {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+.atelier-section-label > span:last-child {
+  font: italic 16px var(--serif);
+}
+.planner-atelier-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.15fr;
+  gap: 60px;
+  align-items: center;
+  padding: 46px 0 42px;
+}
+.planner-atelier-eyebrow {
+  font: italic 20px/1.5 var(--serif);
+  margin: 0 0 26px;
+}
+.planner-atelier h2 {
+  font: 400 clamp(46px, 4.3vw, 68px)/1.08 var(--serif);
+  letter-spacing: -0.04em;
+  margin: 0 0 30px;
+}
+.planner-atelier h2 em {
+  font-weight: 400;
+}
+.planner-atelier-copy > p:not(.planner-atelier-eyebrow) {
+  max-width: 37ch;
+  font-size: 14px;
+  line-height: 1.9;
+  margin: 0;
+}
+.atelier-planner-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid #263d33;
+  padding: 18px 0 12px;
+  margin-top: 24px;
+  min-height: 48px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.atelier-planner-link svg {
+  flex-shrink: 0;
+}
+.atelier-planner-footnote {
+  display: block;
+  margin-top: 12px;
+  font-size: 10px;
+  color: #627166;
+}
+.planner-dossier {
+  position: relative;
+  height: 580px;
+  min-width: 0;
+  isolation: isolate;
+}
+.dossier-folder {
+  position: absolute;
+  inset: 16px 30px 45px 34px;
+  rotate: -3deg;
+  background: #294b46;
+  padding: 26px 28px;
+  color: #f3ead7;
+  box-shadow: 4px 14px 24px #233d3326;
+}
+.dossier-folder::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 42%;
+  height: 18px;
+  border-radius: 6px 6px 0 0;
+  background: #294b46;
+}
+.dossier-folder > span,
+.dossier-folder small {
+  display: block;
+  font-size: 7px;
+  letter-spacing: 0.15em;
+}
+.dossier-folder b {
+  display: block;
+  font: 23px var(--serif);
+  margin: 8px 0;
+}
+.dossier-folder > i {
+  position: absolute;
+  right: 24px;
+  top: 25px;
+  font: italic 44px var(--serif);
+  opacity: 0.5;
+}
+.dossier-venue {
+  position: absolute;
+  margin: 0;
+  left: 0;
+  top: 145px;
+  width: 58%;
+  padding: 9px 9px 15px;
+  background: #faf5e9;
+  rotate: -7deg;
+  box-shadow: 3px 9px 20px #233d3330;
+}
+.dossier-venue img {
+  width: 100%;
+  height: 295px;
+  object-fit: cover;
+}
+.dossier-venue figcaption {
+  font: italic 15px/1.5 var(--serif);
+  text-align: center;
+  padding-top: 12px;
+}
+.dossier-invitation {
+  position: absolute;
+  right: 0;
+  top: 112px;
+  width: 43%;
+  min-height: 345px;
+  padding: 24px 16px;
+  background: #f2ddc8;
+  outline: 1px solid #b99b78;
+  outline-offset: -10px;
+  rotate: 6deg;
+  box-shadow: 3px 10px 20px #233d3330;
+  text-align: center;
+}
+.dossier-crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  width: 58px;
+  height: 68px;
+  border: 1px solid #8b8168;
+  border-radius: 50%;
+  font: 22px var(--serif);
+  gap: 3px;
+}
+.dossier-crest i {
+  font-size: 12px;
+}
+.dossier-invitation > small {
+  font-size: 6px;
+  letter-spacing: 0.1em;
+  display: block;
+}
+.dossier-invitation strong {
+  display: block;
+  font: 37px/0.95 var(--serif);
+  margin: 22px 0;
+}
+.dossier-invitation strong i {
+  font-size: 19px;
+}
+.dossier-invitation > span:not(.dossier-crest) {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+}
+.dossier-invitation > b {
+  display: block;
+  font: italic 13px var(--serif);
+  margin-top: 20px;
+}
+.dossier-palette {
+  position: absolute;
+  bottom: 26px;
+  right: 15px;
+  width: 220px;
+  padding: 15px 18px;
+  background: #f8f4e9;
+  rotate: 2deg;
+  box-shadow: 2px 6px 12px #233d3320;
+}
+.dossier-palette > span {
+  font-size: 7px;
+  letter-spacing: 0.14em;
+}
+.dossier-palette > div {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.dossier-palette i {
+  width: 38px;
+  height: 24px;
+  background: #294b46;
+}
+.dossier-palette i:nth-child(2) {
+  background: #f2ddc8;
+}
+.dossier-palette i:nth-child(3) {
+  background: #b6b89d;
+}
+.dossier-palette small {
+  font: italic 11px var(--serif);
+}
+.dossier-silk {
+  position: absolute;
+  width: 110px;
+  left: -30px;
+  top: 140px;
+  rotate: 20deg;
+  pointer-events: none;
+}
+.dossier-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 8px;
+  color: #627166;
+}
+.atelier-bottom-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 24px;
+  border-top: 1px solid #263d332b;
+}
+.atelier-bottom-line > span {
+  font-size: 8px;
+  letter-spacing: 0.13em;
+}
+.atelier-bottom-line p {
+  text-align: center;
+  font: 18px/1.6 var(--serif);
+  margin: 0;
+}
+@media (max-width: 1000px) {
+  .planner-atelier-layout {
+    gap: 30px;
+  }
+  .planner-dossier {
+    height: 540px;
+  }
+  .dossier-venue img {
+    height: 235px;
+  }
+  .dossier-invitation strong {
+    font-size: 30px;
+  }
+  .dossier-folder {
+    inset-inline: 15px;
+  }
+  .dossier-palette {
+    width: 180px;
+    bottom: 18px;
+  }
+}
+@media (max-width: 768px) {
+  .planner-atelier {
+    padding: 26px 24px;
+  }
+  .atelier-section-label > span:last-child {
+    display: none;
+  }
+  .planner-atelier-layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 32px;
+    gap: 35px;
+  }
+  .planner-atelier h2 {
+    font-size: clamp(40px, 10.5vw, 60px);
+  }
+  .planner-atelier-eyebrow {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  .planner-atelier-copy > p:not(.planner-atelier-eyebrow) {
+    max-width: 42ch;
+  }
+  .planner-dossier {
+    width: min(100%, 440px);
+    margin: auto;
+    height: 515px;
+  }
+  .dossier-venue {
+    top: 135px;
+    width: 57%;
+  }
+  .dossier-venue img {
+    height: 225px;
+  }
+  .dossier-invitation {
+    top: 115px;
+    width: 46%;
+    padding: 20px 10px;
+    min-height: 310px;
+  }
+  .dossier-invitation strong {
+    font-size: 29px;
+  }
+  .dossier-invitation > b {
+    font-size: 11px;
+  }
+  .dossier-crest {
+    width: 44px;
+    height: 54px;
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  .dossier-folder {
+    padding: 22px 18px;
+  }
+  .dossier-folder b {
+    font-size: 21px;
+  }
+  .dossier-folder > i {
+    right: 15px;
+    font-size: 32px;
+  }
+  .dossier-venue figcaption {
+    font-size: 11px;
+  }
+  .dossier-silk {
+    left: -15px;
+    width: 72px;
+  }
+  .dossier-palette {
+    width: 160px;
+    padding: 10px 12px;
+    bottom: 5px;
+    right: 2px;
+  }
+  .dossier-palette > span {
+    font-size: 6px;
+  }
+  .dossier-palette i {
+    width: 30px;
+    height: 18px;
+  }
+  .dossier-caption {
+    bottom: -20px;
+    font-size: 7px;
+  }
+  .atelier-bottom-line {
+    justify-content: center;
+    padding-top: 20px;
+  }
+  .atelier-bottom-line > span {
+    display: none;
+  }
+  .atelier-bottom-line p {
+    font-size: 16px;
+  }
+}

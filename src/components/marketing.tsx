@@ -7,6 +7,7 @@ import { FirstSteps, OfferQuestions } from "./marketing-offer";
 import MarketingNavigation from "./marketing-navigation";
 import ProductShowcase from "./product-showcase";
 import ProductStory from "./product-story";
+import PlannerAtelier from "./planner-atelier";
 import { useGSAP } from "@gsap/react";
 import { CheckIcon } from "@phosphor-icons/react";
 import { Arrow, Brand } from "./ui";
@@ -241,35 +242,7 @@ export default function Marketing() {
         </section>
         <FirstSteps />
         <ProductStory variant="studio" />
-        <section className="planner-section" id="planners" tabIndex={-1}>
-          <div className="planner-image">
-            <img
-              src="/images/wedding-details.webp"
-              alt="Garden roses, silk ribbon and wedding bands, thoughtfully arranged"
-              loading="lazy"
-            />
-            <div className="planner-venue-print depth-drift" aria-hidden="true">
-              <img src="/images/hero-maison.webp" alt="" loading="lazy" />
-              <span>Every detail, considered.</span>
-              <b className="depth-paper-seal">V &amp; M</b>
-            </div>
-          </div>
-          <div>
-            <p className="collection-caption">For the people behind the day</p>
-            <h2>
-              Your eye for detail.
-              <br />
-              <em>A studio to match.</em>
-            </h2>
-            <p>
-              Give every couple their own world. Keep every wedding, guest list,
-              and collaborator beautifully in hand.
-            </p>
-            <a href="/planners" className="button light-button">
-              How planners use Vow Motion <Arrow diagonal size={15} />
-            </a>
-          </div>
-        </section>
+        <PlannerAtelier />
         <section
           className="beginning-section section-pad"
           id="pricing"
