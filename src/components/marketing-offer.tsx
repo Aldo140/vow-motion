@@ -135,6 +135,24 @@ export function OfferQuestions({ planner = false }: { planner?: boolean }) {
         <p className="offer-note">
           A clear picture, before you make room for something new.
         </p>
+        {!planner && (
+          <div className="faq-keepsake depth-drift" aria-hidden="true">
+            <img src="/images/maison.webp" alt="" loading="lazy" />
+            <div className="faq-paper-note">
+              <span>
+                V <i>&amp;</i> M
+              </span>
+              <strong>
+                Thought of.
+                <br />
+                <i>Taken care of.</i>
+              </strong>
+              <svg viewBox="0 0 120 36" fill="none">
+                <path d="M6 28C40 28 70 8 114 8M32 24Q24 7 16 10Q15 24 32 24M55 17Q45 0 37 5Q39 18 55 17M77 11Q78 30 89 28Q92 16 77 11M99 8Q97 25 107 25Q114 15 99 8" />
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
       <div className="offer-questions">
         {questions.map(([question, answer]) => (
