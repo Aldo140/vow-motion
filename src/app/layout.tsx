@@ -22,6 +22,7 @@ import "./guest-faqs.css";
 import "./documents.css";
 import "./pilot.css";
 import "./marketing-offer.css";
+import "./product-showcase.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

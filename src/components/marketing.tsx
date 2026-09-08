@@ -5,6 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LandingHero from "./landing-hero";
 import { FirstSteps, OfferQuestions } from "./marketing-offer";
 import MarketingNavigation from "./marketing-navigation";
+import ProductShowcase from "./product-showcase";
 import { useGSAP } from "@gsap/react";
 import { CheckIcon, ArrowDownIcon } from "@phosphor-icons/react";
 import { Brand, Arrow, DemoButton } from "./ui";
@@ -94,6 +95,7 @@ export default function Marketing() {
             </a>
           </div>
         </section>
+        <ProductShowcase />
         <section className="collection section-pad" id="worlds" tabIndex={-1}>
           <div className="section-heading">
             <div>
