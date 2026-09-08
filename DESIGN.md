@@ -61,3 +61,11 @@ The programme is now an order of service. Moments group under the day they fall 
 The countdown closes the weekend. Figures are set in the serif at display size with tabular numerals so the digits do not jostle as they tick; on a phone the four pair up two by two rather than shrinking to fit. The ticking figures are hidden from assistive technology, which is given one settled sentence instead of a stream of seconds. After the day it reads as a statement rather than a clock.
 
 Not taken from the references: an ambient soundtrack, which appears in most of them. A track cannot be licensed here, and a speaker control that plays silence is worse than no control at all.
+
+## The reply suite and the memory album
+
+`guest-reply-card.tsx` replaces the centred RSVP panel with a folded reply suite on an open envelope. Its coloured cover holds the existing crest and the couple's names; the addressed letter carries the household names, real reply deadline, saved-response state and one clear action. On mobile, the cover becomes a compact header above the letter. Floral photography belongs to the tabletop, not the form. The original RSVP modal and its guest permissions remain the source of truth.
+
+`guest-memory-album.tsx` composes two facing album pages with a shaded binding. Desktop places the written invitation on the left and photographic prints on the right. Mobile reads as title, photographs, then sharing action, in the same DOM and keyboard order. The empty album pairs decorative reception photography with a working first-photo slot. Once guests upload, real authorized images replace that composition, preserving pending-review labels. Every thumbnail and the browse action open a native dialog with full-size imagery, captions, previous/next controls, arrow-key navigation and focus restoration. Additional photos remain reachable through that viewer beyond the four-print preview.
+
+`guest-reply-album.css` scopes the new layouts across all six worlds. Existing world colours and typefaces carry through; the crest inherits the cover's contrasting ink. English and Spanish actions, 320px layouts, reduced motion, real photo upload, and private-photo viewing are checked before release.

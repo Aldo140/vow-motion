@@ -5,6 +5,8 @@ import GuestInvitationHero from "./guest-invitation-hero";
 import GuestCountdown from "./guest-countdown";
 import GuestCrest from "./guest-crest";
 import GuestWeddingPass from "./guest-wedding-pass";
+import GuestReplyCard from "./guest-reply-card";
+import GuestMemoryAlbum from "./guest-memory-album";
 import { preparePhoto } from "@/lib/prepare-photo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
@@ -19,7 +21,6 @@ import {
   CheckIcon,
   CalendarBlankIcon,
   UploadSimpleIcon,
-  CameraIcon,
 } from "@phosphor-icons/react";
 import type { GuestData } from "@/lib/types";
 import { getWorld, formatDate, eventTime } from "@/lib/worlds";
@@ -696,114 +697,16 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 )}
               </div>
             </section>
-            <section className="rsvp-scene" id="rsvp">
-              <img
-                className="rsvp-scene-image"
-                src={world.image}
-                alt=""
-                loading="lazy"
-              />
-              <div className="rsvp-back-paper" aria-hidden="true">
-                <span>{data.wedding.names}</span>
-              </div>
-              <div className="rsvp-stationery">
-                <span className="rsvp-seal" aria-hidden="true">
-                  {data.wedding.names
-                    .split(" & ")
-                    .map((n) => n[0])
-                    .join(" & ")}
-                </span>
-                <span>
-                  {data.guests.map((g) => g.name.split(" ")[0]).join(" & ")},
-                </span>
-                <h2>{c.rsvp}</h2>
-                <p>
-                  {locale === "en" ? "Kindly reply by" : "Confirma antes del"}{" "}
-                  {formatDate(data.wedding.rsvp_deadline, locale)}.
-                </p>
-                <button
-                  className="guest-button"
-                  onClick={() => setModal("rsvp")}
-                >
-                  {data.responses.length ? c.update : c.respond}
-                  <Arrow diagonal />
-                </button>
-                <small>
-                  {locale === "en"
-                    ? "Your invitation is just for your household."
-                    : "Esta invitación es solo para tu familia."}
-                </small>
-              </div>
-            </section>
-            <section className="guest-memory">
-              <div>
-                <span>
-                  {locale === "en"
-                    ? "THROUGH YOUR EYES"
-                    : "A TRAVÉS DE TUS OJOS"}
-                </span>
-                <h2>{c.photos}</h2>
-                <p>
-                  {locale === "en"
-                    ? "The dance floor. The long lunch. The way the light fell. Help us remember the parts we might have missed."
-                    : "La pista de baile. La sobremesa. La luz de la tarde. Ayúdanos a recordar cada pequeño momento."}
-                </p>
-                <button
-                  className="guest-text-link"
-                  onClick={() => setModal("photos")}
-                >
-                  {c.share}
-                  <UploadSimpleIcon size={18} />
-                </button>
-              </div>
-              <div className="memory-photos">
-                {data.photos.length ? (
-                  data.photos.slice(0, 4).map((p) => (
-                    <figure key={p.id}>
-                      <img
-                        src={"/api/photos/" + p.id + "?token=" + data.token}
-                        alt={p.caption || c.photos}
-                      />
-                      <figcaption>
-                        {p.caption}
-                        {!p.approved &&
-                          (locale === "en"
-                            ? " · Awaiting host approval"
-                            : " · Pendiente de aprobación")}
-                      </figcaption>
-                    </figure>
-                  ))
-                ) : (
-                  <button
-                    className="memory-first-photo"
-                    onClick={() => setModal("photos")}
-                    aria-label={
-                      locale === "en"
-                        ? "Add the first memory"
-                        : "Añade el primer recuerdo"
-                    }
-                  >
-                    <img
-                      src="/images/wedding-evening.webp"
-                      alt=""
-                      loading="lazy"
-                    />
-                    <span className="memory-first-photo-label">
-                      <CameraIcon size={24} />
-                      {locale === "en"
-                        ? "Your view belongs here."
-                        : "Tu mirada tiene un lugar aquí."}
-                    </span>
-                    <span className="memory-first-photo-action">
-                      {locale === "en"
-                        ? "Be the first to share a memory"
-                        : "Comparte el primer recuerdo"}
-                      <Arrow diagonal size={17} />
-                    </span>
-                  </button>
-                )}
-              </div>
-            </section>
+            <GuestReplyCard
+              data={data}
+              locale={locale}
+              onReply={() => setModal("rsvp")}
+            />
+            <GuestMemoryAlbum
+              data={data}
+              locale={locale}
+              onUpload={() => setModal("photos")}
+            />
             {data.registry.length > 0 && (
               <section className="guest-registry">
                 <h2>{c.gifts}</h2>
