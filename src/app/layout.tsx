@@ -28,6 +28,7 @@ import "./marketing-depth.css";
 import "./guest-finishing.css";
 import "./planner-atelier.css";
 import "./studio-story.css";
+import "./guest-preview-stage.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

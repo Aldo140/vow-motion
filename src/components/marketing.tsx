@@ -94,17 +94,6 @@ export default function Marketing() {
             scrub: true,
           },
         });
-        gsap.from(".journey-reply-card", {
-          opacity: 0,
-          y: 20,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".journey-collage",
-            start: "center 80%",
-            end: "bottom 70%",
-            scrub: true,
-          },
-        });
         gsap.fromTo(
           ".beginning-invitation",
           { rotation: -7, y: 35 },

@@ -22,6 +22,11 @@ function PhoneFrame({
       <div className="journey-phone-screen" aria-label={label}>
         {children}
       </div>
+      <span className="phone-stage-label">
+        {className.includes("invite")
+          ? "01 / The invitation"
+          : "02 / The reply"}
+      </span>
     </div>
   );
 }
@@ -30,19 +35,21 @@ export default function ProductShowcase() {
   return (
     <section
       id="experience"
-      className="product-showcase section-pad"
+      className="product-showcase guest-preview-stage section-pad"
       aria-labelledby="journey-title"
       tabIndex={-1}
     >
       <div className="journey-heading">
-        <p className="collection-caption">What your guests actually receive</p>
+        <p className="collection-caption">
+          A personal welcome. An effortless reply.
+        </p>
         <h2 id="journey-title">
-          <span>From the first tap</span>
-          <em>to the final yes.</em>
+          <span>Made to be opened.</span>
+          <em>Easy to say yes to.</em>
         </h2>
         <p>
-          One private link opens into their invitation, their events, and a
-          reply made for their household.
+          An invitation with their names on it. Only the events meant for them.
+          One thoughtful reply for everyone in their household.
         </p>
         <Link prefetch={false} href="/demo/riviera" className="text-link">
           Try the RSVP yourself <ArrowUpRightIcon size={17} />
@@ -51,11 +58,10 @@ export default function ProductShowcase() {
 
       <div
         className="journey-collage"
-        role="img"
-        aria-label="Sample invitation, household events and RSVP confirmation"
+        aria-label="Sample invitation and household event details"
       >
         <div className="journey-playing" aria-hidden="true">
-          <span /> Sample guest experience
+          SAMPLE WEDDING / ELENA &amp; MATTEO
         </div>
         <div className="journey-photo journey-photo-primary">
           <Image
@@ -64,91 +70,85 @@ export default function ProductShowcase() {
             fill
             sizes="(max-width: 760px) 75vw, 34vw"
           />
-          <span>Lake Como, 19 June 2027</span>
         </div>
 
-        <PhoneFrame
-          className="journey-phone-invite"
-          label="Personal invitation preview"
+        <div
+          className="journey-phone-pair"
+          tabIndex={0}
+          role="group"
+          aria-label="Invitation and RSVP previews. Scroll horizontally to explore on mobile."
         >
-          <div className="phone-invitation">
-            <small>YOU ARE JOYFULLY INVITED</small>
-            <div className="phone-monogram">
-              E <i>&amp;</i> M
-            </div>
-            <h3>
-              Elena
-              <i>&amp;</i>
-              Matteo
-            </h3>
-            <p>19 · 06 · 27</p>
-            <span className="phone-open">
-              Open your invitation <i aria-hidden="true">→</i>
-            </span>
-          </div>
-        </PhoneFrame>
-
-        <PhoneFrame
-          className="journey-phone-events"
-          label="Household event details preview"
-        >
-          <div className="phone-events">
-            <div className="phone-events-hero">
-              <Image
-                src="/images/wedding-details.webp"
-                alt=""
-                fill
-                sizes="220px"
-              />
-              <span>YOUR WEEKEND</span>
-              <h3>Made for your household.</h3>
-            </div>
-            <div className="phone-event-row">
-              <CalendarDotsIcon size={15} />
-              <div>
-                <b>Welcome dinner</b>
-                <small>Friday · 7:00 PM</small>
+          <PhoneFrame
+            className="journey-phone-invite"
+            label="Personal invitation preview"
+          >
+            <div className="phone-invitation">
+              <small>YOU ARE JOYFULLY INVITED</small>
+              <div className="phone-monogram">
+                E <i>&amp;</i> M
               </div>
-              <span className="phone-event-answer">Going</span>
-            </div>
-            <div className="phone-event-row">
-              <MapPinIcon size={15} />
-              <div>
-                <b>The ceremony</b>
-                <small>Villa Balbianello</small>
-              </div>
-              <span className="phone-event-answer phone-event-answer-late">
-                Going
+              <h3>
+                Elena
+                <i>&amp;</i>
+                Matteo
+              </h3>
+              <p>19 · 06 · 27</p>
+              <span className="phone-open">
+                Open your invitation <i aria-hidden="true">→</i>
               </span>
             </div>
-            <div className="phone-meal-question">
-              <span>DINNER</span>
-              <b>Choose a meal</b>
-              <div>
-                <i>Garden</i>
-                <i className="phone-meal-selected">
-                  Seabass <CheckIcon size={9} weight="bold" />
-                </i>
+          </PhoneFrame>
+
+          <PhoneFrame
+            className="journey-phone-events"
+            label="Household event details preview"
+          >
+            <div className="phone-events">
+              <div className="phone-events-hero">
+                <Image
+                  src="/images/wedding-details.webp"
+                  alt=""
+                  fill
+                  sizes="220px"
+                />
+                <span>YOUR WEEKEND</span>
+                <h3>Made for your household.</h3>
+              </div>
+              <div className="phone-event-row">
+                <CalendarDotsIcon size={15} />
+                <div>
+                  <b>Welcome dinner</b>
+                  <small>Friday · 7:00 PM</small>
+                </div>
+                <span className="phone-event-answer">Going</span>
+              </div>
+              <div className="phone-event-row">
+                <MapPinIcon size={15} />
+                <div>
+                  <b>The ceremony</b>
+                  <small>Villa Balbianello</small>
+                </div>
+                <span className="phone-event-answer phone-event-answer-late">
+                  Going
+                </span>
+              </div>
+              <div className="phone-meal-question">
+                <span>DINNER</span>
+                <b>Choose a meal</b>
+                <div>
+                  <i>Garden</i>
+                  <i className="phone-meal-selected">
+                    Seabass <CheckIcon size={9} weight="bold" />
+                  </i>
+                </div>
               </div>
             </div>
-          </div>
-        </PhoneFrame>
-
-        <div className="journey-reply-card">
-          <span className="journey-check">
-            <CheckIcon size={20} weight="bold" />
-          </span>
-          <small>REPLY RECEIVED</small>
-          <h3>We’ll be there.</h3>
-          <p>Sophie and James are attending the ceremony and dinner.</p>
-          <span className="journey-synced">
-            <i aria-hidden="true" /> Synced to your Studio
-          </span>
+          </PhoneFrame>
         </div>
-
-        <div className="journey-seal" aria-hidden="true">
-          V<i>&amp;</i>M
-        </div>
+        <p className="phone-gallery-hint">
+          Swipe to explore the invitation and reply{" "}
+          <span aria-hidden="true">&harr;</span>
+        </p>
       </div>
     </section>
   );
