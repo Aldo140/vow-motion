@@ -149,11 +149,6 @@ export default function ProductShowcase() {
         <div className="journey-seal" aria-hidden="true">
           V<i>&amp;</i>M
         </div>
-        <p className="journey-handnote" aria-hidden="true">
-          Personal to every guest.
-          <br />
-          Easy for everyone.
-        </p>
       </div>
 
       <div className="journey-steps" aria-label="The guest journey">

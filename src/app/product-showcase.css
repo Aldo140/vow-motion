@@ -413,17 +413,6 @@
 .journey-seal i {
   font-size: 12px;
 }
-.journey-handnote {
-  position: absolute;
-  z-index: 6;
-  right: 0;
-  top: 51%;
-  font-family: var(--serif);
-  font-size: 17px;
-  font-style: italic;
-  line-height: 1.35;
-  transform: rotate(-4deg);
-}
 .journey-steps {
   position: relative;
   z-index: 2;
@@ -435,13 +424,6 @@
 }
 .journey-steps > div {
   padding: 24px 30px 0 0;
-  animation: journey-step 12s ease-in-out infinite;
-}
-.journey-steps > div:nth-child(2) {
-  animation-delay: 0.8s;
-}
-.journey-steps > div:nth-child(3) {
-  animation-delay: 1.6s;
 }
 .journey-steps span {
   display: block;
@@ -543,17 +525,14 @@
   0%,
   57%,
   100% {
-    opacity: 0;
-    clip-path: inset(100% 0 0 0);
+    translate: 0 6px;
   }
   66%,
   87% {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
+    translate: 0 0;
   }
   94% {
-    opacity: 0;
-    clip-path: inset(0 0 0 0);
+    translate: 0 6px;
   }
 }
 @keyframes journey-check {
@@ -565,20 +544,6 @@
   68%,
   87% {
     transform: scale(1) rotate(0);
-  }
-}
-@keyframes journey-step {
-  0%,
-  100% {
-    opacity: 0.58;
-  }
-  12%,
-  42% {
-    opacity: 1;
-  }
-  55%,
-  88% {
-    opacity: 0.7;
   }
 }
 @media (hover: hover) and (pointer: fine) {
@@ -701,9 +666,6 @@
     height: 55px;
     font-size: 12px;
   }
-  .journey-handnote {
-    display: none;
-  }
   .journey-steps {
     grid-template-columns: 1fr;
   }
@@ -739,14 +701,11 @@
   .journey-check {
     animation: none;
   }
-  .journey-steps > div {
-    animation: none;
-  }
   .phone-event-answer,
   .phone-meal-question,
   .journey-reply-card {
     opacity: 1;
-    clip-path: none;
+    translate: none;
     transform: none;
   }
 }
