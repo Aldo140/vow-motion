@@ -4,19 +4,45 @@ import { Arrow, Field, Notice, Submit } from "@/components/ui";
 import { ArrowUpRightIcon, CheckIcon, PlusIcon } from "@phosphor-icons/react";
 import { TimezoneField } from "@/components/timezone-field";
 import { suggestedDeadline } from "@/lib/setup-assist";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { Wedding } from "@/lib/types";
+import { useDraft } from "./use-draft";
+import { DraftStatus } from "./draft-status";
 
 export function SettingsManager({
   data,
   mutate,
   notify,
   onSaved,
-}: PanelProps & { onSaved?: () => Promise<void> }) {
+  onPreviewChange,
+}: PanelProps & {
+  onSaved?: () => Promise<void>;
+  onPreviewChange?: (value: Partial<Wedding>) => void;
+}) {
   const [error, setError] = useState(""),
-    [busy, setBusy] = useState(false),
-    [privacy, setPrivacy] = useState(data.wedding.privacy);
-  const [date, setDate] = useState(data.wedding.date);
-  const [deadline, setDeadline] = useState(data.wedding.rsvp_deadline);
+    [busy, setBusy] = useState(false);
+  const draft = useDraft(
+    data.user.email + ":" + data.wedding.id + ":essentials",
+    {
+      names: data.wedding.names,
+      date: data.wedding.date,
+      rsvp_deadline: data.wedding.rsvp_deadline,
+      location: data.wedding.location,
+      timezone: data.wedding.timezone,
+      locale: data.wedding.locale,
+      privacy: data.wedding.privacy,
+    },
+  );
+  const { date, rsvp_deadline: deadline, privacy } = draft.value;
+  const change = (field: keyof typeof draft.value, value: string) =>
+    draft.update((previous) => ({ ...previous, [field]: value }));
+  const setDate = (value: string) => change("date", value);
+  const setDeadline = (value: string) => change("rsvp_deadline", value);
+  const setPrivacy = (value: string) => change("privacy", value);
+  const serialized = JSON.stringify(draft.value);
+  useEffect(() => {
+    onPreviewChange?.(JSON.parse(serialized));
+  }, [serialized, onPreviewChange]);
   return (
     <>
       <PageHeading
@@ -27,6 +53,20 @@ export function SettingsManager({
             : "Your wedding essentials, privacy, and publishing controls."
         }
       />
+      <DraftStatus status={draft.status} discard={draft.discard} />
+      {date && deadline && deadline > date && (
+        <Notice error>
+          The RSVP deadline is after the wedding. Choose an earlier date.
+        </Notice>
+      )}
+      {date &&
+        date !== data.wedding.date &&
+        data.events.some((event) => event.starts_at.slice(0, 10) !== date) && (
+          <p className="muted-copy">
+            Changing the wedding date does not move existing events. Review
+            their dates in the next chapter.
+          </p>
+        )}
       {error && <Notice error>{error}</Notice>}
       <form
         className="settings-form"
@@ -42,6 +82,7 @@ export function SettingsManager({
               { ...data.wedding, ...form, privacy },
               "PATCH",
             );
+            draft.clear();
             if (!onSaved) notify("Wedding settings saved.");
             await onSaved?.();
           } catch (e) {
@@ -58,7 +99,12 @@ export function SettingsManager({
           </div>
           <div>
             <Field label="Names">
-              <input name="names" defaultValue={data.wedding.names} required />
+              <input
+                name="names"
+                value={draft.value.names}
+                onChange={(e) => change("names", e.target.value)}
+                required
+              />
             </Field>
             <div className="form-grid">
               <Field label="Date">
@@ -104,13 +150,22 @@ export function SettingsManager({
             <Field label="Location">
               <input
                 name="location"
-                defaultValue={data.wedding.location}
+                value={draft.value.location}
+                onChange={(e) => change("location", e.target.value)}
                 required
               />
             </Field>
-            <TimezoneField defaultValue={data.wedding.timezone} />
+            <TimezoneField
+              value={draft.value.timezone}
+              onChange={(value) => change("timezone", value)}
+              location={draft.value.location}
+            />
             <Field label="Default guest language">
-              <select name="locale" defaultValue={data.wedding.locale}>
+              <select
+                name="locale"
+                value={draft.value.locale}
+                onChange={(e) => change("locale", e.target.value)}
+              >
                 <option value="en">English</option>
                 <option value="es">Español</option>
               </select>

@@ -22,6 +22,14 @@ Pilot feedback can be recorded from any Studio screen, with open/in-progress/res
 
 Migration `008_planner_pilot.sql` adds preview tokens, pilot feedback and private guest requests. The existing migration runner applies it on database startup.
 
-Direct planning-platform integrations, reusable event-template libraries and printable stationery were deferred ideas, not part of this first pilot implementation. Existing planner document exports remain available.
+Unfinished essentials, world/story choices, identity refinements, guest/event editors and spreadsheet reviews now recover from local drafts. Draft keys include the current account and wedding; successful saves remove the corresponding draft. Closing an editor keeps its draft, while Discard local draft returns to saved values. The selected setup chapter and open guest/event/import editor are recovered too. This is device/browser storage, not cross-device synchronization. Passwords and billing fields are not stored in drafts. Storage failures are reported without preventing normal saving.
+
+Four editable event starters fill the title, description and suggested local start/end times relative to the wedding date. Venue suggestions cover recognized destination names, require an explicit selection, and decline to guess if the text matches multiple zones. End-before-start errors and event overlaps receive guidance; overlaps are advisory because parallel/private events may be intentional. Daylight-saving gaps and ambiguous times still use the existing event-time validation.
+
+Spreadsheet mapping recognizes common exported header variants, separators and accented aliases. Name, email and household cells are editable in the review table, with field-specific explanations and original CSV row numbers. Corrections and column choices recover on reload. Changing a mapping or correction requires duplicate review again; a newer file selection supersedes an earlier parse.
+
+The setup workbench includes one live design preview for local names, date, location, language, world, story, opening style and identity choices, alongside the saved programme. It is explicitly a design preview; the existing household preview remains the place to verify private event access and guest behavior.
+
+Direct planning-platform integrations, user-created event-template libraries and printable stationery remain outside this implementation. Existing planner document exports remain available.
 
 Validation: `npm run check` and `npx playwright test tests/e2e/planner-pilot.spec.ts`. If Playwright’s bundled browser is unavailable, set `PLAYWRIGHT_CHANNEL=msedge` or `chrome` to use an installed browser.

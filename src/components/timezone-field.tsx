@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Field } from "./ui";
+import { venueTimezone } from "@/lib/planning-assist";
 
 const popular = [
   ["America/Edmonton", "Calgary, Banff & Edmonton — Mountain time"],
@@ -24,11 +25,23 @@ const popular = [
 export function TimezoneField({
   defaultValue = "Europe/Rome",
   label = "Timezone",
+  value: controlledValue,
+  onChange,
+  location = "",
 }: {
   defaultValue?: string;
   label?: string;
+  value?: string;
+  onChange?: (zone: string) => void;
+  location?: string;
 }) {
-  const [value, setValue] = useState(defaultValue);
+  const [localValue, setLocalValue] = useState(defaultValue);
+  const value = controlledValue ?? localValue;
+  const setValue = (zone: string) => {
+    setLocalValue(zone);
+    onChange?.(zone);
+  };
+  const suggestion = venueTimezone(location);
   const [search, setSearch] = useState("");
   const zones = [
     ...new Set([
@@ -87,6 +100,18 @@ export function TimezoneField({
       >
         Use my device’s timezone
       </button>
+      {suggestion && suggestion.zone !== value && (
+        <button
+          type="button"
+          className="text-link"
+          onClick={() => {
+            setValue(suggestion.zone);
+            setSearch("");
+          }}
+        >
+          Use suggested timezone for {suggestion.label}
+        </button>
+      )}
     </Field>
   );
 }

@@ -2,14 +2,30 @@
 import { type PanelProps } from "@/components/studio/shared";
 import { identityStyle, weddingIdentity } from "@/lib/identity";
 import { formatDate, getWorld } from "@/lib/worlds";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDraft } from "./studio/use-draft";
+import { DraftStatus } from "./studio/draft-status";
 import GuestCrest from "./guest-crest";
 import { Field, Notice, Submit } from "./ui";
 
-export default function IdentityEditor({ data, mutate, notify }: PanelProps) {
-  const [identity, setIdentity] = useState(() =>
+export default function IdentityEditor({
+  data,
+  mutate,
+  notify,
+  onIdentityChange,
+}: PanelProps & {
+  onIdentityChange?: (identity: ReturnType<typeof weddingIdentity>) => void;
+}) {
+  const draft = useDraft(
+    data.user.email + ":" + data.wedding.id + ":identity",
     weddingIdentity(data.wedding.settings),
   );
+  const identity = draft.value,
+    setIdentity = draft.update;
+  const serialized = JSON.stringify(identity);
+  useEffect(() => {
+    onIdentityChange?.(JSON.parse(serialized));
+  }, [serialized, onIdentityChange]);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const world = getWorld(data.wedding.world);
@@ -21,6 +37,7 @@ export default function IdentityEditor({ data, mutate, notify }: PanelProps) {
         Refine your saved world. Your choices carry into the invitation, RSVP,
         itinerary and wedding pass.
       </p>
+      <DraftStatus status={draft.status} discard={draft.discard} />
       {error && <Notice error>{error}</Notice>}
       <form
         onSubmit={async (e) => {
@@ -29,6 +46,7 @@ export default function IdentityEditor({ data, mutate, notify }: PanelProps) {
           setError("");
           try {
             await mutate("identity", identity, "PATCH");
+            draft.clear();
             notify("Identity details saved.");
           } catch (e) {
             setError((e as Error).message);

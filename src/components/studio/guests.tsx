@@ -1,6 +1,6 @@
 "use client";
 import { PageHeading, type PanelProps } from "@/components/studio/shared";
-import { Arrow, Field, Modal, Notice, Submit } from "@/components/ui";
+import { Arrow, Modal } from "@/components/ui";
 import type { Guest } from "@/lib/types";
 import {
   DownloadSimpleIcon,
@@ -11,15 +11,29 @@ import {
   UploadSimpleIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
+import { GuestEditor } from "./guest-editor";
+import { useDraft } from "./use-draft";
 import { ImportGuests } from "./import-guests";
 export function GuestManager({ data, mutate, notify }: PanelProps) {
   const [search, setSearch] = useState(""),
     [filter, setFilter] = useState("all"),
-    [edit, setEdit] = useState<Guest | null | undefined>(undefined),
-    [importing, setImporting] = useState(false),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false),
     [remove, setRemove] = useState<Guest | null>(null);
+  const active = useDraft(
+    data.user.email + ":" + data.wedding.id + ":guest-editor",
+    { id: "", importing: false },
+  );
+  const edit =
+    active.value.id === "new"
+      ? null
+      : data.guests.find((g) => g.id === active.value.id);
+  const setEdit = (guest: Guest | null | undefined) =>
+    active.update((previous) => ({
+      ...previous,
+      id: guest === null ? "new" : guest?.id || "",
+    }));
+  const importing = active.value.importing;
+  const setImporting = (importing: boolean) =>
+    active.update((previous) => ({ ...previous, importing }));
   const guests = data.guests.filter(
     (g) =>
       (filter === "all" || g.status === filter) &&
@@ -40,7 +54,6 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
         <button
           className="button primary"
           onClick={() => {
-            setError("");
             setEdit(null);
           }}
         >
@@ -174,7 +187,6 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
                       className="icon-button"
                       aria-label={"Edit " + g.name}
                       onClick={() => {
-                        setError("");
                         setEdit(g);
                       }}
                     >
@@ -232,123 +244,14 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
         </a>
       </div>
       {edit !== undefined && (
-        <Modal
-          title={edit ? "A guest’s details" : "Add someone you love"}
+        <GuestEditor
+          key={edit?.id || "new"}
+          data={data}
+          mutate={mutate}
+          notify={notify}
+          guest={edit}
           onClose={() => setEdit(undefined)}
-        >
-          {error && <Notice error>{error}</Notice>}
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setBusy(true);
-              setError("");
-              const f = new FormData(e.currentTarget);
-              const input = {
-                ...Object.fromEntries(f),
-                is_plus_one: f.has("is_plus_one"),
-                consent: f.has("consent"),
-              };
-              try {
-                await mutate(
-                  "guests" + (edit ? "/" + edit.id : ""),
-                  input,
-                  edit ? "PATCH" : "POST",
-                );
-                setEdit(undefined);
-                notify(
-                  edit
-                    ? "Guest details saved."
-                    : "A place for one more. Guest added.",
-                );
-              } catch (e) {
-                setError((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            <Field label="Full name">
-              <input
-                name="name"
-                defaultValue={edit?.name}
-                required
-                placeholder="Jessica Williams"
-              />
-            </Field>
-            <div className="form-grid">
-              <Field label="Email">
-                <input name="email" type="email" defaultValue={edit?.email} />
-              </Field>
-              <Field label="Phone">
-                <input name="phone" type="tel" defaultValue={edit?.phone} />
-              </Field>
-            </div>
-            {!edit && (
-              <Field
-                label="Household"
-                hint="Use the same household name to group people on one invitation."
-              >
-                <input
-                  name="household"
-                  list="households"
-                  placeholder="Williams household"
-                />
-                <datalist id="households">
-                  {data.households.map((h) => (
-                    <option key={h.id}>{h.name}</option>
-                  ))}
-                </datalist>
-              </Field>
-            )}
-            <Field label="Postal address">
-              <textarea name="address" defaultValue={edit?.address} rows={2} />
-            </Field>
-            <div className="form-grid">
-              <Field label="Tags" hint="Separate tags with commas.">
-                <input
-                  name="tags"
-                  defaultValue={edit?.tags}
-                  placeholder="Family, Out of town"
-                />
-              </Field>
-              <Field label="Language">
-                <select name="language" defaultValue={edit?.language || "en"}>
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                </select>
-              </Field>
-            </div>
-            <Field label="Private notes">
-              <textarea name="notes" defaultValue={edit?.notes} rows={2} />
-            </Field>
-            {!edit && (
-              <label className="check-label">
-                <input type="checkbox" name="is_plus_one" />
-                This is an assigned plus-one (they can update their name)
-              </label>
-            )}
-            <label className="check-label">
-              <input
-                type="checkbox"
-                name="consent"
-                defaultChecked={edit?.consent}
-              />
-              This guest has agreed to receive wedding messages
-            </label>
-            <div className="form-actions">
-              <button
-                type="button"
-                className="button outline"
-                onClick={() => setEdit(undefined)}
-              >
-                Cancel
-              </button>
-              <Submit pending={busy}>
-                Save guest <Arrow />
-              </Submit>
-            </div>
-          </form>
-        </Modal>
+        />
       )}
       {remove && (
         <Modal

@@ -61,7 +61,9 @@ test("couples edit venue times, review message audiences, and navigate without a
   await expect(page.getByLabel("Starts", { exact: true })).toHaveValue(
     "2027-06-19T23:30",
   );
-  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Close and keep draft", exact: true })
+    .click();
   await page
     .getByRole("navigation", { name: "Studio navigation" })
     .getByRole("link", { name: "Messages", exact: true })

@@ -9,7 +9,11 @@ import { Field } from "@/components/ui";
 import type { Opening, World } from "@/lib/types";
 import { getWorld, worlds } from "@/lib/worlds";
 import { CheckIcon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { weddingIdentity } from "@/lib/identity";
+import type { Wedding } from "@/lib/types";
+import { useDraft } from "./use-draft";
+import { DraftStatus } from "./draft-status";
 import { GuestQuestions } from "./guest-questions";
 export const OPENINGS: {
   id: Opening;
@@ -48,15 +52,37 @@ export const OPENINGS: {
 ];
 
 export function ExperienceManager(
-  props: PanelProps & { onSaved?: () => Promise<void> },
+  props: PanelProps & {
+    onSaved?: () => Promise<void>;
+    onPreviewChange?: (value: Partial<Wedding>) => void;
+  },
 ) {
   const { data, mutate, notify } = props;
-  const [selected, setSelected] = useState<World>(data.wedding.world),
-    [opening, setOpening] = useState<Opening>(
-      data.wedding.opening === "seal" ? "seal" : "envelope",
-    ),
-    [story, setStory] = useState(data.wedding.story),
-    [busy, setBusy] = useState(false);
+  const draft = useDraft(
+    data.user.email + ":" + data.wedding.id + ":experience",
+    {
+      world: data.wedding.world,
+      opening: data.wedding.opening,
+      story: data.wedding.story,
+    },
+  );
+  const { world: selected, opening, story } = draft.value;
+  const setSelected = (world: World) =>
+    draft.update((previous) => ({ ...previous, world }));
+  const setOpening = (opening: Opening) =>
+    draft.update((previous) => ({ ...previous, opening }));
+  const setStory = (story: string) =>
+    draft.update((previous) => ({ ...previous, story }));
+  const [busy, setBusy] = useState(false);
+  const onPreviewChange = props.onPreviewChange;
+  const updateIdentity = useCallback(
+    (identity: ReturnType<typeof weddingIdentity>) =>
+      onPreviewChange?.({ settings: { ...data.wedding.settings, identity } }),
+    [onPreviewChange, data.wedding.settings],
+  );
+  useEffect(() => {
+    onPreviewChange?.({ world: selected, opening, story });
+  }, [selected, opening, story, onPreviewChange]);
   return (
     <>
       <PageHeading
@@ -75,6 +101,7 @@ export function ExperienceManager(
                 { ...data.wedding, world: selected, opening, story },
                 "PATCH",
               );
+              draft.clear();
               if (!props.onSaved) notify("Your wedding identity is saved.");
               await props.onSaved?.();
             } catch (e) {
@@ -92,6 +119,7 @@ export function ExperienceManager(
           <CheckIcon size={17} />
         </button>
       </PageHeading>
+      <DraftStatus status={draft.status} discard={draft.discard} />
       <div className="world-choice-grid">
         {worlds.map((w) => (
           <button
@@ -175,7 +203,7 @@ export function ExperienceManager(
           />
         </Field>
       </section>
-      <IdentityEditor {...props} />
+      <IdentityEditor {...props} onIdentityChange={updateIdentity} />
       <GuestQuestions {...props} />
       <div className="identity-summary">
         <span>YOUR IDENTITY</span>

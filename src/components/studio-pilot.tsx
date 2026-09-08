@@ -6,19 +6,33 @@ import {
 } from "@/components/studio/shared";
 import { planningActions, setupSteps } from "@/lib/pilot";
 import Link from "next/link";
+import type { Wedding } from "@/lib/types";
+import { useDraft } from "./studio/use-draft";
+import { LiveInvitation } from "./studio/live-invitation";
 import { setupEncouragement } from "@/lib/setup-assist";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { EventsManager, GuestManager } from "./studio-guests";
 import { ExperienceManager, SettingsManager } from "./studio-tools";
 import { Field, Modal, Notice, Submit } from "./ui";
 
 export function SetupManager(props: PanelProps) {
   const steps = setupSteps(props.data);
-  const [index, setIndex] = useState(() =>
-    Math.max(
-      0,
-      steps.findIndex((s) => !s.done),
-    ),
+  const journey = useDraft(
+    props.data.user.email + ":" + props.data.wedding.id + ":chapter",
+    {
+      index: Math.max(
+        0,
+        steps.findIndex((s) => !s.done),
+      ),
+    },
+  );
+  const index = Math.max(0, Math.min(4, journey.value.index));
+  const setIndex = (index: number) => journey.update({ index });
+  const [preview, setPreview] = useState<Partial<Wedding>>({});
+  const updatePreview = useCallback(
+    (value: Partial<Wedding>) =>
+      setPreview((previous) => ({ ...previous, ...value })),
+    [],
   );
   const [busy, setBusy] = useState(false);
   const [milestone, setMilestone] = useState("");
@@ -52,6 +66,9 @@ export function SetupManager(props: PanelProps) {
           Your completed steps stay saved. Return whenever it suits you.{" "}
           {steps.filter((s) => s.done).length} of {steps.length} reviewed.
         </p>
+        <a className="text-link" href="#setup-live-preview">
+          See live invitation preview
+        </a>
         <nav className="setup-steps" aria-label="Setup steps">
           {steps.map((s, i) => (
             <button
@@ -82,22 +99,42 @@ export function SetupManager(props: PanelProps) {
           </button>
         </div>
       )}
-      <div key={step.id}>
-        {index === 0 && <ExperienceManager {...props} onSaved={complete} />}
-        {index === 1 && <SettingsManager {...props} onSaved={complete} />}
-        {index === 2 && <EventsManager {...props} />}
-        {index === 3 && <GuestManager {...props} />}
-        {index === 4 && (
-          <section className="pilot-panel">
-            <h1>See it through their eyes.</h1>
-            <p>
-              Open a household’s preview and check their events, RSVP questions,
-              travel information and wedding pass. Preview links expire after an
-              hour and cannot change guest information.
-            </p>
-            <PreviewButton {...props} />
-          </section>
-        )}
+      <div className="setup-workbench">
+        <div key={step.id}>
+          {index === 0 && (
+            <ExperienceManager
+              {...props}
+              onSaved={complete}
+              onPreviewChange={updatePreview}
+            />
+          )}
+          {index === 1 && (
+            <SettingsManager
+              {...props}
+              onSaved={complete}
+              onPreviewChange={updatePreview}
+            />
+          )}
+          {index === 2 && <EventsManager {...props} />}
+          {index === 3 && <GuestManager {...props} />}
+          {index === 4 && (
+            <section className="pilot-panel">
+              <h1>See it through their eyes.</h1>
+              <p>
+                Open a household’s preview and check their events, RSVP
+                questions, travel information and wedding pass. Preview links
+                expire after an hour and cannot change guest information.
+              </p>
+              <PreviewButton {...props} />
+            </section>
+          )}
+        </div>
+        <div id="setup-live-preview">
+          <LiveInvitation
+            wedding={{ ...props.data.wedding, ...preview }}
+            events={props.data.events}
+          />
+        </div>
       </div>
       <section className="pilot-panel setup-completion">
         {index >= 2 && (

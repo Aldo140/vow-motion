@@ -2,7 +2,14 @@
 import { type PanelProps } from "@/components/studio/shared";
 import { Arrow, Field, Modal, Notice } from "@/components/ui";
 import Papa from "papaparse";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import {
+  guessColumns,
+  importFields,
+  importProblems,
+} from "@/lib/planning-assist";
+import { useDraft } from "./use-draft";
+import { DraftStatus } from "./draft-status";
 
 export function ImportGuests({
   data,
@@ -15,31 +22,42 @@ export function ImportGuests({
   onClose: () => void;
   notify: PanelProps["notify"];
 }) {
-  const [records, setRecords] = useState<Record<string, string>[]>([]),
-    [mapping, setMapping] = useState<Record<string, string>>({}),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false),
-    [skip, setSkip] = useState<number[]>([]);
+  const draft = useDraft(data.user.email + ":" + data.wedding.id + ":import", {
+    records: [] as Record<string, string>[],
+    mapping: {} as Record<string, string>,
+    skip: [] as number[],
+    fixes: {} as Record<
+      number,
+      { name?: string; email?: string; household?: string }
+    >,
+  });
+  const { records, mapping, skip, fixes } = draft.value;
+  const setRecords = (records: Record<string, string>[]) =>
+    draft.update((previous) => ({ ...previous, records, fixes: {} }));
+  const setMapping = (mapping: Record<string, string>) =>
+    draft.update((previous) => ({ ...previous, mapping, fixes: {} }));
+  const setSkip = (skip: number[]) =>
+    draft.update((previous) => ({ ...previous, skip }));
+  const [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
   const [duplicatesReviewed, setDuplicatesReviewed] = useState(false);
-  const fields = [
-    "name",
-    "first name",
-    "last name",
-    "email",
-    "phone",
-    "household",
-    "tags",
-  ];
-  const aliases: Record<string, string[]> = {
-    name: ["name", "full name", "guest name"],
-    "first name": ["first", "first name", "firstname"],
-    "last name": ["last", "last name", "surname", "lastname"],
-    email: ["email", "email address"],
-    phone: ["phone", "phone #", "mobile", "telephone"],
-    household: ["household", "family", "group", "guest of"],
-    tags: ["tags", "relationship"],
+  const uploadVersion = useRef(0);
+  const fields = importFields;
+  const fix = (
+    index: number,
+    field: "name" | "email" | "household",
+    value: string,
+  ) => {
+    draft.update((previous) => ({
+      ...previous,
+      fixes: {
+        ...previous.fixes,
+        [index]: { ...previous.fixes[index], [field]: value },
+      },
+    }));
+    setDuplicatesReviewed(false);
   };
-  const mapped = records.map((r) => ({
+  const mapped = records.map((r, i) => ({
     name:
       r[mapping.name]?.trim() ||
       [r[mapping["first name"]], r[mapping["last name"]]]
@@ -50,10 +68,9 @@ export function ImportGuests({
     phone: (r[mapping.phone] || "").trim(),
     household: (r[mapping.household] || "").trim(),
     tags: (r[mapping.tags] || "").trim(),
+    ...fixes[i],
   }));
-  const invalid = (r: (typeof mapped)[number]) =>
-    !r.name.trim() ||
-    (!!r.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email));
+  const invalid = (r: (typeof mapped)[number]) => importProblems(r).length > 0;
   const duplicate = (r: (typeof mapped)[number], i: number) =>
     data.guests.some(
       (g) =>
@@ -76,12 +93,20 @@ export function ImportGuests({
         Import a CSV from Excel, Numbers, or Google Sheets. Map your columns,
         review every row, then add your guests.
       </p>
+      <DraftStatus status={draft.status} discard={draft.discard} />
+      {records.length > 0 && (
+        <p>
+          Matching columns are selected for you. Check the choices, then fix any
+          flagged row directly below.
+        </p>
+      )}
       {error && <Notice error>{error}</Notice>}
       <Field label="Choose a CSV file">
         <input
           type="file"
           accept=".csv,text/csv"
           onChange={(e) => {
+            const version = ++uploadVersion.current;
             const file = e.target.files?.[0];
             if (!file) return;
             setRecords([]);
@@ -95,21 +120,13 @@ export function ImportGuests({
               header: true,
               skipEmptyLines: "greedy",
               complete: (result) => {
+                if (version !== uploadVersion.current) return;
                 if (result.errors.length) {
                   setError(result.errors.map((e) => e.message).join(" "));
                   return;
                 }
                 const headers = result.meta.fields || [];
-                setMapping(
-                  Object.fromEntries(
-                    fields.map((f) => [
-                      f,
-                      headers.find((h) =>
-                        aliases[f].includes(h.toLowerCase().trim()),
-                      ) || "",
-                    ]),
-                  ),
-                );
+                setMapping(guessColumns(headers));
                 setRecords(result.data);
                 setSkip([]);
                 setError("");
@@ -166,9 +183,28 @@ export function ImportGuests({
                         }
                       />
                     </td>
-                    <td>{r.name || "Missing name"}</td>
-                    <td>{r.email || "—"}</td>
-                    <td>{r.household || `${r.name} household`}</td>
+                    <td>
+                      <input
+                        aria-label={"Name for row " + (i + 1)}
+                        value={r.name}
+                        onChange={(e) => fix(i, "name", e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        aria-label={"Email for row " + (i + 1)}
+                        value={r.email}
+                        onChange={(e) => fix(i, "email", e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        aria-label={"Household for row " + (i + 1)}
+                        value={r.household}
+                        placeholder={`${r.name} household`}
+                        onChange={(e) => fix(i, "household", e.target.value)}
+                      />
+                    </td>
                     <td>
                       <span
                         className={
@@ -186,6 +222,11 @@ export function ImportGuests({
                             ? "Possible duplicate"
                             : "Ready"}
                       </span>
+                      {importProblems(r).map((problem) => (
+                        <p className="import-row-error" key={problem}>
+                          Sheet row {i + 2}: {problem}
+                        </p>
+                      ))}
                     </td>
                   </tr>
                 ))}
@@ -246,6 +287,7 @@ export function ImportGuests({
                     "guests",
                     mapped.filter((_, i) => !skip.includes(i)),
                   );
+                  draft.clear();
                   notify(`${mapped.length - skip.length} guests imported.`);
                   onClose();
                 } catch (e) {

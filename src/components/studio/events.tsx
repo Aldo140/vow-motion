@@ -1,7 +1,5 @@
 "use client";
-import { PageHeading, type PanelProps } from "@/components/studio/shared";
-import { Arrow, Field, Modal, Notice, Submit } from "@/components/ui";
-import { eventInstant, localEventTime } from "@/lib/event-time";
+import { PageHeading, type PanelProps } from "./shared";
 import type { Event } from "@/lib/types";
 import { eventTime, formatDate } from "@/lib/worlds";
 import {
@@ -10,14 +8,19 @@ import {
   PencilSimpleIcon,
   PlusIcon,
 } from "@phosphor-icons/react";
-import { TimezoneField } from "@/components/timezone-field";
-import { useState } from "react";
-
-export function EventsManager({ data, mutate, notify }: PanelProps) {
-  const [editing, setEditing] = useState<Event | null | undefined>(undefined),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false),
-    [visibility, setVisibility] = useState("all");
+import { EventEditor } from "./event-editor";
+import { useDraft } from "./use-draft";
+export function EventsManager({ data, mutate, notify, refresh }: PanelProps) {
+  const active = useDraft(
+    data.user.email + ":" + data.wedding.id + ":event-editor",
+    { id: "" },
+  );
+  const editing =
+    active.value.id === "new"
+      ? null
+      : data.events.find((event) => event.id === active.value.id);
+  const setEditing = (event: Event | null | undefined) =>
+    active.update({ id: event === null ? "new" : event?.id || "" });
   return (
     <>
       <PageHeading
@@ -27,7 +30,6 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
         <button
           className="button primary"
           onClick={() => {
-            setVisibility("all");
             setEditing(null);
           }}
         >
@@ -80,8 +82,6 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
             <button
               className="button outline small"
               onClick={() => {
-                setVisibility(event.visibility);
-                setError("");
                 setEditing(event);
               }}
             >
@@ -102,196 +102,15 @@ export function EventsManager({ data, mutate, notify }: PanelProps) {
         </div>
       )}
       {editing !== undefined && (
-        <Modal
-          title={editing ? "Edit this moment" : "A new moment"}
+        <EventEditor
+          key={editing?.id || "new"}
+          data={data}
+          mutate={mutate}
+          notify={notify}
+          refresh={refresh}
+          event={editing}
           onClose={() => setEditing(undefined)}
-          wide
-        >
-          {error && <Notice error>{error}</Notice>}
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setBusy(true);
-              const f = new FormData(e.currentTarget);
-              try {
-                await mutate(
-                  "events" + (editing ? "/" + editing.id : ""),
-                  {
-                    ...Object.fromEntries(f),
-                    starts_at: eventInstant(
-                      String(f.get("starts_at")),
-                      String(f.get("timezone")),
-                    ),
-                    ends_at: eventInstant(
-                      String(f.get("ends_at")),
-                      String(f.get("timezone")),
-                    ),
-                    capacity: Number(f.get("capacity")),
-                    rsvp_required: f.has("rsvp_required"),
-                    household_ids: f.getAll("household_ids"),
-                    visibility,
-                  },
-                  editing ? "PATCH" : "POST",
-                );
-                setEditing(undefined);
-                notify("Your event is saved.");
-              } catch (e) {
-                setError((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            <div className="form-grid">
-              <Field label="Event title">
-                <input
-                  name="title"
-                  list="event-title-ideas"
-                  defaultValue={editing?.title}
-                  required
-                />
-                <datalist id="event-title-ideas">
-                  {[
-                    "Wedding ceremony",
-                    "Reception",
-                    "Welcome drinks",
-                    "Rehearsal dinner",
-                    "Farewell brunch",
-                  ].map((title) => (
-                    <option key={title}>{title}</option>
-                  ))}
-                </datalist>
-              </Field>
-              <Field label="Spanish title">
-                <input name="title_es" defaultValue={editing?.title_es} />
-              </Field>
-              <Field
-                label="Starts"
-                hint="Use the local time at your venue. We handle the timezone."
-              >
-                <input
-                  name="starts_at"
-                  type="datetime-local"
-                  defaultValue={
-                    editing
-                      ? localEventTime(editing.starts_at, editing.timezone)
-                      : data.wedding.date + "T16:00"
-                  }
-                  required
-                />
-              </Field>
-              <Field label="Ends">
-                <input
-                  name="ends_at"
-                  type="datetime-local"
-                  defaultValue={
-                    editing
-                      ? localEventTime(editing.ends_at, editing.timezone)
-                      : data.wedding.date + "T23:00"
-                  }
-                  required
-                />
-              </Field>
-              <TimezoneField
-                label="Venue timezone"
-                defaultValue={editing?.timezone || data.wedding.timezone}
-              />
-              <Field label="Capacity">
-                <input
-                  name="capacity"
-                  type="number"
-                  min={1}
-                  max={10000}
-                  defaultValue={
-                    editing?.capacity || Math.max(1, data.guests.length || 100)
-                  }
-                  required
-                />
-              </Field>
-              <Field label="Venue">
-                <input name="venue" defaultValue={editing?.venue} required />
-              </Field>
-              <Field label="Address">
-                <input
-                  name="address"
-                  defaultValue={editing?.address ?? data.wedding.location}
-                />
-              </Field>
-            </div>
-            <Field label="The details">
-              <textarea
-                name="description"
-                defaultValue={editing?.description}
-              />
-            </Field>
-            <Field label="Dress code">
-              <input
-                name="dress_code"
-                list="dress-code-ideas"
-                defaultValue={editing?.dress_code}
-                placeholder="Choose a suggestion or write your own"
-              />
-              <datalist id="dress-code-ideas">
-                {[
-                  "Black tie",
-                  "Formal",
-                  "Cocktail attire",
-                  "Garden party",
-                  "Smart casual",
-                  "Come as you feel comfortable",
-                ].map((code) => (
-                  <option key={code}>{code}</option>
-                ))}
-              </datalist>
-            </Field>
-            <Field label="Who is invited?">
-              <select
-                value={visibility}
-                onChange={(e) => setVisibility(e.target.value)}
-              >
-                <option value="all">All invited guests</option>
-                <option value="private">Selected households only</option>
-              </select>
-            </Field>
-            {visibility === "private" && (
-              <fieldset className="household-checkboxes">
-                <legend>Invited households</legend>
-                {data.households.map((h) => (
-                  <label className="check-label" key={h.id}>
-                    <input
-                      type="checkbox"
-                      name="household_ids"
-                      value={h.id}
-                      defaultChecked={editing?.household_ids?.includes(h.id)}
-                    />
-                    {h.name}
-                  </label>
-                ))}
-              </fieldset>
-            )}
-            <label className="check-label">
-              <input
-                type="checkbox"
-                name="rsvp_required"
-                defaultChecked={editing?.rsvp_required ?? true}
-              />
-              Ask for an RSVP to this event
-            </label>
-            <div className="form-actions">
-              <button
-                type="button"
-                className="button outline"
-                onClick={() => setEditing(undefined)}
-              >
-                Cancel
-              </button>
-              <Submit pending={busy}>
-                Save event
-                <Arrow />
-              </Submit>
-            </div>
-          </form>
-        </Modal>
+        />
       )}
     </>
   );
