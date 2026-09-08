@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import MarketingNavigation from "./marketing-navigation";
+import { FirstSteps, OfferQuestions } from "./marketing-offer";
 import { Brand, Arrow, DemoButton } from "./ui";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -111,18 +112,24 @@ export default function Planners() {
             <span>They experience the magic.</span>
           </p>
           <p className="planner-lede">
-            Vow Motion is one place to run a wedding — guest list, invitations,
-            RSVP, travel, seating and updates — while the couple’s guests
-            receive something that looks nothing like a form.
+            Carry your couple’s wedding design from the invitation opening to
+            household RSVPs, private events and travel details. Explore the
+            guest experience first, then see whether the Studio fits the way you
+            work.
           </p>
           <div className="planner-hero-actions">
-            <DemoButton>Open the planner Studio</DemoButton>
-            <a href={guestPreview} className="text-link">
+            <a href={guestPreview} className="button primary">
               See what a guest receives <Arrow diagonal size={14} />
             </a>
+            <DemoButton className="text-link">
+              Open the planner Studio
+            </DemoButton>
           </div>
+          <p className="offer-note">
+            Working invitation. Sample guests. No signup or card required.
+          </p>
         </section>
-
+        <FirstSteps planner />
         <section className="planner-ledger" aria-labelledby="ledger-heading">
           <div className="ledger-intro">
             <h2 id="ledger-heading">
@@ -132,7 +139,7 @@ export default function Planners() {
             </h2>
             <p>
               Everything you set on the left is what their guests meet on the
-              right. Nothing is entered twice.
+              right. Details stay connected within Vow Motion.
             </p>
           </div>
           <div className="ledger-columns" aria-hidden="true">
@@ -167,26 +174,25 @@ export default function Planners() {
             />
           </div>
           <div className="pilot-copy">
-            <p className="collection-caption">A founding planner pilot</p>
+            <p className="collection-caption">Explore first. Build together.</p>
             <h2 id="pilot-heading">
-              Use it for
+              Start by imagining
               <br />
               <em>one wedding.</em>
             </h2>
             <p>
-              We are looking for a small number of planners to run one real
-              wedding through Vow Motion. We build the first one with you, you
-              run it with your couple, and you tell us where it does not fit the
-              way you already work.
+              Get a feel for it with a private Studio demo before you involve a
+              couple. We are a small team interested in working directly with
+              planners to make the guest experience more personal and the setup
+              easier. Your current process is the starting point for that
+              conversation.
             </p>
             <ul className="pilot-list">
+              <li>Three sample weddings, ready to explore and change.</li>
+              <li>Try the designs, guest lists and event settings yourself.</li>
               <li>
-                We set the first wedding up with you, guest list included.
+                No card, no meeting and no real guest list needed to try it.
               </li>
-              <li>
-                Your guest data stays yours, and exports whenever you ask.
-              </li>
-              <li>No card, and no commitment beyond that wedding.</li>
             </ul>
             <DemoButton className="button primary">
               Start with a private demo
@@ -198,6 +204,7 @@ export default function Planners() {
           </div>
         </section>
 
+        <OfferQuestions planner />
         <section className="planner-closing">
           <span>ONE PLACE TO RUN THE DAY. ONE PLACE TO REMEMBER IT.</span>
           <h2>

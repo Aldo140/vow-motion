@@ -207,31 +207,27 @@ export default function LandingHero() {
         <div className="hero-copy-depth">
           <div className="immersive-hero-copy">
             <p className="hero-dedication">
-              For the day. For your people. Forever.
+              Wedding invitations, RSVPs and guest details
             </p>
             <h1>
               <span>Your entire wedding.</span>
               <em>Beautifully shared.</em>
             </h1>
             <p className="hero-description">
-              An invitation they’ll feel.
-              <br />A celebration they’ll never forget.
+              An invitation that feels like you, with household RSVPs, event
+              details and travel plans together in one beautiful place.
             </p>
             <div className="hero-actions">
-              <Link href="/start" className="button light-button">
-                Create your wedding <ArrowUpRightIcon size={17} />
-              </Link>
-              <Link
-                href={"/demo/" + mood.id}
-                prefetch={false}
-                className="hero-explore"
-              >
-                Explore a wedding <ArrowRightIcon size={16} />
+              <a href={"/demo/" + mood.id} className="button light-button">
+                Try a guest invitation <ArrowUpRightIcon size={17} />
+              </a>
+              <Link href="/start" className="hero-explore">
+                Create your wedding <ArrowRightIcon size={16} />
               </Link>
             </div>
             <div className="hero-reassurance">
               <CheckIcon size={13} />
-              <span>No card required. Just the two of you.</span>
+              <span>Try the demo without signing up. No card required.</span>
             </div>
           </div>
         </div>

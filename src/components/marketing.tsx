@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LandingHero from "./landing-hero";
+import { FirstSteps, OfferQuestions } from "./marketing-offer";
 import MarketingNavigation from "./marketing-navigation";
 import { useGSAP } from "@gsap/react";
 import { CheckIcon, ArrowDownIcon } from "@phosphor-icons/react";
@@ -179,6 +180,7 @@ export default function Marketing() {
             </div>
           </div>
         </section>
+        <FirstSteps />
         <section
           className="platform-story section-pad"
           id="experience"
@@ -308,16 +310,19 @@ export default function Marketing() {
             <span className="beginning-monogram">V M</span>
           </div>
           <div className="beginning-copy">
-            <p className="collection-caption">A beautiful beginning</p>
+            <p className="collection-caption">Your wedding, all together</p>
             <h2>
               A little less planning.
               <br />
               <em>A little more living.</em>
             </h2>
             <p>
-              Choose your world. Bring your people. Make room for the moments
-              you’ll want to remember.
+              Your invitation is just the beginning. Keep replies, event details
+              and the information your guests need connected in your own Studio.
             </p>
+            <div className="offer-price">
+              Included at no charge in this release.
+            </div>
             <ul>
               <li>
                 <CheckIcon size={18} /> Personal invitations & household RSVPs
@@ -331,13 +336,14 @@ export default function Marketing() {
               </li>
             </ul>
             <a href="/start" className="button primary">
-              Begin your story <Arrow diagonal />
+              Create your wedding <Arrow diagonal />
             </a>
             <small>
-              No card required. Your wedding tools are included in this release.
+              No card required. Preview your invitations before you share them.
             </small>
           </div>
         </section>
+        <OfferQuestions />
         <section className="closing">
           <img
             src="/images/wedding-evening.webp"
