@@ -491,6 +491,7 @@ async function handler(request: NextRequest, context: Context) {
       const tableMap: Record<string, string> = {
         travel: "travel_items",
         registry: "registry_links",
+        faqs: "faqs",
         questions: "rsvp_questions",
         tables: "seating_tables",
         collaborators: "collaborators",
@@ -515,9 +516,9 @@ async function handler(request: NextRequest, context: Context) {
         if (
           method === "PATCH" &&
           item &&
-          ["travel", "registry"].includes(action)
+          ["travel", "registry", "faqs"].includes(action)
         ) {
-          const fields = schemas[action as "travel" | "registry"].parse(
+          const fields = schemas[action as "travel" | "registry" | "faqs"].parse(
             await body(),
           );
           const keys = Object.keys(fields);

@@ -1,3 +1,10 @@
+export type Faq = {
+  id: string;
+  question: string;
+  question_es: string;
+  answer: string;
+  answer_es: string;
+};
 export type Opening = "envelope" | "seal";
 export type World =
   "riviera" | "maison" | "notte" | "heritage" | "modernist" | "garden";
@@ -105,6 +112,7 @@ export type StudioData = {
   questions: Question[];
   travel: Travel[];
   registry: { id: string; title: string; url: string }[];
+  faqs: Faq[];
   messages: Message[];
   tables: Table[];
   photos: Photo[];
@@ -130,6 +138,7 @@ export type GuestData = {
   events: Event[];
   questions: Question[];
   travel: Travel[];
+  faqs: Faq[];
   registry: { id: string; title: string; url: string }[];
   photos: Photo[];
   responses: {

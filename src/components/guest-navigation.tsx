@@ -7,6 +7,7 @@ export default function GuestNavigation({
   names,
   location,
   locale,
+  hasFaqs = false,
   onLocale,
   onRsvp,
   onPass,
@@ -14,6 +15,7 @@ export default function GuestNavigation({
   names: string;
   location: string;
   locale: "en" | "es";
+  hasFaqs?: boolean;
   onLocale: () => void;
   onRsvp: () => void;
   onPass: () => void;
@@ -66,6 +68,15 @@ export default function GuestNavigation({
               "travel",
               locale === "en" ? "Travel & stay" : "Viaje y alojamiento",
             ],
+            // Only offered when the couple has actually answered something.
+            ...(hasFaqs
+              ? [
+                  ["faqs", locale === "en" ? "Questions" : "Preguntas"] as [
+                    string,
+                    string,
+                  ],
+                ]
+              : []),
           ].map(([target, label]) => (
             <a
               key={target}

@@ -437,6 +437,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             names={data.wedding.names}
             location={data.wedding.location}
             locale={locale}
+            hasFaqs={!!data.faqs?.length}
             onLocale={() => setLocale(locale === "en" ? "es" : "en")}
             onRsvp={() => setModal("rsvp")}
             onPass={() => setModal("pass")}
@@ -624,6 +625,49 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 </ol>
               </div>
             </section>
+            {!!data.faqs?.length && (
+              <section className="guest-faqs" id="faqs" tabIndex={-1}>
+                <div className="faqs-intro">
+                  <GuestCrest
+                    names={data.wedding.names}
+                    world={data.wedding.world}
+                    className="faqs-crest"
+                    size={92}
+                  />
+                  <h2>
+                    {locale === "en"
+                      ? "You might be wondering."
+                      : "Quizá te preguntes."}
+                  </h2>
+                  <p>
+                    {locale === "en"
+                      ? "The things guests usually write to ask. If yours is not here, tell us in your reply."
+                      : "Lo que suelen preguntarnos. Si falta la tuya, dínoslo en tu respuesta."}
+                  </p>
+                </div>
+                <ul className="faq-list">
+                  {data.faqs.map((faq) => (
+                    <li key={faq.id}>
+                      <details name="guest-faq">
+                        <summary>
+                          <span>
+                            {locale === "es" && faq.question_es
+                              ? faq.question_es
+                              : faq.question}
+                          </span>
+                          <i aria-hidden="true" />
+                        </summary>
+                        <p>
+                          {locale === "es" && faq.answer_es
+                            ? faq.answer_es
+                            : faq.answer}
+                        </p>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <section
               className="guest-wait"
               aria-label={

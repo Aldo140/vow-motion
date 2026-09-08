@@ -95,3 +95,11 @@ A world was a palette and a photograph, which is how a system of worlds turns ba
 Ornament follows the same rule. The photographic worlds print silk; Heritage and Garden print a drawn sprig instead, line art in the world's own ink rather than a second photograph; Modernist prints nothing, consistent with the crest it already strips and the envelope pattern it already omits. All three occupy the same place in the composition and inherit the same scroll motion, so only the material changes.
 
 A regression test reads all six openings and refuses to let any two share a greeting, a kicker or an invitation line.
+
+## The questions guests would have emailed
+
+Every wedding answers the same handful of questions by hand: can I bring someone, what do I wear, are children invited, is there a shuttle, when must I reply. `faqs` makes them part of the invitation instead of part of the couple's inbox.
+
+Guests meet them as an engraved index rather than a support page. The crest opens the section, the questions sit on hairlines, and a drawn cross turns into a minus as an answer appears. Only one answer is open at a time, which the native exclusive `details` grouping handles rather than any script, so it survives with JavaScript disabled and keeps keyboard behaviour the browser already provides. Spanish answers replace English ones rather than sitting beside them, and the section is reachable from the invitation's contents, which offers it only once a couple has answered something.
+
+In the Studio the section sits under the world and the opening, because it belongs to what a guest meets. Six starters carry drafted answers, since most couples will edit a sentence and few will write one from nothing; each starter disappears once its question exists. The showcase wedding answers all six, in both languages, with the shuttle time and the reply deadline it actually holds.

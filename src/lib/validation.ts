@@ -60,6 +60,13 @@ export const schemas = {
     url: safeUrl.default(""),
     price: z.string().max(100).default(""),
   }),
+  faqs: z.object({
+    question: z.string().min(1).max(300),
+    question_es: z.string().max(300).default(""),
+    answer: z.string().min(1).max(4000),
+    answer_es: z.string().max(4000).default(""),
+    position: z.number().int().min(0).max(999).default(0),
+  }),
   registry: z.object({
     title: z.string().min(1).max(100),
     url: safeUrl.refine((v) => !!v),

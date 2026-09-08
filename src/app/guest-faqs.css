@@ -1,0 +1,173 @@
+/* The questions guests would otherwise email. Set as an engraved index rather
+   than a support page: one open at a time, hairlines between. */
+.guest-faqs {
+  max-width: 1100px;
+  margin: auto;
+  padding: clamp(48px, 7vw, 96px) 6%;
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: clamp(28px, 5vw, 76px);
+  align-items: start;
+  border-top: 1px solid var(--guest-line);
+}
+.faqs-intro h2 {
+  margin: 0 0 12px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 46px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+.faqs-intro p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 34ch;
+  opacity: 0.85;
+}
+.faqs-crest {
+  margin-bottom: 20px;
+}
+.faq-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--guest-line);
+}
+.faq-list > li {
+  border-bottom: 1px solid var(--guest-line);
+}
+.faq-list summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 2px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--serif);
+  font-size: clamp(17px, 1.9vw, 21px);
+  line-height: 1.35;
+}
+.faq-list summary::-webkit-details-marker {
+  display: none;
+}
+.faq-list summary:focus-visible {
+  outline: 2px solid var(--guest-accent);
+  outline-offset: 3px;
+}
+/* A drawn cross that becomes a minus when the answer is showing. */
+.faq-list summary > i {
+  position: relative;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+}
+.faq-list summary > i::before,
+.faq-list summary > i::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 1px;
+  background: var(--guest-accent);
+  transition: transform 0.3s var(--ease);
+}
+.faq-list summary > i::after {
+  transform: rotate(90deg);
+}
+.faq-list details[open] summary > i::after {
+  transform: rotate(0deg);
+}
+.faq-list details > p {
+  margin: 0;
+  padding: 0 2px 24px;
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.75;
+  opacity: 0.85;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-list summary > i::before,
+  .faq-list summary > i::after {
+    transition: none;
+  }
+}
+@media (max-width: 900px) {
+  .guest-faqs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Choosing them in the Studio */
+.faq-studio {
+  margin-top: 46px;
+}
+.faq-studio-intro h2 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+.faq-studio-list {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.faq-studio-list > li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.faq-studio-list h3 {
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.faq-studio-list p {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.faq-studio-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.faq-starters {
+  margin-top: 24px;
+}
+.faq-starters > span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.faq-starters > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.faq-starter {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: border-color 0.2s var(--ease);
+}
+.faq-starter:hover {
+  border-color: var(--olive);
+}
+.faq-starter-blank {
+  border-style: dashed;
+}

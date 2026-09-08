@@ -898,6 +898,50 @@ export async function createShowcaseWedding(ownerId: string) {
         ],
       );
 
+    // The questions this wedding would otherwise receive by email.
+    for (const [position, [question, questionEs, answer, answerEs]] of [
+      [
+        "Can I bring a guest?",
+        "¿Puedo llevar acompañante?",
+        "Your invitation names everyone we have room for at the villa. If it lists a guest, we would love to meet them.",
+        "Tu invitación nombra a todas las personas para las que tenemos sitio. Si incluye acompañante, nos encantará conocerle.",
+      ],
+      [
+        "What should I wear?",
+        "¿Cómo me visto?",
+        "Black tie with a summer spirit for Saturday, relaxed tailoring for the welcome dinner, and whatever you like for brunch. The terrace is stone, so bring a heel you can walk on.",
+        "Etiqueta con aire veraniego el sábado, algo más relajado para la cena de bienvenida y lo que quieras para el brunch. La terraza es de piedra, así que trae un tacón cómodo.",
+      ],
+      [
+        "Are children invited?",
+        "¿Pueden ir los niños?",
+        "Children named on your invitation are very welcome, and there is a children's menu at the reception.",
+        "Los niños que aparecen en tu invitación son muy bienvenidos, y hay menú infantil en la celebración.",
+      ],
+      [
+        "Is there a shuttle?",
+        "¿Hay transporte?",
+        "Coaches leave Hotel Riva at 2:15pm on Saturday and return from the villa hourly from 11pm. Tell us in your reply if you would like a seat.",
+        "Los autocares salen del Hotel Riva a las 14:15 del sábado y vuelven desde la villa cada hora a partir de las 23:00. Dínoslo en tu respuesta si quieres plaza.",
+      ],
+      [
+        "Can I take photographs?",
+        "¿Puedo hacer fotos?",
+        "Please keep phones away during the ceremony so everyone sees it with their own eyes. Afterwards, photograph everything, and add your favourites to the album here.",
+        "Guarda el móvil durante la ceremonia para verla con tus propios ojos. Después, fotografía todo y sube tus favoritas al álbum.",
+      ],
+      [
+        "When should I reply by?",
+        "¿Hasta cuándo puedo responder?",
+        "By 10 July, so the villa can be given final numbers. You can change your answer here at any time before then.",
+        "Antes del 10 de julio, para dar los números finales a la villa. Puedes cambiar tu respuesta aquí hasta entonces.",
+      ],
+    ].entries())
+      await c.query(
+        "INSERT INTO faqs(id,wedding_id,question,question_es,answer,answer_es,position) VALUES($1,$2,$3,$4,$5,$6,$7)",
+        [id(), weddingId, question, questionEs, answer, answerEs, position],
+      );
+
     await c.query(
       "INSERT INTO messages(id,wedding_id,subject,body,audience,status) VALUES($1,$2,$3,$4,$5,$6)",
       [
