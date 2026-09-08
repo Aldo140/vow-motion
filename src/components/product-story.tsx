@@ -37,20 +37,30 @@ export default function ProductStory({
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const timeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: root.current?.querySelector(".product-film"),
-            start: "top 85%",
-            end: "bottom 55%",
-            scrub: true,
+          scrollTrigger:
+            variant === "invitation"
+              ? {
+                  trigger: root.current?.querySelector(".product-film-art"),
+                  start: "center center",
+                  toggleActions: "play none none none",
+                  once: true,
+                }
+              : {
+                  trigger: root.current?.querySelector(".product-film"),
+                  start: "top 85%",
+                  end: "bottom 55%",
+                  scrub: true,
+                },
+          defaults: {
+            ease: variant === "invitation" ? "power2.inOut" : "none",
           },
-          defaults: { ease: "none" },
         });
         if (variant === "invitation") {
           timeline
             .to(".invitation-flap", {
               rotationX: 150,
               transformOrigin: "top",
-              duration: 0.25,
+              duration: 0.45,
             })
             .to(
               ".invitation-wax",
@@ -59,10 +69,10 @@ export default function ProductStory({
             )
             .to(
               ".film-invitation-envelope",
-              { yPercent: 105, duration: 0.55 },
-              0.2,
+              { yPercent: 105, duration: 0.85 },
+              0.35,
             )
-            .from(".invitation-reveal", { scale: 0.94, duration: 0.5 }, 0.2);
+            .from(".invitation-reveal", { scale: 0.94, duration: 0.8 }, 0.35);
         } else {
           timeline
             .from(".studio-arriving-row", {
