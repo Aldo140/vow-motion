@@ -20,6 +20,42 @@ export default function Marketing() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(".paper-seam-seal", {
+          rotation: -22,
+          y: -12,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".paper-seam",
+            start: "top 90%",
+            end: "bottom 45%",
+            scrub: true,
+          },
+        });
+        gsap.from(".memory-thread path", {
+          strokeDashoffset: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".memory-bridge",
+            start: "top 90%",
+            end: "bottom 65%",
+            scrub: true,
+          },
+        });
+        gsap.utils
+          .toArray<HTMLElement>(".bridge-print")
+          .forEach((element, index) => {
+            gsap.from(element, {
+              y: 35,
+              rotation: index === 1 ? -6 : 6,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".memory-bridge",
+                start: "top 90%",
+                end: "bottom 50%",
+                scrub: true,
+              },
+            });
+          });
         gsap.utils.toArray<HTMLElement>(".depth-drift").forEach((element) => {
           gsap.fromTo(
             element,
@@ -94,6 +130,12 @@ export default function Marketing() {
         <LandingHero />
         <ProductStory variant="invitation" />
         <ProductShowcase />
+        <div className="paper-seam" aria-hidden="true">
+          <div className="paper-seam-edge" />
+          <span className="paper-seam-seal">
+            V <i>&amp;</i> M
+          </span>
+        </div>
         <section className="collection section-pad" id="worlds" tabIndex={-1}>
           <div className="section-heading">
             <div>
@@ -294,6 +336,33 @@ export default function Marketing() {
           </div>
         </section>
         <OfferQuestions />
+        <div className="memory-bridge" aria-hidden="true">
+          <svg
+            className="memory-thread"
+            viewBox="0 0 1200 220"
+            fill="none"
+            preserveAspectRatio="none"
+          >
+            <path
+              pathLength="1"
+              d="M0 150C140 150 175 30 330 82S500 230 690 112 920 55 1200 145"
+            />
+          </svg>
+          <div className="bridge-prints">
+            <figure className="bridge-print">
+              <img src="/images/hero-maison.webp" alt="" loading="lazy" />
+              <figcaption>A place to gather.</figcaption>
+            </figure>
+            <figure className="bridge-print">
+              <img src="/images/wedding-details.webp" alt="" loading="lazy" />
+              <figcaption>A little anticipation.</figcaption>
+            </figure>
+            <figure className="bridge-print">
+              <img src="/images/notte.webp" alt="" loading="lazy" />
+              <figcaption>A night to remember.</figcaption>
+            </figure>
+          </div>
+        </div>
         <section className="closing">
           <img
             src="/images/wedding-evening.webp"

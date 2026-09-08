@@ -1,4 +1,131 @@
 /* Photographic objects stay inside their own columns, clear of copy and controls. */
+.paper-seam {
+  position: relative;
+  height: 66px;
+  background: var(--bg);
+  isolation: isolate;
+  pointer-events: none;
+}
+.paper-seam-edge {
+  position: absolute;
+  inset: -1px 0 24px;
+  background: #17372e;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 50%,
+    94% 57%,
+    87% 46%,
+    79% 60%,
+    72% 48%,
+    65% 56%,
+    58% 45%,
+    50% 59%,
+    43% 49%,
+    35% 60%,
+    28% 46%,
+    20% 57%,
+    12% 48%,
+    5% 59%,
+    0 51%
+  );
+}
+.paper-seam-seal {
+  position: absolute;
+  left: calc(50% - 31px);
+  top: -8px;
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: #753b36;
+  color: #f3dfb8;
+  border-radius: 48% 52% 49% 51%;
+  outline: 1px solid #c6a67b;
+  outline-offset: -7px;
+  box-shadow:
+    inset 2px 2px 6px #ffffff20,
+    0 5px 12px #31271b25;
+  font: 18px var(--serif);
+}
+.paper-seam-seal i {
+  font-size: 12px;
+}
+.memory-bridge {
+  position: relative;
+  isolation: isolate;
+  padding: 28px 30px 52px;
+  background: var(--bg);
+  overflow: clip;
+}
+.memory-thread {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+.memory-thread path {
+  stroke: #a39065;
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  vector-effect: non-scaling-stroke;
+}
+.bridge-prints {
+  max-width: 880px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 6vw, 90px);
+}
+.bridge-print {
+  width: 200px;
+  flex: 0 1 200px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 8px 13px;
+  background: #faf5e9;
+  rotate: -7deg;
+  box-shadow: 2px 8px 18px #273b3026;
+}
+.bridge-print:nth-child(2) {
+  rotate: 5deg;
+  margin-top: 28px;
+}
+.bridge-print:nth-child(3) {
+  rotate: -3deg;
+}
+.bridge-print img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.bridge-print figcaption {
+  font: italic 14px/1.5 var(--serif);
+  color: #35463a;
+  padding-top: 9px;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .memory-bridge {
+    padding: 25px 24px 40px;
+  }
+  .bridge-prints {
+    gap: 16px;
+  }
+  .bridge-print {
+    padding: 6px 6px 10px;
+  }
+  .bridge-print:nth-child(2) {
+    display: none;
+  }
+  .bridge-print figcaption {
+    font-size: 11px;
+  }
+}
 .marketing .invitation-editorial {
   display: grid;
   grid-template-columns: 1fr 0.85fr 1.15fr;
