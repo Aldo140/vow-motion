@@ -15,10 +15,49 @@ import {
 import { PageHeading, PreviewButton, type PanelProps } from "./studio";
 import { Modal, Field, Submit, Notice, Arrow } from "./ui";
 import { worlds, getWorld, formatDate } from "@/lib/worlds";
-import type { World, Travel } from "@/lib/types";
+import type { World, Opening, Travel } from "@/lib/types";
+const OPENINGS: {
+  id: Opening;
+  name: string;
+  description: string;
+  detail: string;
+  preview: React.ReactNode;
+}[] = [
+  {
+    id: "envelope",
+    name: "The suite",
+    description:
+      "A photograph, a card and a lined envelope laid out together. The guest presses a seal to open it.",
+    detail: "Unfolds across the page · best on a large screen",
+    preview: (
+      <span className="preview-suite">
+        <i className="preview-photo" />
+        <i className="preview-card" />
+        <i className="preview-seal" />
+      </span>
+    ),
+  },
+  {
+    id: "seal",
+    name: "The sealed envelope",
+    description:
+      "One printed envelope, held closed by a wax seal. The guest breaks the seal and the card rises out.",
+    detail: "Reads as one object · best in a hand",
+    preview: (
+      <span className="preview-sealed">
+        <i className="preview-flap" />
+        <i className="preview-wax" />
+      </span>
+    ),
+  },
+];
+
 export function ExperienceManager(props: PanelProps) {
   const { data, mutate, notify } = props;
   const [selected, setSelected] = useState<World>(data.wedding.world),
+    [opening, setOpening] = useState<Opening>(
+      data.wedding.opening === "seal" ? "seal" : "envelope",
+    ),
     [story, setStory] = useState(data.wedding.story),
     [busy, setBusy] = useState(false);
   return (
@@ -36,7 +75,7 @@ export function ExperienceManager(props: PanelProps) {
             try {
               await mutate(
                 "settings",
-                { ...data.wedding, world: selected, story },
+                { ...data.wedding, world: selected, opening, story },
                 "PATCH",
               );
               notify("Your wedding identity is saved.");
@@ -83,6 +122,41 @@ export function ExperienceManager(props: PanelProps) {
           </button>
         ))}
       </div>
+      <section className="opening-choice">
+        <div className="opening-choice-intro">
+          <h2>How your invitation arrives.</h2>
+          <p className="muted-copy">
+            The first thing a guest sees. Both open into the same invitation, so
+            you can change your mind whenever you like.
+          </p>
+        </div>
+        <div className="opening-choice-grid">
+          {OPENINGS.map((choice) => (
+            <button
+              key={choice.id}
+              className={
+                "opening-option " + (opening === choice.id ? "selected" : "")
+              }
+              onClick={() => setOpening(choice.id)}
+              aria-pressed={opening === choice.id}
+            >
+              <span className="opening-preview" aria-hidden="true">
+                {choice.preview}
+              </span>
+              <h3>
+                {choice.name}
+                {opening === choice.id && (
+                  <span className="opening-check">
+                    <CheckIcon size={15} />
+                  </span>
+                )}
+              </h3>
+              <p>{choice.description}</p>
+              <small>{choice.detail}</small>
+            </button>
+          ))}
+        </div>
+      </section>
       <section className="content-editor">
         <div>
           <h2>Your story, in your words.</h2>

@@ -102,7 +102,7 @@ export async function guestData(rawToken: string): Promise<GuestData> {
     updates,
   ] = await Promise.all([
     rows(
-      "SELECT id,slug,names,date,location,timezone,world,privacy,story,locale,status,rsvp_deadline,settings FROM weddings WHERE id=$1",
+      "SELECT id,slug,names,date,location,timezone,world,opening,privacy,story,locale,status,rsvp_deadline,settings FROM weddings WHERE id=$1",
       [weddingId],
     ),
     rows(

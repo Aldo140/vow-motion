@@ -1,3 +1,4 @@
+export type Opening = "envelope" | "seal";
 export type World =
   "riviera" | "maison" | "notte" | "heritage" | "modernist" | "garden";
 export type Wedding = {
@@ -9,6 +10,7 @@ export type Wedding = {
   location: string;
   timezone: string;
   world: World;
+  opening: Opening;
   privacy: string;
   story: string;
   locale: string;

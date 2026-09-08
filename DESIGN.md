@@ -77,3 +77,13 @@ The desktop suite remains the compositional reference. Mobile removes the extra 
 `guest-navigation.tsx` replaces the website-style link bar with a monogram that opens the invitation's contents. A native popover handles light dismissal and Escape; section links transfer focus to their destination, and opening a dialog restores focus to the monogram on return. Replay is a quiet secondary action. The fixed controls read as a folded index slip, keeping explicit text labels and touch targets.
 
 `guest-continuity.css` carries the same paper, ink, typography and short settling motion into RSVP and the wedding pass. The response form retains native controls and its existing draft, validation and persistence logic. Confirmation offers a direct next step into the pass, completing the contents → celebration → RSVP → pass journey without sending the guest back to search for another control.
+
+## Two ways an invitation can arrive
+
+A couple chooses how their invitation opens, and both choices lead to the same invitation. The crafted suite lays a photograph, a card and a lined envelope out together and unfolds across the page; the sealed envelope puts one printed envelope in the hand, closed with wax.
+
+`guest-seal-gate.tsx` prints its paper rather than photographing it: a botanical repeat drawn as an SVG pattern in the world's own ink, so every world prints the same stationery in its own colour and Modernist prints none at all, as it carries no silk elsewhere. The envelope's height follows its content, so long names lengthen the paper instead of spilling out of a fixed shape. The wax is the only control on the page, so it carries a visible label as well as its accessible name, and the flap point sits above the card rather than across the names. The envelope is addressed on the paper itself, which is both the truer metaphor and the only place a household's names are legible over photography that is not uniformly dark.
+
+Breaking the seal lifts and tilts the wax away, swings the flap down, and raises the card before handing over to the invitation. Reduced motion goes straight through.
+
+The choice is a validated column rather than a loose setting, because it selects a component: an unknown value is refused by the API and by the database. In the Studio it sits under the world grid as two drawn previews, each described by what a guest does rather than by the name of a style, and it can be changed at any time.

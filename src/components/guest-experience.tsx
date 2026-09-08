@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import GuestInvitationGate from "./guest-invitation-gate";
+import GuestSealGate from "./guest-seal-gate";
 import GuestInvitationHero from "./guest-invitation-hero";
 import GuestNavigation from "./guest-navigation";
 import GuestCountdown from "./guest-countdown";
@@ -414,12 +415,22 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
       lang={locale}
     >
       {!opened ? (
-        <GuestInvitationGate
-          data={data}
-          locale={locale}
-          onLocaleChange={() => setLocale(locale === "en" ? "es" : "en")}
-          onOpen={openInvitation}
-        />
+        // Both openings hand the guest to the same invitation; the couple
+        // chooses which one arrives.
+        (() => {
+          const Opening =
+            data.wedding.opening === "seal"
+              ? GuestSealGate
+              : GuestInvitationGate;
+          return (
+            <Opening
+              data={data}
+              locale={locale}
+              onLocaleChange={() => setLocale(locale === "en" ? "es" : "en")}
+              onOpen={openInvitation}
+            />
+          );
+        })()
       ) : (
         <>
           <GuestNavigation

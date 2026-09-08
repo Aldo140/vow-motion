@@ -326,6 +326,7 @@ async function handler(request: NextRequest, context: Context) {
               }
             }, "Choose a valid timezone."),
             world: worldSchema,
+            opening: z.enum(["envelope", "seal"]),
             story: z.string().max(10000),
             privacy: z.enum(["public", "invite-only", "password"]),
             password: z.string().min(8).max(200).optional(),
