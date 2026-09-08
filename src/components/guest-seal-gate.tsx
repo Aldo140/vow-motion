@@ -28,7 +28,8 @@ export default function GuestSealGate({
   const opening = useRef(false);
   const [busy, setBusy] = useState(false);
   const patternId = useId();
-  const world = getWorld(data.wedding.world);
+  const world = getWorld(data.wedding.world),
+    voice = world.voice[locale];
   const initials = data.wedding.names
     .split(" & ")
     .map((name) => name.trim()[0])
@@ -80,11 +81,7 @@ export default function GuestSealGate({
         </button>
       </div>
 
-      <p className="opening-dedication">
-        {locale === "en"
-          ? "Something arrived for you."
-          : "Ha llegado algo para ti."}
-      </p>
+      <p className="opening-dedication">{voice.arrival}</p>
 
       <div className="seal-envelope">
         {/* The botanical repeat is drawn rather than photographed, so every
@@ -139,18 +136,14 @@ export default function GuestSealGate({
         </button>
 
         <div className="seal-card">
-          <span>
-            {locale === "en"
-              ? "Together with our families"
-              : "Junto con nuestras familias"}
-          </span>
+          <span>{voice.kicker}</span>
           <h1>{data.wedding.names}</h1>
           <p>{formatDate(data.wedding.date, locale)}</p>
           <small>{data.wedding.location}</small>
         </div>
 
         <p className="seal-script" aria-hidden="true">
-          {locale === "en" ? "You are invited" : "Estás invitado"}
+          {voice.script}
         </p>
 
         {/* The envelope is addressed, so the household's names sit on the

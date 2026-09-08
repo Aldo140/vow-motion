@@ -24,7 +24,8 @@ export default function GuestInvitationGate({
   const root = useRef<HTMLElement>(null);
   const opening = useRef(false);
   const [busy, setBusy] = useState(false);
-  const world = getWorld(data.wedding.world);
+  const world = getWorld(data.wedding.world),
+    voice = world.voice[locale];
   const initials = data.wedding.names
     .split(" & ")
     .map((name) => name[0])
@@ -103,11 +104,7 @@ export default function GuestInvitationGate({
           {locale === "en" ? "ES" : "EN"}
         </button>
       </div>
-      <p className="opening-dedication">
-        {locale === "en"
-          ? "Some days deserve a little anticipation."
-          : "Hay días que merecen un poquito de ilusión."}
-      </p>
+      <p className="opening-dedication">{voice.arrival}</p>
       <div className="envelope-composition">
         <figure className="envelope-photograph" aria-hidden="true">
           <img src={world.image} alt="" />
@@ -116,11 +113,7 @@ export default function GuestInvitationGate({
         <div className="invitation-envelope">
           <div className="envelope-liner" aria-hidden="true" />
           <div className="envelope-letter">
-            <span>
-              {locale === "en"
-                ? "Together with our families"
-                : "Junto con nuestras familias"}
-            </span>
+            <span>{voice.kicker}</span>
             <h1>{data.wedding.names}</h1>
             <p>{formatDate(data.wedding.date, locale)}</p>
             <small>{data.wedding.location}</small>
@@ -153,11 +146,7 @@ export default function GuestInvitationGate({
           </div>
         </div>
       </div>
-      <p className="opening-postscript">
-        {locale === "en"
-          ? "A day for love. A place for you."
-          : "Un día para el amor. Un lugar para ti."}
-      </p>
+      <p className="opening-postscript">{voice.closing}</p>
       <small className="gate-bottom">
         {world.name.toUpperCase()} · VOW MOTION
       </small>

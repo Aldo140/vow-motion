@@ -18,7 +18,8 @@ export default function GuestInvitationHero({
   locale: "en" | "es";
   onReplay: () => void;
 }) {
-  const world = getWorld(data.wedding.world);
+  const world = getWorld(data.wedding.world),
+    voice = world.voice[locale];
   const names = data.wedding.names.split(" & ");
   const firstEvent = [...data.events].sort(
     (a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at),
@@ -50,15 +51,13 @@ export default function GuestInvitationHero({
               ? locale === "en"
                 ? "Just married"
                 : "Recién casados"
-              : locale === "en"
-                ? "Together with our families"
-                : "Junto con nuestras familias"}
+              : voice.kicker}
           </span>
           <h1 tabIndex={-1}>
             <span>{names[0]}</span>
             {names[1] && (
               <>
-                <i>&</i>
+                <i>{world.separator}</i>
                 <span>{names.slice(1).join(" & ")}</span>
               </>
             )}
@@ -68,9 +67,7 @@ export default function GuestInvitationHero({
               ? locale === "en"
                 ? "A day we will always carry with us."
                 : "Un día que siempre llevaremos con nosotros."
-              : locale === "en"
-                ? "would love you to join us\nas we begin our forever."
-                : "nos encantaría que nos acompañaras\nen el comienzo de nuestro para siempre."}
+              : voice.invite}
           </p>
           <div className="atelier-letter-date">
             <span>
@@ -96,16 +93,57 @@ export default function GuestInvitationHero({
             <span>{locale === "en" ? "Meet us here." : "Nos vemos aquí."}</span>
           </div>
         </div>
-        <img
-          className="atelier-silk"
-          src="/images/invitation-silk.webp"
-          width={620}
-          height={930}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable={false}
-        />
+        {/* Each world prints its own ornament: silk for the photographic
+            worlds, a drawn sprig for the botanical ones, nothing at all for
+            Modernist. All three share the class the scroll motion moves. */}
+        {world.ornament === "silk" && (
+          <img
+            className="atelier-silk"
+            src="/images/invitation-silk.webp"
+            width={620}
+            height={930}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            draggable={false}
+          />
+        )}
+        {world.ornament === "sprig" && (
+          <svg
+            className="atelier-silk atelier-sprig"
+            viewBox="0 0 220 340"
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <g
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              fill="none"
+            >
+              <path d="M150 8c-24 44-44 96-52 150-8 54-4 116 14 174" />
+              {[
+                [40, -34, -18],
+                [78, 36, 20],
+                [116, -40, -14],
+                [154, 38, 16],
+                [196, -34, -10],
+                [238, 32, 14],
+                [278, -26, -8],
+              ].map(([y, dx, dy]) => (
+                <path
+                  key={y}
+                  d={`M${132 - (y - 40) * 0.16} ${y}c${dx} ${dy} ${dx * 1.25} ${
+                    dy + 26
+                  } ${dx * 0.5} ${dy + 44}c-${Math.abs(dx) * 0.55} -${
+                    12 + dy * 0.2
+                  } -${Math.abs(dx) * 0.3} -${30 + dy * 0.2} 0 -${dy + 44}Z`}
+                />
+              ))}
+            </g>
+          </svg>
+        )}
         <a
           className="date-keepsake"
           href={"/api/guest/calendar?token=" + data.token}

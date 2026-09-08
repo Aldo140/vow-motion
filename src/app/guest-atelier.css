@@ -441,3 +441,13 @@
 .atelier-letter h1:focus {
   outline: none;
 }
+
+/* The drawn ornament for the botanical worlds. It occupies the same place as
+   the silk and inherits the same scroll motion, so only the material changes. */
+.atelier-sprig {
+  color: var(--guest-accent);
+  opacity: 0.55;
+}
+.atelier-sprig path {
+  vector-effect: non-scaling-stroke;
+}

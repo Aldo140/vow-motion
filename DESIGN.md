@@ -87,3 +87,11 @@ A couple chooses how their invitation opens, and both choices lead to the same i
 Breaking the seal lifts and tilts the wax away, swings the flap down, and raises the card before handing over to the invitation. Reduced motion goes straight through.
 
 The choice is a validated column rather than a loose setting, because it selects a component: an unknown value is refused by the API and by the database. In the Studio it sits under the world grid as two drawn previews, each described by what a guest does rather than by the name of a style, and it can be changed at any time.
+
+## Six worlds that are actually six
+
+A world was a palette and a photograph, which is how a system of worlds turns back into a set of templates. Each world now also carries a voice: the line that greets a guest at the envelope, the phrase above the names, the invitation itself, the closing note, and the mark that joins two names. Maison asks for the pleasure of your company at a very long lunch; Notte says the car is waiting; Modernist promises no speeches you have to sit through and joins its names with a plus rather than an ampersand. Every line exists in both languages, because a world that only has a voice in English is not a world.
+
+Ornament follows the same rule. The photographic worlds print silk; Heritage and Garden print a drawn sprig instead, line art in the world's own ink rather than a second photograph; Modernist prints nothing, consistent with the crest it already strips and the envelope pattern it already omits. All three occupy the same place in the composition and inherit the same scroll motion, so only the material changes.
+
+A regression test reads all six openings and refuses to let any two share a greeting, a kicker or an invitation line.
