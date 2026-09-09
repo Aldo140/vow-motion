@@ -10,7 +10,7 @@ Replies to Maren at Bow Valley Weddings, Sheena at Champagne & Roses, and Cathy 
 
 Fleur Weddings asked about per wedding pricing and agency partnerships. Blush & Bordeaux requested more information. Both received replies September 8 with the demo or pilot details and a choice of a conversation or written information. Await their replies; no meeting or pilot has been confirmed.
 
-The current reconciled roster is saved locally in `artifacts/outreach-master-current.json` and `artifacts/outreach-master-current.md`. As of September 9 it contains 595 contacts and 601 sent messages. Gmail accepted all 100 messages in batch 10 and five addresses returned immediate delivery failures. Gmail Sent and incoming mail must be checked again before any future outreach. Sent means accepted by Gmail, not confirmed inbox delivery. Automatic replies and bounces are separate from genuine interest.
+The current reconciled roster is saved locally in `artifacts/outreach-master-current.json` and `artifacts/outreach-master-current.md`. As of September 9 it contains 695 contacts and 701 sent messages. Gmail accepted all 100 messages in batch 11 and two addresses returned immediate delivery failures. Batch 11 used current planner pages, stronger address verification, shorter plain text copy, no link, and a complimentary invitation concept as the offer. Gmail Sent and incoming mail must be checked again before any future outreach. Sent means accepted by Gmail, not confirmed inbox delivery. Automatic replies and bounces are separate from genuine interest.
 
 Prioritize a short household walkthrough with Maren and feedback from Sheena. Cathy declined because of her existing planning workflow. No pilot or paid customer has been confirmed.
 
