@@ -68,7 +68,7 @@ export function Invitations({ data, mutate, notify }: PanelProps) {
 
   return <>
     <PageHeading title="It starts with an invitation." description="Review every household once. Vow Motion creates each private link and places it into the right email automatically.">
-      <button className="button primary" disabled={!ready.length || data.role === "viewer"} onClick={openCampaign}>Send invitations <Arrow /></button>
+      <button className="button primary" disabled={!ready.length || data.role === "viewer"} onClick={openCampaign}>{ready.length ? "Send invitations" : "All invitations sent"} <Arrow /></button>
     </PageHeading>
     <section className="invitation-readiness" aria-label="Invitation readiness">
       <div><strong>{ready.length}</strong><span>Ready to send</span></div>

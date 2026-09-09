@@ -40,6 +40,13 @@ test("a planner sends personalized invitations as one household campaign", async
   expect(householdSends).toHaveLength(2);
   await expect(page.getByRole("region", { name: "Invitation readiness" })).toContainText("2Already sent");
 
+  // Sending once must not leave the action in its busy state. A planner can
+  // immediately reopen the campaign for the remaining households.
+  await page.getByRole("button", { name: "Send invitations" }).click();
+  await expect(page.getByRole("dialog", { name: "Send the invitations" })).toContainText("60 household invitations ready");
+  await expect(page.getByRole("dialog", { name: "Send the invitations" })).not.toContainText("Sending safely");
+  await page.getByRole("dialog", { name: "Send the invitations" }).getByRole("button", { name: "Close dialog" }).click();
+
   // The server enforces the same exclusion as the screen. A stale second tab
   // cannot rebroadcast to households that already received this campaign.
   const repeat = await page.request.post(
