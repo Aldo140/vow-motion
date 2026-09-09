@@ -50,6 +50,12 @@ The dock is fixed to the foot of the viewport while the invitation sits at a fix
 
 `/planners` argues the case that the homepage cannot: the couple sees a celebration, the planner sees a plan. Its signature is a ledger whose every row pairs something the planner sets in the Studio with what the couple's guests meet because of it, so the correspondence is the structure rather than a claim. The planner half stays in the working face and the guest half in the invitation's italic olive, divided by a spine marked once per row. On a phone the pair stacks and each half names its side, because the columns no longer can. Nothing here introduces a colour or a face the wedding surfaces do not already use.
 
+A planner who already runs a planning platform read the earlier page as a bid to replace it and left. The ledger was not the problem; what came before it was. The page now says its position before it says anything else, in the headline and again on an engraved plate: the planning system stays where it is, and this is the guest-facing layer around it. The plate sets the movement as three columns on a hairline — bring in, run here, take back out — with the middle column on tinted paper because it is the only one being asked for, and its marks drawn as hairline SVG rather than iconography. No competitor is named anywhere on the page; naming one starts the comparison rather than ending it, and the concept only needs the shape to be legible.
+
+Ahead of the ledger sit the three documents a planner otherwise rebuilds by hand the week before a wedding: the kitchen sheet, the shuttle manifest, the place cards. They lead because they are the one piece of planner value that threatens nobody's existing system, and they are set as what they are — three sheets of paper with a printed addressee, a ruled contents and the format noted at the foot. Each line is what the export actually writes, so the page can be checked against the file that downloads.
+
+Six worlds are six voices and six ornaments, but only Riviera, Maison and Notte are photographed throughout; the other three still borrow the house photography. `worlds.ts` records that as a field rather than leaving it to copy, the collection tabs order the finished three first and set the rest a shade back, and the preview says so in the panel itself instead of in a footnote nobody reads.
+
 ## The ceremonial layer
 
 Three things recur across the reference material this direction was drawn from, and the invitation had none of them: an engraved crest, the day set out as an order of service, and the wait counted down.
@@ -103,6 +109,18 @@ Every wedding answers the same handful of questions by hand: can I bring someone
 Guests meet them as an engraved index rather than a support page. The crest opens the section, the questions sit on hairlines, and a drawn cross turns into a minus as an answer appears. Only one answer is open at a time, which the native exclusive `details` grouping handles rather than any script, so it survives with JavaScript disabled and keeps keyboard behaviour the browser already provides. Spanish answers replace English ones rather than sitting beside them, and the section is reachable from the invitation's contents, which offers it only once a couple has answered something.
 
 In the Studio the section sits under the world and the opening, because it belongs to what a guest meets. Six starters carry drafted answers, since most couples will edit a sentence and few will write one from nothing; each starter disappears once its question exists. The showcase wedding answers all six, in both languages, with the shuttle time and the reply deadline it actually holds.
+
+## The post room
+
+Messages was the one Studio tab that did not say what it was for. It opened on a compose button and a paragraph, offered three channels without saying what any of them cost a guest, and answered "why can't I write to everyone?" with three overlapping totals and a note admitting they overlapped.
+
+`studio-post-room.css` sets the answer as a ruled ledger on a single sheet, the same correspondence of two halves the planner page uses: one row per way of writing, each pairing a figure with the reason it is not larger. The figure is the count of guests that way reaches right now, set in the serif at display size with tabular numerals so it does not jostle as replies come in. Beside it sits what that channel asks of a guest, and under that a hairline list where every guest out of reach is accounted for exactly once — permission not given, no address on file, or neither — each line ending in the one place in the Studio that changes it. The buckets are exclusive by construction, so they add up, which the three figures they replaced never did.
+
+The constraint itself is real rather than decorative. Email and SMS need both a guest's permission and their contact details, and attending a wedding gives neither. An update posted inside the invitation asks nothing at all, which is why it always reaches further and why it is the row that comes first. The one thing it does need — a household holding a live invitation link — is stated as a wait rather than a refusal, because the note is filed against that household and appears the moment their link exists.
+
+Below the ledger, what has been written. Every message names its own state in a sentence rather than a status column: a draft, one scheduled and waiting, one sending, one that stopped part-way, one where some did not send. A failure no longer wears the green a guest wears when they are attending, and it carries the provider's own words about what went wrong. Anything unfinished offers a way forward — try the rest again, which skips whoever already received it, or discard, which only a draft nobody has seen will accept.
+
+Not taken further: a preview of the message as the guest will meet it. Email renders as plain text and an invitation update inherits the world's own paper, so the preview worth building is the existing guest preview, not a second one here.
 
 ## The documents a planner hands to suppliers
 

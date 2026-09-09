@@ -8,6 +8,10 @@ export type Voice = {
   closing: string;
   script: string;
 };
+// Three worlds are photographed throughout; three are drawn, written and
+// coloured but still borrow the house photography. That is recorded here so the
+// marketing surfaces can say which is which instead of selling six of the same.
+export type Photography = "complete" | "in-progress";
 export const worlds: {
   id: World;
   name: string;
@@ -15,6 +19,8 @@ export const worlds: {
   couple: string;
   place: string;
   image: string;
+  mood: string;
+  photography: Photography;
   palette: string[];
   ornament: "silk" | "sprig" | "none";
   separator: string;
@@ -27,6 +33,8 @@ export const worlds: {
     couple: "Elena & Matteo",
     place: "Lake Como, Italy",
     image: "/images/riviera.webp",
+    mood: "/images/hero-riviera.webp",
+    photography: "complete",
     palette: ["#efe9d9", "#40617a", "#858a66"],
     ornament: "silk",
     separator: "&",
@@ -55,6 +63,8 @@ export const worlds: {
     couple: "Amélie & Julien",
     place: "Provence, France",
     image: "/images/maison.webp",
+    mood: "/images/hero-maison.webp",
+    photography: "complete",
     palette: ["#f3f0e9", "#282824", "#9c8c7e"],
     ornament: "silk",
     separator: "&",
@@ -82,6 +92,8 @@ export const worlds: {
     couple: "Isabel & Oliver",
     place: "New York, USA",
     image: "/images/notte.webp",
+    mood: "/images/wedding-evening.webp",
+    photography: "complete",
     palette: ["#1b1b1b", "#dfd0b6", "#6b343e"],
     ornament: "silk",
     separator: "&",
@@ -110,6 +122,8 @@ export const worlds: {
     couple: "Charlotte & James",
     place: "Cotswolds, England",
     image: "/images/heritage.webp",
+    mood: "/images/wedding-details.webp",
+    photography: "in-progress",
     palette: ["#ede8dc", "#514c36", "#a49a73"],
     ornament: "sprig",
     separator: "&",
@@ -137,6 +151,8 @@ export const worlds: {
     couple: "Alex & Sam",
     place: "Copenhagen, Denmark",
     image: "/images/modernist.webp",
+    mood: "/images/wedding-details.webp",
+    photography: "in-progress",
     palette: ["#e5e7e6", "#263fa0", "#df693b"],
     ornament: "none",
     separator: "+",
@@ -165,6 +181,8 @@ export const worlds: {
     couple: "Sofia & Luca",
     place: "Tuscany, Italy",
     image: "/images/garden.webp",
+    mood: "/images/wedding-details.webp",
+    photography: "in-progress",
     palette: ["#e6e9db", "#466044", "#aba58a"],
     ornament: "sprig",
     separator: "&",

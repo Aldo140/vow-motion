@@ -89,6 +89,7 @@ export type Message = {
   status: string;
   scheduled_at: string | null;
   created_at: string;
+  updated_at?: string;
 };
 export type Table = { id: string; name: string; capacity: number };
 export type Photo = {
@@ -139,7 +140,15 @@ export type StudioData = {
   photos: Photo[];
   collaborators: { id: string; email: string; role: string }[];
   domains: { id: string; hostname: string; status: string }[];
-  deliveries: { id: string; status: string }[];
+  deliveries: {
+    id: string;
+    status: string;
+    message_id?: string;
+    guest_id?: string;
+    error?: string | null;
+  }[];
+  /** Households holding a live invitation link, so can open what is posted there. */
+  invitedHouseholds: string[];
   activity: { id: string; action: string; created_at: string }[];
   role: string;
   user: {

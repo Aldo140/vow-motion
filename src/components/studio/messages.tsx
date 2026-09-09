@@ -3,15 +3,64 @@ import { PageHeading, type PanelProps } from "@/components/studio/shared";
 import { Arrow, Field, Modal, Notice, Submit } from "@/components/ui";
 import { eventInstant } from "@/lib/event-time";
 import { formatDate } from "@/lib/worlds";
-import { EnvelopeSimpleIcon, PlusIcon } from "@phosphor-icons/react";
+import {
+  ArrowClockwiseIcon,
+  EnvelopeSimpleIcon,
+  PlusIcon,
+} from "@phosphor-icons/react";
 import { useState } from "react";
 import Link from "next/link";
 import { messagingAudience } from "@/lib/messaging-audience";
+import { canRetry, despatchState } from "@/lib/message-state";
+import type { Message } from "@/lib/types";
+
+const channelNoun = (channel: string) =>
+  channel === "invitation"
+    ? "invitation update"
+    : channel === "sms"
+      ? "text message"
+      : "email";
+
+const contactNoun = (channel: string) =>
+  channel === "sms" ? "mobile number" : "email address";
+
+/** The venue's own clock, which is the one a couple schedules against. */
+const atVenue = (instant: string, timezone: string) =>
+  new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(instant));
+
+/** Why a guest is out of reach, stated as a count, a cause and a way to fix it. */
+function ReachReasons({
+  reasons,
+}: {
+  reasons: { count: number; cause: string; remedy: React.ReactNode }[];
+}) {
+  const live = reasons.filter((r) => r.count > 0);
+  if (!live.length) return null;
+  return (
+    <ul className="reach-reasons">
+      {live.map((reason) => (
+        <li key={reason.cause}>
+          <span className="reach-count">{reason.count}</span>
+          <span>
+            {reason.cause} <em>{reason.remedy}</em>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function MessagesManager({ data, mutate, notify }: PanelProps) {
   const [compose, setCompose] = useState(false),
     [error, setError] = useState(""),
-    [sending, setSending] = useState(""),
+    [working, setWorking] = useState(""),
     [busy, setBusy] = useState(false),
     [audience, setAudience] = useState("everyone"),
     [channel, setChannel] = useState(
@@ -19,9 +68,92 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
     ),
     [subject, setSubject] = useState(""),
     [body, setBody] = useState("");
-  const { recipients, selected, missingContact, notOptedIn } =
+
+  const total = data.guests.length;
+  const emailReady = data.user.is_demo || data.capabilities.email;
+  const guestsLink = `/studio/guests?wid=${data.wedding.id}`;
+  const invitationsLink = `/studio/invitations?wid=${data.wedding.id}`;
+  const withoutLink = data.households.filter(
+    (h) => !(data.invitedHouseholds || []).includes(h.id),
+  ).length;
+
+  const { recipients, selected, awaitingOptIn, awaitingContact, awaitingBoth } =
     messagingAudience(data.guests, audience, channel);
-  const emailReadiness = messagingAudience(data.guests, "everyone", "email");
+
+  const openCompose = (next?: { channel?: string; audience?: string }) => {
+    setError("");
+    if (next?.channel) setChannel(next.channel);
+    if (next?.audience) setAudience(next.audience);
+    setCompose(true);
+  };
+
+  // Every way of writing, what it asks of a guest, and how far it reaches now.
+  const ways = [
+    "invitation",
+    "email",
+    ...(data.capabilities.sms ? ["sms"] : []),
+  ].map((id) => {
+    const reach = messagingAudience(data.guests, "everyone", id);
+    return {
+      id,
+      available: id === "email" ? emailReady : true,
+      name:
+        id === "invitation"
+          ? "Inside the invitation"
+          : id === "email"
+            ? "Email"
+            : "Text message",
+      reach: reach.recipients.length,
+      what:
+        id === "invitation"
+          ? "Posted on each household’s own invitation page. Nothing is asked of your guests — the note is waiting the next time they open their link."
+          : id === "email"
+            ? "Sent to the address a guest gave you, and only if they chose to hear from you. Both are theirs to give."
+            : "Sent to the mobile number a guest gave you, and only if they chose to hear from you.",
+      unavailable:
+        id === "email" && !emailReady
+          ? "Email delivery is not switched on for this Studio yet, so this channel cannot send. Everything below still works inside the invitation."
+          : "",
+      action:
+        id === "invitation"
+          ? "Write an invitation update"
+          : id === "email"
+            ? "Write an email"
+            : "Write a text message",
+      reasons:
+        id === "invitation"
+          ? [
+              {
+                count: withoutLink,
+                cause: `${withoutLink === 1 ? "household has" : "households have"} no invitation link yet, so your note waits on a page they cannot open.`,
+                remedy: <Link href={invitationsLink}>Create their links</Link>,
+              },
+            ]
+          : [
+              {
+                count: reach.awaitingOptIn,
+                cause:
+                  "have not chosen wedding updates — guests opt in when they RSVP.",
+                remedy: (
+                  <Link href={invitationsLink}>Share their invitations</Link>
+                ),
+              },
+              {
+                count: reach.awaitingContact,
+                cause: `chose updates but left no ${contactNoun(id)}.`,
+                remedy: <Link href={guestsLink}>Add it to the guest list</Link>,
+              },
+              {
+                count: reach.awaitingBoth,
+                cause: `have given neither permission nor ${contactNoun(id) === "email address" ? "an email address" : "a mobile number"}.`,
+                remedy: (
+                  <Link href={invitationsLink}>Send their invitation</Link>
+                ),
+              },
+            ],
+    };
+  });
+
   const templates = [
     {
       label: "RSVP reminder",
@@ -36,189 +168,334 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
       body: `We can’t wait to see you in ${data.wedding.location}! Your personal invitation has the programme, venue details, and travel information in one place.\n\nTake a moment to check the latest details before you set off. Reply here if there’s anything we can help with.\n\nWith love,\n${data.wedding.names}`,
     },
   ];
+
+  const outcomeOf = (messageId: string) => {
+    const rows = (data.deliveries || []).filter(
+      (d) => d.message_id === messageId,
+    );
+    return {
+      delivered: rows.filter((d) =>
+        ["sent", "development", "published"].includes(d.status),
+      ).length,
+      failed: rows.filter((d) => d.status === "failed").length,
+      reason:
+        rows.find((d) => d.status === "failed" && d.error)?.error?.trim() || "",
+    };
+  };
+
+  const run = async (
+    message: Message,
+    payload: Record<string, unknown>,
+    verb: string,
+  ) => {
+    setWorking(message.id);
+    try {
+      const result = (await mutate("send/" + message.id, payload)) as {
+        development?: boolean;
+        published?: boolean;
+        count: number;
+        failed?: number;
+        skipped?: number;
+      };
+      const failed = result.failed || 0;
+      notify(
+        result.published
+          ? `Published. ${result.count} ${result.count === 1 ? "guest" : "guests"} will see this in their invitation${message.scheduled_at ? " when it is due" : ""}.`
+          : failed
+            ? `${result.count} ${verb}, ${failed} could not be delivered. Open the message to see why.`
+            : result.development
+              ? `${result.count} recorded in your development outbox. Nothing left the building.`
+              : `${result.count} ${verb}.`,
+        failed ? "error" : "success",
+      );
+    } catch (e) {
+      notify((e as Error).message, "error");
+    } finally {
+      setWorking("");
+    }
+  };
+
   return (
     <>
       <PageHeading
-        title="Keep everyone in the loop."
-        description="A thoughtful note, a timely reminder, or a change of plans."
+        title="The post room."
+        description="Write to your guests here. Every note says who it can reach before it goes."
       >
-        <button
-          className="button primary"
-          onClick={() => {
-            setError("");
-            setCompose(true);
-          }}
-        >
+        <button className="button primary" onClick={() => openCompose()}>
           <PlusIcon size={17} />
           Write a message
         </button>
       </PageHeading>
-      <Notice>
-        {data.user.is_demo
-          ? "Demo messages are recorded in your development outbox. No email or SMS is sent."
-          : "Email your guests, or post an update inside their private invitations. Published updates appear when guests visit."}
-      </Notice>
-      <section
-        className="message-readiness"
-        aria-labelledby="message-readiness-title"
-      >
-        <span className="eyebrow">READY TO REACH YOUR PEOPLE</span>
-        <h2 id="message-readiness-title">
-          Guests choose updates in their RSVP.
-        </h2>
-        <div className="message-readiness-stats">
-          <span>
-            <strong>{emailReadiness.recipients.length}</strong> ready for email
-          </span>
-          <span>
-            <strong>{emailReadiness.notOptedIn}</strong> have not opted in
-          </span>
-          <span>
-            <strong>{emailReadiness.missingContact}</strong> missing an email
-          </span>
+
+      {data.user.is_demo && (
+        <Notice>
+          You’re in your demo Studio, so nothing is really sent. Messages are
+          recorded in a development outbox exactly as a real send would be.
+        </Notice>
+      )}
+
+      <section className="post-room" aria-labelledby="post-room-title">
+        <div className="post-room-head">
+          <span className="eyebrow">WAYS TO REACH YOUR PEOPLE</span>
+          <h2 id="post-room-title">
+            {total
+              ? `${total} ${total === 1 ? "guest" : "guests"} on your list. Here is how far each way of writing carries today.`
+              : "Your guest list is empty, so there is nobody to write to yet."}
+          </h2>
+          <p>
+            Guests choose updates in their RSVP. Attending a wedding does not
+            subscribe anyone to email — permission and contact details are
+            theirs to give, which is why a note posted{" "}
+            <strong>inside the invitation</strong> always reaches further.
+          </p>
         </div>
-        <p>
-          Share each household’s private invitation link from your guest list.
-          At the end of their RSVP, guests can choose{" "}
-          <strong>Stay in the loop</strong> and add their contact details. They
-          can also choose updates before or after replying under{" "}
-          <strong>Contact & wedding updates</strong> in their invitation.
-        </p>
-        <p>
-          Attending does not automatically subscribe a guest. While you wait,
-          post a note <strong>inside the invitation</strong>; guests will see it
-          when they visit. No email or text is sent.
-        </p>
-        <button
-          className="button outline small"
-          onClick={() => {
-            setChannel("invitation");
-            setError("");
-            setCompose(true);
-          }}
-        >
-          Write an invitation update <Arrow />
-        </button>
-        <Link
-          className="button text"
-          href={`/studio/guests?wid=${data.wedding.id}`}
-        >
-          Open guest list <Arrow />
-        </Link>
-      </section>
-      <div className="message-list">
-        {data.messages.map((m) => {
-          const eligible = messagingAudience(data.guests, m.audience, m.channel)
-            .recipients.length;
-          return (
-            <article className="message-card" key={m.id}>
-              <EnvelopeSimpleIcon size={26} />
-              <div>
-                <div className="message-meta">
+
+        {total === 0 ? (
+          <div className="post-room-empty">
+            <p>Add your households and the post room fills itself in.</p>
+            <Link className="button outline small" href={guestsLink}>
+              Build your guest list <Arrow />
+            </Link>
+          </div>
+        ) : (
+          <ol className="dispatch-ways">
+            {ways.map((way) => (
+              <li
+                key={way.id}
+                className={
+                  "dispatch-way" + (way.available ? "" : " dispatch-way-off")
+                }
+              >
+                <div className="dispatch-figure">
+                  <strong>{way.available ? way.reach : "—"}</strong>
                   <span>
-                    {m.channel.toUpperCase()} · {m.audience}
-                  </span>
-                  <span
-                    className={
-                      "status " +
-                      (m.status === "draft" ? "pending" : "attending")
-                    }
-                  >
-                    {m.status === "development"
-                      ? "Development outbox"
-                      : m.status === "published" &&
-                          m.scheduled_at &&
-                          new Date(m.scheduled_at) > new Date()
-                        ? "Scheduled"
-                        : m.status}
+                    {way.available
+                      ? `of ${total} can be reached`
+                      : "unavailable"}
                   </span>
                 </div>
-                <h2>{m.subject}</h2>
-                <p>{m.body}</p>
-                {m.scheduled_at && (
-                  <small>
-                    Scheduled: {new Date(m.scheduled_at).toLocaleString()}
-                  </small>
-                )}
-              </div>
-              {m.status === "draft" && (
+                <div className="dispatch-body">
+                  <h3>{way.name}</h3>
+                  <p>{way.what}</p>
+                  {way.unavailable ? (
+                    <p className="dispatch-note">{way.unavailable}</p>
+                  ) : (
+                    <>
+                      <ReachReasons reasons={way.reasons} />
+                      {way.reach === total &&
+                        !way.reasons.some((r) => r.count > 0) && (
+                          <p className="dispatch-note">
+                            Everyone on your list can be reached this way.
+                          </p>
+                        )}
+                    </>
+                  )}
+                </div>
+                <div className="dispatch-action">
+                  <button
+                    className="button outline small"
+                    disabled={!way.available || data.role === "viewer"}
+                    onClick={() => openCompose({ channel: way.id })}
+                  >
+                    {way.action} <Arrow />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
+      {data.messages.length > 0 && (
+        <div className="despatch-book">
+          <div className="despatch-book-head">
+            <span className="eyebrow">WHAT YOU HAVE WRITTEN</span>
+          </div>
+          {data.messages.map((m) => {
+            const reach = messagingAudience(data.guests, m.audience, m.channel);
+            const eligible = reach.recipients.length;
+            const state = despatchState(m);
+            const outcome = outcomeOf(m.id);
+            const scheduledAhead = Boolean(
+              m.scheduled_at && new Date(m.scheduled_at) > new Date(),
+            );
+            // Only email and SMS wait: an invitation update is published now
+            // and simply becomes visible when its time comes.
+            const waitingItsTurn = scheduledAhead && m.channel !== "invitation";
+            const retryable = canRetry(m);
+            const removable = ["draft", "failed"].includes(m.status);
+            const readOnly = data.role === "viewer";
+            return (
+              <article className="message-card" key={m.id}>
+                <EnvelopeSimpleIcon size={26} />
+                <div>
+                  <div className="message-meta">
+                    <span>
+                      {channelNoun(m.channel).toUpperCase()} ·{" "}
+                      {m.audience.toUpperCase()}
+                    </span>
+                    <span className={"status despatch-" + state.tone}>
+                      {state.label}
+                    </span>
+                  </div>
+                  <h2>{m.subject}</h2>
+                  <p>{m.body}</p>
+                  {m.scheduled_at && (
+                    <small>
+                      {scheduledAhead ? "Due" : "Was due"}{" "}
+                      {atVenue(m.scheduled_at, data.wedding.timezone)} ·{" "}
+                      {data.wedding.timezone}
+                    </small>
+                  )}
+                  {(outcome.delivered > 0 || outcome.failed > 0) && (
+                    <small className="despatch-outcome">
+                      {outcome.delivered} delivered
+                      {outcome.failed
+                        ? ` · ${outcome.failed} failed${outcome.reason ? `: ${outcome.reason}` : ""}`
+                        : ""}
+                    </small>
+                  )}
+                </div>
                 <div className="message-blocked">
                   <p>
-                    {eligible} {eligible === 1 ? "guest" : "guests"}{" "}
+                    <strong>{eligible}</strong>{" "}
+                    {eligible === 1 ? "guest" : "guests"} in this audience{" "}
                     {m.channel === "invitation"
                       ? "can see this update"
-                      : "can receive this message"}
+                      : "can be reached today"}
                     .
                   </p>
                   {!eligible && (
-                    <p>
+                    <p className="dispatch-note">
                       {m.channel === "invitation"
-                        ? "No guests match this audience."
-                        : "Guests need to choose wedding updates and add contact details first."}
+                        ? "No guests match this audience, so there is nobody to publish it to."
+                        : `Nobody here has both chosen updates and left ${m.channel === "sms" ? "a mobile number" : "an email address"} yet.`}
                     </p>
                   )}
-                  {!eligible && m.channel !== "invitation" && (
+                  {m.status === "draft" && (
+                    <>
+                      {!eligible && m.channel !== "invitation" && (
+                        <button
+                          className="text-link"
+                          onClick={() => {
+                            setSubject(m.subject);
+                            setBody(m.body);
+                            openCompose({
+                              channel: "invitation",
+                              audience: m.audience,
+                            });
+                          }}
+                        >
+                          Use this note inside invitations instead
+                        </button>
+                      )}
+                      {/* A message waiting on its own schedule has no work for
+                          anyone to do, so its action says so rather than
+                          offering a press that the server will refuse. */}
+                      <button
+                        className="button outline small"
+                        disabled={
+                          working === m.id ||
+                          !eligible ||
+                          readOnly ||
+                          waitingItsTurn
+                        }
+                        onClick={() =>
+                          run(
+                            m,
+                            {},
+                            m.channel === "invitation" ? "published" : "sent",
+                          )
+                        }
+                      >
+                        {working === m.id
+                          ? "Working…"
+                          : m.channel === "invitation"
+                            ? "Publish update"
+                            : waitingItsTurn
+                              ? "Waiting for its time"
+                              : data.user.is_demo
+                                ? "Preview send"
+                                : "Send message"}
+                        {!waitingItsTurn && <Arrow />}
+                      </button>
+                      {waitingItsTurn && (
+                        <>
+                          <p className="dispatch-note">
+                            The daily delivery run sends this once its time
+                            passes. There is nothing you need to do.
+                          </p>
+                          <button
+                            className="text-link"
+                            disabled={working === m.id || !eligible || readOnly}
+                            onClick={() => run(m, { now: true }, "sent")}
+                          >
+                            Send it now instead
+                          </button>
+                        </>
+                      )}
+                    </>
+                  )}
+                  {retryable && (
+                    <>
+                      <button
+                        className="button outline small"
+                        disabled={working === m.id || readOnly}
+                        onClick={() => run(m, { now: true }, "sent")}
+                      >
+                        <ArrowClockwiseIcon size={15} />
+                        {working === m.id ? "Working…" : "Try the rest again"}
+                      </button>
+                      <p className="dispatch-note">
+                        Guests who already received it are skipped, so nobody is
+                        written to twice.
+                      </p>
+                    </>
+                  )}
+                  {removable && !readOnly && (
                     <button
-                      className="text-link"
-                      onClick={() => {
-                        setSubject(m.subject);
-                        setBody(m.body);
-                        setAudience(m.audience);
-                        setChannel("invitation");
-                        setError("");
-                        setCompose(true);
+                      className="text-link quiet"
+                      disabled={working === m.id}
+                      onClick={async () => {
+                        setWorking(m.id);
+                        try {
+                          await mutate("messages/" + m.id, undefined, "DELETE");
+                          notify("Draft discarded.");
+                        } catch (e) {
+                          notify((e as Error).message, "error");
+                        } finally {
+                          setWorking("");
+                        }
                       }}
                     >
-                      Use this note inside invitations
+                      Discard this draft
                     </button>
                   )}
-                  <button
-                    className="button outline small"
-                    disabled={sending === m.id || !eligible}
-                    onClick={async () => {
-                      setSending(m.id);
-                      try {
-                        const result = (await mutate("send/" + m.id, {})) as {
-                          development: boolean;
-                          count: number;
-                          published?: boolean;
-                        };
-                        notify(
-                          result.published
-                            ? `${result.count} guests can see this update in their invitation when it is due.`
-                            : result.development
-                              ? `${result.count} messages recorded in the development outbox.`
-                              : `${result.count} messages accepted by the provider.`,
-                        );
-                      } catch (e) {
-                        notify((e as Error).message);
-                      } finally {
-                        setSending("");
-                      }
-                    }}
-                  >
-                    {sending === m.id
-                      ? "Processing…"
-                      : m.channel === "invitation"
-                        ? "Publish update"
-                        : data.user.is_demo
-                          ? "Preview send"
-                          : "Send message"}
-                    <Arrow />
-                  </button>
                 </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
       {!data.messages.length && (
         <div className="empty-state">
           <EnvelopeSimpleIcon size={36} />
           <h2>A little note goes a long way.</h2>
-          <p>Write to everyone, or just the guests who need an update.</p>
+          <p>
+            Nothing written yet. Start with an update inside the invitation — it
+            reaches every household you have shared a link with, and asks
+            nothing of them.
+          </p>
+          <button
+            className="button outline small"
+            onClick={() => openCompose({ channel: "invitation" })}
+          >
+            Write an invitation update <Arrow />
+          </button>
         </div>
       )}
+
       {compose && (
         <Modal title="A note for your people" onClose={() => setCompose(false)}>
           {error && <Notice error>{error}</Notice>}
@@ -241,7 +518,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 setCompose(false);
                 setSubject("");
                 setBody("");
-                notify("Message draft saved.");
+                notify("Message draft saved. Review it, then send when ready.");
               } catch (e) {
                 setError((e as Error).message);
               } finally {
@@ -307,13 +584,10 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                   value={channel}
                   onChange={(e) => setChannel(e.target.value)}
                 >
-                  <option
-                    value="email"
-                    disabled={!data.user.is_demo && !data.capabilities.email}
-                  >
-                    Email
-                  </option>
                   <option value="invitation">Inside the invitation</option>
+                  <option value="email" disabled={!emailReady}>
+                    Email{emailReady ? "" : " — not switched on"}
+                  </option>
                   {data.capabilities.sms && <option value="sms">SMS</option>}
                 </select>
               </Field>
@@ -331,11 +605,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
               <strong>
                 {recipients.length}{" "}
                 {recipients.length === 1 ? "guest" : "guests"} can receive this{" "}
-                {channel === "invitation"
-                  ? "invitation update"
-                  : channel === "email"
-                    ? "email"
-                    : "text"}
+                {channelNoun(channel)}
               </strong>
               <p>
                 {recipients.length
@@ -347,14 +617,45 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                       ? ` and ${recipients.length - 3} more.`
                       : ".")
                   : selected.length
-                    ? "Guests can choose updates in their RSVP or in Contact & wedding updates in their invitation."
+                    ? "Nobody in this audience can be reached this way yet."
                     : "No guests match this audience. Choose another audience."}
               </p>
-              <small>
-                {channel === "invitation"
-                  ? "Updates are visible inside the selected guests’ private household invitations."
-                  : `${selected.length} in this audience. ${notOptedIn} have not opted in; ${missingContact} are missing ${channel === "email" ? "an email address" : "a mobile number"}. These groups can overlap.`}
-              </small>
+              {channel === "invitation" ? (
+                <small>
+                  {selected.length} in this audience. Updates appear inside each
+                  household’s private invitation.
+                  {withoutLink > 0 &&
+                    ` ${withoutLink} ${withoutLink === 1 ? "household has" : "households have"} no link yet, so the note waits for them.`}
+                </small>
+              ) : (
+                <>
+                  <small>
+                    {selected.length} in this audience
+                    {selected.length > recipients.length
+                      ? `, ${selected.length - recipients.length} of whom cannot be reached this way:`
+                      : "."}
+                  </small>
+                  <ReachReasons
+                    reasons={[
+                      {
+                        count: awaitingOptIn,
+                        cause: "have not chosen wedding updates.",
+                        remedy: null,
+                      },
+                      {
+                        count: awaitingContact,
+                        cause: `have no ${contactNoun(channel)} on file.`,
+                        remedy: null,
+                      },
+                      {
+                        count: awaitingBoth,
+                        cause: "have given neither.",
+                        remedy: null,
+                      },
+                    ]}
+                  />
+                </>
+              )}
               {channel !== "invitation" &&
                 !recipients.length &&
                 selected.length > 0 && (

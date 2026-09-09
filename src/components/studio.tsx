@@ -5,6 +5,7 @@ import {
   ListIcon,
   PlusIcon,
   SignOutIcon,
+  WarningCircleIcon,
   XIcon,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -23,7 +24,10 @@ export default function Studio({
   initialId: string;
 }) {
   const [weddingId, setWeddingId] = useState(initialId),
-    [toast, setToast] = useState(""),
+    [toast, setToastState] = useState<{
+      text: string;
+      tone: "success" | "error";
+    }>({ text: "", tone: "success" }),
     [mobile, setMobile] = useState(false),
     [create, setCreate] = useState(false),
     [smallScreen, setSmallScreen] = useState(false);
@@ -69,9 +73,16 @@ export default function Studio({
     };
   }, [mobile, smallScreen]);
   const { data, error, refresh, mutate } = useStudioData(weddingId);
+  const setToast = (text: string, tone: "success" | "error" = "success") =>
+    setToastState({ text, tone });
+  const dismissToast = () => setToastState({ text: "", tone: "success" });
   useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(""), 4500);
+    if (!toast.text) return;
+    // A problem should stay on screen long enough to be read and acted on.
+    const t = setTimeout(
+      () => setToastState({ text: "", tone: "success" }),
+      toast.tone === "error" ? 9000 : 4500,
+    );
     return () => clearTimeout(t);
   }, [toast]);
   if (!data)
@@ -239,11 +250,18 @@ export default function Studio({
           <span>VOW MOTION STUDIO</span>
         </footer>
       </div>
-      {toast && (
-        <div className="toast" role="status">
-          <CheckIcon size={18} />
-          {toast}
-          <button onClick={() => setToast("")} aria-label="Dismiss">
+      {toast.text && (
+        <div
+          className={"toast " + toast.tone}
+          role={toast.tone === "error" ? "alert" : "status"}
+        >
+          {toast.tone === "error" ? (
+            <WarningCircleIcon size={18} />
+          ) : (
+            <CheckIcon size={18} />
+          )}
+          {toast.text}
+          <button onClick={dismissToast} aria-label="Dismiss">
             <XIcon size={16} />
           </button>
         </div>
@@ -258,7 +276,7 @@ export default function Studio({
                 const result = await api("/api/weddings", "POST", form);
                 window.location.href = "/studio?wid=" + result.id;
               } catch (e) {
-                setToast((e as Error).message);
+                setToast((e as Error).message, "error");
               }
             }}
           >

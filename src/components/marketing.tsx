@@ -14,10 +14,16 @@ import { CheckIcon } from "@phosphor-icons/react";
 import { Arrow, Brand } from "./ui";
 import { worlds } from "@/lib/worlds";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
+// The finished worlds lead, and the rest say what they are still waiting for.
+// Six tabs that all promise the same thing would be the lie worth avoiding.
+const collection = [
+  ...worlds.filter((w) => w.photography === "complete"),
+  ...worlds.filter((w) => w.photography !== "complete"),
+];
 export default function Marketing() {
   const root = useRef<HTMLDivElement>(null),
     [active, setActive] = useState("riviera");
-  const world = worlds.find((w) => w.id === active)!;
+  const world = collection.find((w) => w.id === active)!;
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -138,41 +144,50 @@ export default function Marketing() {
               </h2>
             </div>
             <p>
-              Six worlds, each with its own kind of romance.
+              Three worlds are fully dressed, each with its own photography,
+              voice and ornament.
               <br />
-              Find the one that feels like you.
+              Three more are drawn and written, and still borrowing our house
+              photography.
             </p>
           </div>
           <div className="world-tabs" role="tablist" aria-label="Design worlds">
-            {worlds.map((w) => (
+            {collection.map((w) => (
               <button
                 role="tab"
                 id={"tab-" + w.id}
                 aria-controls="world-preview"
                 aria-selected={w.id === active}
                 tabIndex={w.id === active ? 0 : -1}
+                className={
+                  w.photography === "complete" ? undefined : "world-tab-partial"
+                }
                 onKeyDown={(event) => {
-                  const index = worlds.indexOf(w);
+                  const index = collection.indexOf(w);
                   const next =
                     event.key === "ArrowRight"
-                      ? (index + 1) % worlds.length
+                      ? (index + 1) % collection.length
                       : event.key === "ArrowLeft"
-                        ? (index + worlds.length - 1) % worlds.length
+                        ? (index + collection.length - 1) % collection.length
                         : event.key === "Home"
                           ? 0
                           : event.key === "End"
-                            ? worlds.length - 1
+                            ? collection.length - 1
                             : -1;
                   if (next < 0) return;
                   event.preventDefault();
-                  setActive(worlds[next].id);
-                  document.getElementById("tab-" + worlds[next].id)?.focus();
+                  setActive(collection[next].id);
+                  document
+                    .getElementById("tab-" + collection[next].id)
+                    ?.focus();
                 }}
                 key={w.id}
                 onClick={() => setActive(w.id)}
               >
                 {w.name}
-                <span>{String(worlds.indexOf(w) + 1).padStart(2, "0")}</span>
+                <span>
+                  {String(collection.indexOf(w) + 1).padStart(2, "0")}
+                </span>
               </button>
             ))}
           </div>
@@ -199,24 +214,20 @@ export default function Marketing() {
                 className="collection-mood-print depth-drift"
                 aria-hidden="true"
               >
-                <img
-                  src={
-                    active === "riviera"
-                      ? "/images/riviera.webp"
-                      : active === "maison"
-                        ? "/images/hero-maison.webp"
-                        : "/images/wedding-details.webp"
-                  }
-                  alt=""
-                  loading="lazy"
-                />
+                <img src={world.mood} alt="" loading="lazy" />
                 <span>A feeling, down to the details.</span>
               </div>
               <span className="collection-number">
-                0{worlds.indexOf(world) + 1} / 06
+                0{collection.indexOf(world) + 1} / 0{collection.length}
               </span>
               <h3>{world.name}</h3>
               <p>{world.description}</p>
+              {world.photography === "in-progress" && (
+                <p className="collection-honesty">
+                  Colour, typography, ornament and voice are this world&rsquo;s
+                  own. Its photography is still ours, not yet its own.
+                </p>
+              )}
               <div className="swatches">
                 {world.palette.map((c) => (
                   <span key={c} style={{ background: c }} />

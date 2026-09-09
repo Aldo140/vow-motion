@@ -351,6 +351,21 @@ input[type="radio"] {
   color: inherit;
   display: flex;
 }
+/* A refusal used to arrive wearing a tick. It now says what it is. */
+.toast.error {
+  background: oklch(32% 0.09 25);
+  align-items: flex-start;
+  max-width: min(560px, calc(100% - 32px));
+  line-height: 1.6;
+  text-align: left;
+}
+.toast.error > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.toast.error button {
+  margin-top: 1px;
+}
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -606,6 +621,14 @@ input[type="radio"] {
   height: 2px;
   background: var(--ink);
 }
+/* A world still borrowing the house photography is set a shade back, so the
+   three finished ones lead without the other three being hidden. */
+.world-tabs button.world-tab-partial[aria-selected="false"] {
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+.world-tabs button.world-tab-partial[aria-selected="false"] span {
+  font-style: italic;
+}
 .collection-preview {
   display: grid;
   grid-template-columns: 1.7fr 1fr;
@@ -670,6 +693,16 @@ input[type="radio"] {
   color: var(--muted);
   margin-top: 10px;
   max-width: 180px;
+}
+/* Said inside the panel, not in a footnote: this world is coloured, drawn and
+   written, and its photography is still the house's. */
+.collection-note > p.collection-honesty {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1.65;
+  max-width: 30ch;
 }
 .swatches {
   display: flex;
@@ -5102,30 +5135,8 @@ td:last-child {
   font-size: 13px;
   line-height: 1.7;
 }
-.message-readiness {
-  margin: 20px 0 28px;
-  padding: 24px;
-  border: 1px solid var(--line);
-  background: var(--paper);
-}
-.message-readiness h2 {
-  font-size: 25px;
-  margin-bottom: 12px;
-}
-.message-readiness p {
-  max-width: 760px;
-  line-height: 1.7;
-}
-.message-readiness-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 28px;
-  margin: 16px 0;
-}
-.message-readiness-stats strong {
-  font-size: 22px;
-  margin-right: 6px;
-}
+/* The readiness panel this replaced is now the post-room ledger, in
+   studio-post-room.css. */
 .message-blocked {
   max-width: 300px;
   font-size: 13px;

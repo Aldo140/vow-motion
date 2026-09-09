@@ -24,6 +24,7 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     feedback,
     guestRequests,
     responses,
+    invited,
   ] = await Promise.all([
     listWeddings(user.id),
     rows(
@@ -50,7 +51,13 @@ export async function studioData(weddingId: string): Promise<StudioData> {
       "domains",
       "deliveries",
     ].map((table) =>
-      rows(`SELECT * FROM ${table} WHERE wedding_id=$1`, [weddingId]),
+      rows(
+        `SELECT * FROM ${table} WHERE wedding_id=$1` +
+          // Without an order the message list reshuffles itself after every
+          // save, which reads as the Studio losing your work.
+          (table === "messages" ? " ORDER BY created_at DESC" : ""),
+        [weddingId],
+      ),
     ),
     rows(
       "SELECT id,action,created_at FROM audit_log WHERE wedding_id=$1 ORDER BY created_at DESC LIMIT 12",
@@ -66,6 +73,13 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     ),
     rows(
       "SELECT r.guest_id,r.event_id,r.attending,r.meal,r.answers FROM guest_event_responses r JOIN guests g ON g.id=r.guest_id WHERE g.wedding_id=$1",
+      [weddingId],
+    ),
+    // An update posted inside the invitation waits on a page the household can
+    // only open with a link. Which households hold one is therefore part of
+    // knowing who a message actually reaches.
+    rows(
+      "SELECT DISTINCT household_id FROM invitation_tokens WHERE wedding_id=$1 AND revoked=false AND preview=false AND expires_at>now()",
       [weddingId],
     ),
   ]);
@@ -92,6 +106,7 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     feedback,
     guestRequests,
     responses,
+    invitedHouseholds: invited.map((row) => String(row.household_id)),
   } as unknown as StudioData;
 }
 export async function guestData(rawToken: string): Promise<GuestData> {

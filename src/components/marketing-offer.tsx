@@ -22,7 +22,7 @@ export function FirstSteps({ planner = false }: { planner?: boolean }) {
     : [
         [
           "Find your feeling",
-          "Explore six design worlds and open a working invitation before you create an account.",
+          "Open a working invitation before you create an account. Three design worlds are complete; three more are on their way.",
         ],
         [
           "Make it yours",
@@ -98,8 +98,16 @@ export function OfferQuestions({ planner = false }: { planner?: boolean }) {
     ...(planner
       ? [
           [
-            "We already use planning software. Where would this fit?",
-            "Start by comparing the guest experience with what you already offer. Vow Motion focuses on a coordinated invitation design, household replies and wedding details, with a small team building alongside planners. We do not currently integrate directly with Aisle Planner or Planning Pod. Guest data can be imported and exported by CSV, but changes do not automatically sync between systems. If it duplicates work without adding value, it may not be the right fit.",
+            "We already run everything on a planning platform. Where would this sit?",
+            "Beside it, not instead of it. Keep your contracts, budgets, timelines and client portal exactly where they are. Vow Motion is the layer your couple's guests actually touch: the invitation, the household reply, the private events, the weekend details. Bring in the guest list by CSV, run the guest experience here, and export it back whenever you need it.",
+          ],
+          [
+            "Does it sync with the platform we already use?",
+            "No, and we would rather say so plainly. There is no live two-way sync with any other planning system. Movement between them is by CSV in both directions: import a guest list with its columns mapped and duplicates reviewed, and export the guest and RSVP data at any time. In practice planners import once, collect replies here, and export the day-of documents to their suppliers.",
+          ],
+          [
+            "What do we get that our platform does not already give us?",
+            "Two things. The guest side: a designed invitation each household opens without an account, replying for everyone at once. And the supplier side: the kitchen sheet, shuttle manifest and place cards built from the replies you already hold, instead of rebuilt by hand the week before.",
           ],
         ]
       : []),

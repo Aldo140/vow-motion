@@ -1,0 +1,287 @@
+/* The post room.
+
+   A couple arriving here asks three things at once: what is this page for, how
+   many of my people can I actually write to, and why not all of them. The
+   answers are set as a ruled ledger on a single sheet — the same correspondence
+   of two halves the planner page uses — rather than a grid of cards, because
+   the point is the relationship between a figure and its reason, and a hairline
+   states that better than a border ever does. */
+
+.post-room {
+  margin: 24px 0 44px;
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--ink);
+  background: var(--surface);
+}
+
+.post-room-head {
+  padding: clamp(24px, 3.4vw, 40px) clamp(20px, 3.4vw, 44px)
+    clamp(20px, 2.6vw, 30px);
+}
+.post-room-head .eyebrow {
+  display: block;
+  color: var(--olive);
+  margin-bottom: 14px;
+}
+.post-room-head h2 {
+  font-family: var(--serif);
+  font-size: clamp(26px, 2.7vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 22ch;
+}
+.post-room-head p {
+  margin-top: 16px;
+  max-width: 66ch;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--muted);
+}
+.post-room-head strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.post-room-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 26px clamp(20px, 3.4vw, 44px) 32px;
+  border-top: 1px solid var(--line);
+}
+.post-room-empty p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* One row per way of writing: the figure, the explanation, the single action. */
+.dispatch-ways {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dispatch-way {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(20px, 3vw, 42px);
+  padding: clamp(22px, 2.6vw, 32px) clamp(20px, 3.4vw, 44px);
+  border-top: 1px solid var(--line);
+}
+.dispatch-way-off {
+  background: oklch(97% 0.004 90);
+}
+
+/* The figure is the answer to "how many", so it is set at display size in the
+   serif with tabular numerals, and does not shift as the number changes. */
+.dispatch-figure {
+  border-right: 1px solid var(--line);
+  padding-right: clamp(16px, 2vw, 30px);
+  min-height: 62px;
+}
+.dispatch-figure strong {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(40px, 4.4vw, 58px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--olive);
+}
+.dispatch-way-off .dispatch-figure strong {
+  color: var(--muted);
+}
+.dispatch-figure span {
+  display: block;
+  margin-top: 10px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.dispatch-body h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 23px;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.dispatch-body > p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 58ch;
+}
+.dispatch-note {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.75;
+  color: var(--muted);
+  font-style: italic;
+  max-width: 58ch;
+}
+
+/* Why the rest are out of reach. Each line is a count, a cause, and the one
+   place the couple can go to change it. */
+.reach-reasons {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  max-width: 62ch;
+}
+.reach-reasons li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.reach-count {
+  flex-shrink: 0;
+  min-width: 34px;
+  padding: 3px 8px;
+  text-align: center;
+  background: var(--olive-light);
+  color: var(--olive);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  border-radius: 3px;
+}
+.reach-reasons em {
+  font-style: normal;
+  white-space: nowrap;
+}
+.reach-reasons a {
+  border-bottom: 1px solid currentColor;
+  color: var(--olive);
+  font-weight: 600;
+}
+.reach-reasons a:hover {
+  color: var(--ink);
+}
+
+.dispatch-action {
+  align-self: center;
+}
+.dispatch-action .button {
+  white-space: nowrap;
+}
+
+/* What has been written. A running head, then the existing message sheets. */
+.despatch-book-head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ink);
+}
+.despatch-book-head .eyebrow {
+  color: var(--olive);
+}
+.despatch-book .message-card:last-child {
+  border-bottom: 0;
+}
+.despatch-outcome {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+/* Status, told honestly: a failure no longer wears the colour of a success.
+   These labels are sentences rather than single words, so they are not
+   Capitalised Like A Headline the way the one-word guest statuses are. */
+.status[class*="despatch-"] {
+  text-transform: none;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.status.despatch-done {
+  background: oklch(92% 0.035 135);
+  color: oklch(35% 0.065 135);
+}
+.status.despatch-waiting {
+  background: oklch(94% 0.044 85);
+  color: oklch(40% 0.062 75);
+}
+.status.despatch-trouble {
+  background: oklch(93% 0.045 25);
+  color: oklch(40% 0.09 25);
+}
+
+.message-blocked p strong {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  margin-right: 3px;
+}
+.message-blocked .button,
+.message-blocked .text-link {
+  margin-top: 12px;
+}
+.message-blocked .text-link {
+  display: block;
+  text-align: left;
+}
+.text-link.quiet {
+  color: var(--muted);
+  font-size: 11px;
+}
+.text-link.quiet:hover {
+  color: var(--ink);
+}
+.message-blocked .dispatch-note {
+  margin-top: 10px;
+  font-size: 11.5px;
+}
+
+/* The tablet fold: the figure moves above its explanation rather than shrinking
+   into illegibility, and the action takes the full width it needs. */
+@media (max-width: 960px) {
+  .dispatch-way {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 20px 26px;
+  }
+  .dispatch-action {
+    grid-column: 2;
+    align-self: start;
+  }
+}
+@media (max-width: 640px) {
+  .dispatch-way {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .dispatch-figure {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-height: 0;
+    padding: 0 0 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .dispatch-figure strong {
+    font-size: 40px;
+  }
+  .dispatch-figure span {
+    margin-top: 0;
+  }
+  .dispatch-action {
+    grid-column: 1;
+  }
+  .dispatch-action .button {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .reach-reasons em {
+    white-space: normal;
+  }
+}

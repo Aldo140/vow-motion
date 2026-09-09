@@ -107,9 +107,29 @@ test("RSVP collects optional permission, protects households, and makes opt out 
     saved.guests.find((g: { id: string }) => g.id === subscribed.id).status,
   ).toBe("attending");
   await page.goto(`/studio/messages?wid=${wedding.id}`);
+  // The tab has to answer, without being asked: what is this, how many people
+  // can I write to, and why not all of them.
   await expect(
-    page.getByRole("heading", { name: "Guests choose updates in their RSVP." }),
+    page.getByRole("heading", { name: "The post room." }),
   ).toBeVisible();
+  const ways = page.locator(".dispatch-way");
+  await expect(ways).toHaveCount(2);
+  await expect(
+    ways
+      .filter({ hasText: "Inside the invitation" })
+      .locator(".dispatch-figure strong"),
+  ).toHaveText(String(studio.guests.length));
+  const byEmail = ways.filter({ hasText: "Email" });
+  // Guests who withdrew their permission are counted, named as the reason, and
+  // given somewhere to go about it.
+  await expect(byEmail.locator(".reach-reasons li").first()).toContainText(
+    "have not chosen wedding updates",
+  );
+  await expect(byEmail.getByRole("link").first()).toBeVisible();
+  const reachable = Number(
+    await byEmail.locator(".dispatch-figure strong").innerText(),
+  );
+  expect(reachable).toBeLessThan(studio.guests.length);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await expect
@@ -118,10 +138,11 @@ test("RSVP collects optional permission, protects households, and makes opt out 
       )
       .toBe(true);
     await page.screenshot({
-      path: `artifacts/messages-readiness-${width}.png`,
+      path: `artifacts/messages-post-room-${width}.png`,
       fullPage: true,
     });
   }
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("button", { name: "Write an invitation update" })
     .click();

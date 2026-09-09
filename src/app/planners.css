@@ -57,6 +57,236 @@
   margin-top: 34px;
 }
 
+/* Alongside, not instead.
+   An engraved plate rather than a diagram: a ruled card of heavy paper, the
+   three movements set on it as columns divided by hairlines, the middle one
+   tinted because it is the only column Vow Motion is asking for. */
+.planner-alongside {
+  max-width: 1240px;
+  margin: auto;
+  padding: clamp(20px, 3vw, 40px) 6% clamp(30px, 4vw, 56px);
+}
+.alongside-plate {
+  position: relative;
+  padding: clamp(30px, 4.4vw, 62px) clamp(24px, 4vw, 58px)
+    clamp(26px, 3.6vw, 48px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 1px 2px oklch(24% 0.012 100 / 0.05),
+    0 18px 40px oklch(24% 0.012 100 / 0.05);
+}
+/* The engraved double rule that a printed plate carries at its edge. */
+.alongside-plate::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid color-mix(in srgb, var(--olive) 22%, transparent);
+  pointer-events: none;
+}
+.alongside-eyebrow {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--olive);
+}
+.planner-alongside h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(29px, 4.1vw, 50px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  margin: 16px 0 0;
+  max-width: 15ch;
+}
+.planner-alongside h2 em {
+  font-style: italic;
+}
+.alongside-lede {
+  max-width: 52ch;
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+.alongside-movement {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: clamp(30px, 4vw, 52px) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}
+.alongside-step {
+  position: relative;
+  padding: clamp(22px, 2.6vw, 34px) clamp(18px, 2.2vw, 32px)
+    clamp(18px, 2.2vw, 28px);
+}
+.alongside-step + .alongside-step {
+  border-left: 1px solid var(--line);
+}
+.alongside-step:first-child {
+  padding-left: 0;
+}
+.alongside-step:last-child {
+  padding-right: 0;
+}
+/* The middle movement is the only one that happens here, so it is the only
+   one on tinted paper. */
+.alongside-step.step-here {
+  background: color-mix(in srgb, var(--olive-light) 60%, transparent);
+}
+.alongside-number {
+  font-family: var(--serif);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.alongside-mark {
+  display: block;
+  margin: 14px 0 16px;
+  color: var(--olive);
+}
+/* Drawn at its own size, so a hairline stays a hairline. */
+.alongside-mark svg {
+  display: block;
+  width: 44px;
+  height: 30px;
+  stroke-width: 1;
+}
+.alongside-step h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(18px, 1.9vw, 23px);
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+.alongside-step p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.68;
+  color: var(--muted);
+  max-width: 38ch;
+}
+.alongside-caveat {
+  max-width: 68ch;
+  margin: clamp(22px, 2.6vw, 32px) 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* The supplier sheets.
+   Paper laid on the table: square corners, a printed head, ruled contents and
+   the format noted at the foot the way a docket is. */
+.planner-suppliers {
+  max-width: 1240px;
+  margin: auto;
+  padding: clamp(34px, 5vw, 74px) 6% clamp(30px, 4vw, 56px);
+}
+.suppliers-intro {
+  max-width: 660px;
+}
+.suppliers-intro h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(30px, 4.2vw, 52px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+}
+.suppliers-intro h2 em {
+  font-style: italic;
+}
+.suppliers-intro > p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 56ch;
+}
+.supplier-sheets {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.4vw, 34px);
+  margin: clamp(30px, 4.4vw, 58px) 0 0;
+  padding: 0;
+}
+.supplier-sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(300px, 30vw, 380px);
+  padding: clamp(22px, 2.4vw, 34px) clamp(20px, 2.2vw, 30px)
+    clamp(16px, 1.8vw, 22px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 1px 2px oklch(24% 0.012 100 / 0.06),
+    0 16px 34px oklch(24% 0.012 100 / 0.06);
+}
+.docket-for {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--olive);
+}
+.supplier-sheet h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(23px, 2.4vw, 31px);
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  margin: 12px 0 0;
+}
+.docket-rule {
+  display: block;
+  margin: 16px 0 2px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+  height: 3px;
+}
+.docket-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+/* Ruled like the sheet it describes: one requirement to a line. */
+.docket-lines li {
+  padding: 13px 0 13px 20px;
+  position: relative;
+  font-size: 13.5px;
+  line-height: 1.55;
+  border-bottom: 1px solid var(--line);
+}
+.docket-lines li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 21px;
+  width: 9px;
+  height: 1px;
+  background: var(--olive);
+}
+.docket-foot {
+  margin-top: 18px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+}
+.suppliers-note {
+  max-width: 72ch;
+  margin: clamp(24px, 3vw, 36px) 0 0;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
 /* The ledger */
 .planner-ledger {
   max-width: 1240px;
@@ -249,8 +479,39 @@
   .planner-pilot {
     grid-template-columns: minmax(0, 1fr);
   }
+  /* Three sheets no longer fit side by side, so they become a stack you
+     scroll rather than three columns squeezed to nothing. */
+  .supplier-sheets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .supplier-sheet {
+    min-height: 0;
+  }
+  .alongside-movement {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .alongside-step {
+    padding: 26px 0;
+  }
+  .alongside-step + .alongside-step {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  /* Tinted paper keeps its own margins once the column is full width. */
+  .alongside-step.step-here {
+    padding: 26px 18px;
+  }
+  .alongside-step p {
+    max-width: none;
+  }
 }
 @media (max-width: 768px) {
+  .alongside-plate {
+    padding: 30px 22px 26px;
+  }
+  .planner-alongside h2 {
+    max-width: none;
+  }
   /* The pairing still reads on a phone, stacked and labelled, with the spine
      turned into the rule that separates the two halves of each row. */
   .ledger-columns {

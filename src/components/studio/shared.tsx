@@ -6,7 +6,8 @@ export type PanelProps = {
   data: StudioData;
   refresh: () => Promise<void>;
   mutate: (path: string, body?: unknown, method?: string) => Promise<unknown>;
-  notify: (text: string) => void;
+  /** A tone of "error" is announced and marked as a problem, not a tick. */
+  notify: (text: string, tone?: "success" | "error") => void;
 };
 
 export function PageHeading({
