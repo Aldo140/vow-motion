@@ -73,6 +73,17 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
   const emailReady = data.user.is_demo || data.capabilities.email;
   const guestsLink = `/studio/guests?wid=${data.wedding.id}`;
   const invitationsLink = `/studio/invitations?wid=${data.wedding.id}`;
+  const successfullyInvited = new Set(
+    data.invitationDispatches
+      .filter((delivery) => ["development", "sent", "delivered"].includes(delivery.status))
+      .map((delivery) => delivery.household_id),
+  );
+  const householdsWithEmail = new Set(
+    data.guests.filter((guest) => guest.email.trim()).map((guest) => guest.household_id),
+  );
+  const invitationsReady = data.households.filter(
+    (household) => householdsWithEmail.has(household.id) && !successfullyInvited.has(household.id),
+  ).length;
   const withoutLink = data.households.filter(
     (h) => !(data.invitedHouseholds || []).includes(h.id),
   ).length;
@@ -233,6 +244,27 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
           recorded in a development outbox exactly as a real send would be.
         </Notice>
       )}
+
+      <section className="message-journey" aria-labelledby="message-journey-title">
+        <div className="message-journey-copy">
+          <span className="eyebrow">STARTING THE CONVERSATION?</span>
+          <h2 id="message-journey-title">The first invitation has its own send.</h2>
+          <p>
+            Vow Motion prepares one private email and link for every household at once.
+            After guests reply and choose updates, return here for reminders and wedding notes.
+          </p>
+          <Link className="button primary" href={invitationsLink}>
+            {invitationsReady
+              ? `Prepare ${invitationsReady} ${invitationsReady === 1 ? "invitation" : "invitations"}`
+              : "Review invitation delivery"} <Arrow />
+          </Link>
+        </div>
+        <ol className="message-journey-steps">
+          <li className="complete"><span>01</span><div><strong>Invite</strong><small>Private household emails</small></div></li>
+          <li><span>02</span><div><strong>Reply</strong><small>Attendance, meals and consent</small></div></li>
+          <li><span>03</span><div><strong>Keep in touch</strong><small>Updates from this post room</small></div></li>
+        </ol>
+      </section>
 
       <section className="post-room" aria-labelledby="post-room-title">
         <div className="post-room-head">

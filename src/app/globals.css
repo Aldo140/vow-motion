@@ -2027,6 +2027,38 @@ td:last-child {
 .campaign-review-lines span { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }
 .invite-delivery-error { max-width: 50ch; color: var(--danger, #8a3434) !important; text-transform: none; }
 .campaign-actions { display: flex; justify-content: flex-end; gap: 12px; }
+.message-journey {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+  gap: clamp(34px, 6vw, 90px);
+  align-items: end;
+  margin: 30px 0 54px;
+  padding: clamp(30px, 4vw, 58px);
+  color: var(--bg);
+  background: var(--olive);
+  overflow: hidden;
+  position: relative;
+}
+.message-journey::after {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  right: -75px;
+  top: -95px;
+  border: 1px solid color-mix(in srgb, var(--bg) 24%, transparent);
+  border-radius: 50%;
+}
+.message-journey-copy { position: relative; z-index: 1; }
+.message-journey-copy h2 { max-width: 620px; margin: 12px 0 18px; font: 400 clamp(34px, 4vw, 58px)/.98 var(--serif); }
+.message-journey-copy p { max-width: 62ch; margin-bottom: 25px; color: color-mix(in srgb, var(--bg) 75%, transparent); font-size: 12px; line-height: 1.7; }
+.message-journey-copy .button { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+.message-journey-steps { position: relative; z-index: 1; margin: 0; padding: 0; list-style: none; border-top: 1px solid color-mix(in srgb, var(--bg) 24%, transparent); }
+.message-journey-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 17px 0; border-bottom: 1px solid color-mix(in srgb, var(--bg) 24%, transparent); }
+.message-journey-steps li > span { color: color-mix(in srgb, var(--bg) 48%, transparent); font-size: 9px; letter-spacing: .14em; }
+.message-journey-steps strong, .message-journey-steps small { display: block; }
+.message-journey-steps strong { font: 400 20px/1.1 var(--serif); }
+.message-journey-steps small { margin-top: 5px; color: color-mix(in srgb, var(--bg) 65%, transparent); font-size: 9px; }
 .message-card {
   display: flex;
   align-items: flex-start;
@@ -3835,6 +3867,9 @@ td:last-child {
   .campaign-progress { grid-template-columns: 1fr; }
   .campaign-recipients, .campaign-actions { flex-direction: column; }
   .campaign-actions .button { width: 100%; justify-content: space-between; }
+  .message-journey { grid-template-columns: 1fr; padding: 28px 22px; }
+  .message-journey-copy h2 { font-size: 38px; }
+  .message-journey-copy .button { width: 100%; justify-content: space-between; }
   .invitation-live-preview {
     max-width: 370px;
     min-height: 450px;
