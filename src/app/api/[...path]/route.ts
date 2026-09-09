@@ -4,6 +4,7 @@ import { db, rows, transaction } from "@/lib/db";
 import {
   currentUser,
   requireUser,
+  requireAdmin,
   session,
   passwordHash,
   passwordMatches,
@@ -55,6 +56,26 @@ async function handler(request: NextRequest, context: Context) {
       const existing = await currentUser();
       if (!existing) await session(await createDemo());
       return json({ ok: true });
+    }
+    if (area === "admin") {
+      const admin = await requireAdmin();
+      if (action === "role" && method === "POST") {
+        const input = z
+          .object({ user_id: z.string(), is_admin: z.boolean() })
+          .parse(await body());
+        if (input.user_id === admin.id)
+          throw new HttpError(400, "You cannot change your own access.");
+        const updated = await (
+          await db()
+        ).query(
+          "UPDATE users SET is_admin=$1 WHERE id=$2 AND is_demo=false RETURNING id",
+          [input.is_admin, input.user_id],
+        );
+        if (!updated.rows.length)
+          throw new HttpError(404, "Account not found.");
+        return json({ ok: true });
+      }
+      throw new HttpError(404, "This action is unavailable.");
     }
     if (area === "weddings") {
       const user = await requireUser();

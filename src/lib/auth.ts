@@ -33,6 +33,7 @@ export type User = {
   name: string;
   is_demo: boolean;
   email_verified: boolean;
+  is_admin: boolean;
 };
 export async function currentUser(): Promise<User | null> {
   const value = (await cookies()).get("vow_session")?.value;
@@ -40,11 +41,29 @@ export async function currentUser(): Promise<User | null> {
   return (
     (
       await rows<User>(
-        "SELECT u.id,u.email,u.name,u.is_demo,u.email_verified FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=$1 AND s.expires_at>now()",
+        "SELECT u.id,u.email,u.name,u.is_demo,u.email_verified,u.is_admin FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=$1 AND s.expires_at>now()",
         [hash(value)],
       )
     )[0] || null
   );
+}
+/** Addresses granted operator access by environment, lowercased. */
+export function adminEmails() {
+  return (process.env.ADMIN_EMAILS || "")
+    .split(/[,\s]+/)
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+}
+export function isAdmin(user: User | null): user is User {
+  return (
+    !!user &&
+    (user.is_admin || adminEmails().includes(user.email.toLowerCase()))
+  );
+}
+export async function requireAdmin() {
+  const user = await currentUser();
+  if (!isAdmin(user)) throw new HttpError(404, "Not found.");
+  return user;
 }
 export async function session(userId: string) {
   const value = token();
