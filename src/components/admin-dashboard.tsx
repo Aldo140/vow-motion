@@ -154,6 +154,9 @@ export default function AdminDashboard({
         </div>
         <div className="ops-bar-right">
           <span>{me}</span>
+          <Link href="/admin/content" className="button outline small">
+            Content
+          </Link>
           <Link href="/studio" className="button outline small">
             Studio
           </Link>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rows, transaction } from "@/lib/db";
 import { sendMessage, MAX_ATTEMPTS } from "@/lib/messages";
+import { publishDuePosts, maybeRefreshInstagramToken } from "@/lib/social";
 export async function POST(req: NextRequest) {
   if (
     !process.env.CRON_SECRET ||
@@ -96,7 +97,23 @@ export async function POST(req: NextRequest) {
       demoAccounts: demoAccounts.rows.length,
     };
   });
-  return NextResponse.json({ processed: results.length, results, cleanup });
+  // Brand social: refresh the Instagram token well before it lapses, then
+  // publish any queued post whose scheduled time has arrived.
+  const tokenState = await maybeRefreshInstagramToken().catch(
+    (e) => `error: ${(e as Error).message}`,
+  );
+  const social = await publishDuePosts().catch((e) => ({
+    published: 0,
+    failed: 0,
+    error: (e as Error).message,
+  }));
+
+  return NextResponse.json({
+    processed: results.length,
+    results,
+    cleanup,
+    social: { token: tokenState, ...social },
+  });
 }
 
 export const GET = POST;

@@ -32,7 +32,13 @@ import { studioMessagesAction } from "@/lib/studio-messages-api";
 import { sendInvitationCampaign } from "@/lib/invitation-campaign";
 import { listWeddings } from "@/lib/wedding-access";
 import { randomInt } from "node:crypto";
-import { savePhoto, readPhoto, deletePhoto } from "@/lib/photo-storage";
+import {
+  savePhoto,
+  readPhoto,
+  deletePhoto,
+  savePublicMedia,
+} from "@/lib/photo-storage";
+import { listSocialPosts } from "@/lib/social";
 import { readJson } from "@/lib/request-body";
 import sharp from "sharp";
 import QRCode from "qrcode";
@@ -74,6 +80,131 @@ async function handler(request: NextRequest, context: Context) {
         if (!updated.rows.length)
           throw new HttpError(404, "Account not found.");
         return json({ ok: true });
+      }
+      if (action === "media" && method === "POST") {
+        if (Number(request.headers.get("content-length") || 0) > 105_000_000)
+          throw new HttpError(413, "Keep media under 100 MB.");
+        const form = await request.formData();
+        const file = form.get("file");
+        const allowed = [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "video/mp4",
+          "video/quicktime",
+        ];
+        if (!(file instanceof File) || !allowed.includes(file.type))
+          throw new HttpError(400, "Use a JPG, PNG, WebP, or MP4/MOV file.");
+        const kind = file.type.startsWith("video") ? "video" : "image";
+        let bytes = Buffer.from(await file.arrayBuffer());
+        if (kind === "image")
+          bytes = await sharp(bytes, { limitInputPixels: 100_000_000 })
+            .rotate()
+            .resize(1440, 1800, { fit: "inside", withoutEnlargement: true })
+            .jpeg({ quality: 88 })
+            .toBuffer();
+        const url = await savePublicMedia(
+          `${id()}.${kind === "video" ? "mp4" : "jpg"}`,
+          bytes,
+          kind === "video" ? "video/mp4" : "image/jpeg",
+        );
+        return json({ url, type: kind });
+      }
+      if (action === "social") {
+        const media = z
+          .array(
+            z.object({
+              url: z.url(),
+              type: z.enum(["image", "video"]),
+            }),
+          )
+          .max(10);
+        const fields = z.object({
+          caption: z.string().max(2200).default(""),
+          media: media.default([]),
+          kind: z.enum(["image", "carousel", "reel"]).default("image"),
+          status: z.enum(["draft", "scheduled", "canceled"]).optional(),
+          scheduled_at: z.iso.datetime({ offset: true }).nullable().optional(),
+        });
+        if (method === "GET") return json(await listSocialPosts());
+        if (method === "POST") {
+          const input = fields.parse(await body());
+          await (
+            await db()
+          ).query(
+            `INSERT INTO social_posts(id,caption,media,kind,status,scheduled_at,created_by)
+             VALUES($1,$2,$3::jsonb,$4,$5,$6,$7)`,
+            [
+              id(),
+              input.caption,
+              JSON.stringify(input.media),
+              input.kind,
+              input.status === "scheduled" && input.scheduled_at
+                ? "scheduled"
+                : "draft",
+              input.scheduled_at ?? null,
+              admin.id,
+            ],
+          );
+          return json({ ok: true });
+        }
+        if (method === "PATCH" && item) {
+          const input = fields.partial().parse(await body());
+          const current = (
+            await rows<{ status: string; scheduled_at: string | null }>(
+              "SELECT status, scheduled_at FROM social_posts WHERE id=$1",
+              [item],
+            )
+          )[0];
+          if (!current) throw new HttpError(404, "Post not found.");
+          if (current.status === "publishing" || current.status === "posted")
+            throw new HttpError(409, "That post can no longer be edited.");
+          const scheduledAt =
+            input.scheduled_at !== undefined
+              ? input.scheduled_at
+              : current.scheduled_at;
+          const status = input.status ?? current.status;
+          if (status === "scheduled" && !scheduledAt)
+            throw new HttpError(400, "Pick a date and time to schedule.");
+          const sets: string[] = ["updated_at=now()", "attempts=0", "error=NULL"];
+          const values: unknown[] = [];
+          const set = (col: string, value: unknown) => {
+            values.push(value);
+            sets.push(`${col}=$${values.length}`);
+          };
+          if (input.caption !== undefined) set("caption", input.caption);
+          if (input.kind !== undefined) set("kind", input.kind);
+          if (input.media !== undefined) {
+            values.push(JSON.stringify(input.media));
+            sets.push(`media=$${values.length}::jsonb`);
+          }
+          set("scheduled_at", scheduledAt ?? null);
+          set(
+            "status",
+            status === "scheduled"
+              ? "scheduled"
+              : status === "canceled"
+                ? "canceled"
+                : "draft",
+          );
+          values.push(item);
+          await (
+            await db()
+          ).query(
+            `UPDATE social_posts SET ${sets.join(",")} WHERE id=$${values.length}`,
+            values,
+          );
+          return json({ ok: true });
+        }
+        if (method === "DELETE" && item) {
+          await (
+            await db()
+          ).query(
+            "DELETE FROM social_posts WHERE id=$1 AND status<>'publishing'",
+            [item],
+          );
+          return json({ ok: true });
+        }
       }
       throw new HttpError(404, "This action is unavailable.");
     }

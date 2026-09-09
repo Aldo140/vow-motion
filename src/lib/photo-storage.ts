@@ -50,6 +50,30 @@ export async function readPhoto(
   );
 }
 
+/**
+ * Media for a brand social post has to be fetchable by Instagram's servers, so
+ * it goes to a public URL — the Blob store in production, or `public/social/`
+ * in local development where Instagram publishing is not wired anyway.
+ */
+export async function savePublicMedia(
+  name: string,
+  bytes: Buffer,
+  contentType: string,
+): Promise<string> {
+  if (hosted()) {
+    const result = await put(`social/${name}`, bytes, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType,
+    });
+    return result.url;
+  }
+  const dir = path.join(process.cwd(), "public", "social");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, name), bytes);
+  return `${process.env.APP_URL || "http://localhost:3000"}/social/${name}`;
+}
+
 export async function deletePhoto(filename: string): Promise<void> {
   if (filename.startsWith("blob:")) {
     await del(filename.slice(5));
