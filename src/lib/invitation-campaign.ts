@@ -3,6 +3,7 @@ import { audit, HttpError, id } from "./auth";
 import { db, rows } from "./db";
 import { deliver, emailAvailable } from "./providers";
 import { issueInvitationToken } from "./seed";
+import { invitationEmailHtml } from "./email-html";
 
 export const invitationCampaignSchema = z
   .object({
@@ -38,7 +39,7 @@ export async function sendInvitationCampaign(input: {
     throw new HttpError(503, "Email delivery is not configured for this Studio.");
 
   const wedding = (
-    await rows<{ names: string }>("SELECT names FROM weddings WHERE id=$1", [
+    await rows<{ names: string; location: string }>("SELECT names,location FROM weddings WHERE id=$1", [
       input.weddingId,
     ])
   )[0];
@@ -132,6 +133,13 @@ export async function sendInvitationCampaign(input: {
         to: recipient,
         subject: preview ? `[Test] ${subject}` : subject,
         body,
+        html: invitationEmailHtml({
+          body,
+          invitationLink,
+          couple: String(wedding.names),
+          location: String(wedding.location || ""),
+        }),
+        replyTo: input.actorEmail,
         idempotencyKey: deliveryId,
         demo: input.demo,
       });

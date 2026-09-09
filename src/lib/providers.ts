@@ -72,6 +72,8 @@ export async function deliver(input: {
   to: string;
   subject: string;
   body: string;
+  html?: string;
+  replyTo?: string;
   idempotencyKey: string;
   demo: boolean;
   /**
@@ -132,6 +134,8 @@ export async function deliver(input: {
         to: [input.to],
         subject: input.subject,
         text: input.body,
+        ...(input.html ? { html: input.html } : {}),
+        ...(input.replyTo ? { reply_to: input.replyTo } : {}),
         // Omitted entirely for transactional mail rather than sent empty.
         ...(input.headers ? { headers: input.headers } : {}),
       }),

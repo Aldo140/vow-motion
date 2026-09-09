@@ -39,6 +39,8 @@ Unsubscribe, complaint, and hard-bounce suppression must survive imports. Retain
 Before enabling invitation campaigns, send a test to the wedding owner, then send one controlled household invitation. Confirm its private link resolves to the intended household, the delivery appears in Studio, and a repeated send excludes the successfully sent household. Verify bounced and suppressed addresses move to **Needs attention** and cannot be sent again until a bounced address is corrected.
 
 - Verify the sending domain and set `EMAIL_FROM` to that domain.
+- Serve invitation links from the same organizational domain used by `EMAIL_FROM`; mailbox providers treat a different link domain as suspicious. Do not use the `vercel.app` URL in production mail.
+- In Resend, disable click and open tracking for transactional invitations. Confirm SPF and DKIM show **Verified**, publish DMARC (begin with `p=none`), and inspect a Gmail test for `spf=pass`, `dkim=pass`, and `dmarc=pass` before increasing volume.
 - Configure `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `CRON_SECRET`, and a stable `UNSUBSCRIBE_SECRET`.
 - Register `/api/webhooks/resend` and confirm signed delivered, bounced, and complained events update a test delivery.
 - Call `/api/worker` with its bearer secret and confirm scheduled sends and retries.
