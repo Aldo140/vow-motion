@@ -1,4 +1,55 @@
 import { HttpError } from "./auth";
+
+/**
+ * A provider refusal carrying the upstream status, so the caller can tell a
+ * rate limit from a bad address. `deliver()` used to flatten every non-ok
+ * response to a 502, which meant a Resend 429 and an invalid recipient were
+ * indistinguishable — and a retryable failure lost a guest's invitation
+ * permanently with nothing in the UI to say why.
+ */
+export class DeliveryError extends HttpError {
+  constructor(
+    message: string,
+    readonly upstreamStatus: number,
+    readonly detail = "",
+  ) {
+    super(502, message);
+    this.name = "DeliveryError";
+  }
+
+  /** 429 and 5xx are worth another attempt; any other 4xx is the sender's fault. */
+  get retryable() {
+    return this.upstreamStatus === 429 || this.upstreamStatus >= 500;
+  }
+}
+
+/** A timeout or a dropped connection never reached the provider; try again. */
+export function isRetryable(cause: unknown) {
+  if (cause instanceof DeliveryError) return cause.retryable;
+  const name = (cause as Error)?.name;
+  return name === "TimeoutError" || name === "AbortError" || name === "TypeError";
+}
+
+/** The provider's own words, trimmed to something a couple can read. */
+async function refusal(response: Response, fallback: string) {
+  let detail = "";
+  try {
+    const text = (await response.text()).slice(0, 500);
+    try {
+      const parsed = JSON.parse(text);
+      detail = String(parsed?.message || parsed?.error?.message || text);
+    } catch {
+      detail = text;
+    }
+  } catch {
+    /* body already consumed or unreadable; the status alone is enough */
+  }
+  return new DeliveryError(
+    detail ? `${fallback} (${response.status}: ${detail})` : fallback,
+    response.status,
+    detail,
+  );
+}
 export const emailAvailable = () =>
   Boolean(
     process.env.RESEND_API_KEY ||
@@ -23,6 +74,12 @@ export async function deliver(input: {
   body: string;
   idempotencyKey: string;
   demo: boolean;
+  /**
+   * RFC 8058 unsubscribe headers, for update mail only. Transactional mail —
+   * the invitation, RSVP confirmations, verification codes — passes nothing
+   * here on purpose; see `src/lib/unsubscribe.ts`.
+   */
+  headers?: Record<string, string>;
 }) {
   if (
     input.demo ||
@@ -54,8 +111,8 @@ export async function deliver(input: {
       },
     );
     if (!response.ok)
-      throw new HttpError(
-        502,
+      throw await refusal(
+        response,
         "Email could not be sent. Please try again shortly.",
       );
     const result = await response.json();
@@ -64,6 +121,7 @@ export async function deliver(input: {
   if (input.channel === "email") {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(20_000),
       headers: {
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
@@ -74,11 +132,13 @@ export async function deliver(input: {
         to: [input.to],
         subject: input.subject,
         text: input.body,
+        // Omitted entirely for transactional mail rather than sent empty.
+        ...(input.headers ? { headers: input.headers } : {}),
       }),
     });
     if (!response.ok)
-      throw new HttpError(
-        502,
+      throw await refusal(
+        response,
         "The email provider did not accept this message.",
       );
     return { status: "sent", provider_id: (await response.json()).id };
@@ -104,7 +164,10 @@ export async function deliver(input: {
     },
   );
   if (!response.ok)
-    throw new HttpError(502, "The SMS provider did not accept this message.");
+    throw await refusal(
+      response,
+      "The SMS provider did not accept this message.",
+    );
   return { status: "sent", provider_id: (await response.json()).sid };
 }
 export async function checkout(plan: string, weddingId: string, email: string) {

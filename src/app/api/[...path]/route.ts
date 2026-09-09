@@ -340,7 +340,12 @@ async function handler(request: NextRequest, context: Context) {
         const result = await (
           await db()
         ).query(
-          "UPDATE guests SET name=$1,email=$2,phone=$3,address=$4,language=$5,tags=$6,notes=$7,consent=$8 WHERE id=$9 AND wedding_id=$10 RETURNING id",
+          // A guest who unsubscribed stays unsubscribed. Consent is a plain
+          // boolean that the couple's own edit rewrites wholesale, so without
+          // this guard re-saving a guest — or re-importing the spreadsheet they
+          // came from — silently resurrects a withdrawal the guest made
+          // deliberately. `unsubscribed_at` is the durable record of that.
+          "UPDATE guests SET name=$1,email=$2,phone=$3,address=$4,language=$5,tags=$6,notes=$7,consent=($8 AND unsubscribed_at IS NULL) WHERE id=$9 AND wedding_id=$10 RETURNING id",
           [
             input.name,
             input.email,
@@ -590,8 +595,33 @@ async function handler(request: NextRequest, context: Context) {
         await audit(weddingId, user.id, "Message draft saved");
         return json({ id: messageId });
       }
-      if (action === "send" && method === "POST")
-        return json(await sendMessage(weddingId, item, user.id, user.is_demo));
+      if (action === "messages" && method === "DELETE") {
+        // A draft you cannot delete is a draft you are stuck with. Anything
+        // already published or sent stays, because guests have seen it.
+        const removed = await (
+          await db()
+        ).query(
+          "DELETE FROM messages WHERE id=$1 AND wedding_id=$2 AND status IN ('draft','failed') RETURNING id",
+          [item, weddingId],
+        );
+        if (!removed.rows.length)
+          throw new HttpError(
+            409,
+            "Only a draft that has not reached anyone can be discarded.",
+          );
+        await audit(weddingId, user.id, "Message draft discarded");
+        return json({ ok: true });
+      }
+      if (action === "send" && method === "POST") {
+        // The nightly delivery run posts no body at all, so an absent or
+        // unreadable one simply means "send it the ordinary way".
+        const sendNow = await body()
+          .then((parsed) => (parsed as { now?: unknown })?.now === true)
+          .catch(() => false);
+        return json(
+          await sendMessage(weddingId, item, user.id, user.is_demo, sendNow),
+        );
+      }
       if (action === "photos" && method === "PATCH") {
         const input = z.object({ approved: z.boolean() }).parse(await body());
         await (
@@ -889,7 +919,8 @@ async function handler(request: NextRequest, context: Context) {
           }
           for (const contact of input.contacts || []) {
             await c.query(
-              "UPDATE guests SET email=$1,phone=$2,consent=$3 WHERE id=$4 AND household_id=$5",
+              // A previous unsubscribe survives a later RSVP edit; see above.
+              "UPDATE guests SET email=$1,phone=$2,consent=($3 AND unsubscribed_at IS NULL) WHERE id=$4 AND household_id=$5",
               [
                 contact.email,
                 contact.phone,
@@ -914,7 +945,8 @@ async function handler(request: NextRequest, context: Context) {
         await (
           await db()
         ).query(
-          "UPDATE guests SET email=$1,phone=$2,address=$3,consent=$4 WHERE id=$5",
+          // A previous unsubscribe survives a later contact update; see above.
+          "UPDATE guests SET email=$1,phone=$2,address=$3,consent=($4 AND unsubscribed_at IS NULL) WHERE id=$5",
           [
             input.email,
             input.phone,

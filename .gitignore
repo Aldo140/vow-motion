@@ -15,3 +15,6 @@ artifacts/
 # Provider-installed local agent guidance
 .agents/
 skills-lock.json
+
+# Scratch file left by a sandbox that could not delete it; see scripts/verify-delivery.mjs
+sql-verify.mjs
