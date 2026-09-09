@@ -67,7 +67,7 @@ For each day you say go:
 
 ## Volume ramp — weekdays only
 
-**September 9 stop:** Gmail accepted 300 outreach messages today across the earlier send, batch 10 and batch 11. Batch 11 reduced immediate delivery failures to two by reconfirming addresses on current planner websites. Send no more from this mailbox today. Resume only after the mailbox has rested and the reply, bounce, spam, and opt out results have been reviewed.
+**September 9 stop:** Gmail accepted 400 outreach messages today across the earlier send and batches 10 through 12. Batch 12 targeted the highest value state and adjacent affluent markets; four addresses returned immediate delivery failures. Send no more from this mailbox today. Resume only after the mailbox has rested and the reply, bounce, spam, and opt out results have been reviewed.
 
 | Days | Cold emails/day |
 | --- | --- |
