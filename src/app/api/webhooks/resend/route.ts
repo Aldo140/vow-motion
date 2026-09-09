@@ -131,7 +131,22 @@ export async function POST(req: NextRequest) {
         [emailId],
       )
     ).rows[0];
-    if (!delivery) return;
+    if (!delivery) {
+      const invitation = (
+        await c.query<{ id: string; status: string }>(
+          "SELECT id,status FROM invitation_dispatches WHERE provider_id=$1",
+          [emailId],
+        )
+      ).rows[0];
+      if (!invitation || status === null) return;
+      if (TERMINAL.includes(invitation.status) && status === "sent") return;
+      const reason = String(data.reason || "").slice(0, 500) || null;
+      await c.query(
+        "UPDATE invitation_dispatches SET status=$1,error=COALESCE($2,error),updated_at=now() WHERE id=$3",
+        [status, reason, invitation.id],
+      );
+      return;
+    }
     if (status === null) return;
 
     // Webhooks arrive out of order. A late `email.sent` must not overwrite a

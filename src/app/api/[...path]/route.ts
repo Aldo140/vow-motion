@@ -28,6 +28,7 @@ import {
 } from "@/lib/validation";
 import { deliver, checkout } from "@/lib/providers";
 import { studioMessagesAction } from "@/lib/studio-messages-api";
+import { sendInvitationCampaign } from "@/lib/invitation-campaign";
 import { listWeddings } from "@/lib/wedding-access";
 import { randomInt } from "node:crypto";
 import { savePhoto, readPhoto, deletePhoto } from "@/lib/photo-storage";
@@ -575,6 +576,22 @@ async function handler(request: NextRequest, context: Context) {
         readBody: body,
       });
       if (messageAction.handled) return json(messageAction.value);
+      if (action === "invitation-campaign" && method === "POST") {
+        return json(
+          await sendInvitationCampaign({
+            weddingId,
+            actorId: user.id,
+            actorEmail: user.email,
+            demo: user.is_demo,
+            origin:
+              process.env.APP_URL ||
+              new URL(request.url).protocol +
+                "//" +
+                request.headers.get("host"),
+            value: await body(),
+          }),
+        );
+      }
       if (action === "photos" && method === "PATCH") {
         const input = z.object({ approved: z.boolean() }).parse(await body());
         await (

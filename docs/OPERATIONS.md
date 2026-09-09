@@ -36,6 +36,8 @@ Unsubscribe, complaint, and hard-bounce suppression must survive imports. Retain
 
 ## Messaging release gate
 
+Before enabling invitation campaigns, send a test to the wedding owner, then send one controlled household invitation. Confirm its private link resolves to the intended household, the delivery appears in Studio, and a repeated send excludes the successfully sent household. Verify bounced and suppressed addresses move to **Needs attention** and cannot be sent again until a bounced address is corrected.
+
 - Verify the sending domain and set `EMAIL_FROM` to that domain.
 - Configure `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `CRON_SECRET`, and a stable `UNSUBSCRIBE_SECRET`.
 - Register `/api/webhooks/resend` and confirm signed delivered, bounced, and complained events update a test delivery.

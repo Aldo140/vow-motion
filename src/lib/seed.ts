@@ -357,14 +357,23 @@ export async function issueToken(
   householdId: string,
   preview = false,
 ) {
+  return (await issueInvitationToken(weddingId, householdId, preview)).raw;
+}
+
+export async function issueInvitationToken(
+  weddingId: string,
+  householdId: string,
+  preview = false,
+) {
   const raw = token();
+  const tokenId = id();
   await (
     await db()
   ).query(
     "INSERT INTO invitation_tokens(id,wedding_id,household_id,token_hash,expires_at,preview) VALUES($1,$2,$3,$4,now()+CASE WHEN $5 THEN interval '1 hour' ELSE interval '2 years' END,$5)",
-    [id(), weddingId, householdId, hash(raw), preview],
+    [tokenId, weddingId, householdId, hash(raw), preview],
   );
-  return raw;
+  return { raw, id: tokenId };
 }
 
 // A destination wedding at demonstration scale. The numbers are the point: a

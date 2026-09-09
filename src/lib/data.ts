@@ -25,6 +25,7 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     guestRequests,
     responses,
     invited,
+    invitationDispatches,
   ] = await Promise.all([
     listWeddings(user.id),
     rows(
@@ -82,6 +83,13 @@ export async function studioData(weddingId: string): Promise<StudioData> {
       "SELECT DISTINCT household_id FROM invitation_tokens WHERE wedding_id=$1 AND revoked=false AND preview=false AND expires_at>now()",
       [weddingId],
     ),
+    rows(
+      `SELECT d.id,d.household_id,d.email,d.status,d.error,d.created_at,t.opened_at
+       FROM invitation_dispatches d
+       LEFT JOIN invitation_tokens t ON t.id=d.token_id
+       WHERE d.wedding_id=$1 AND d.test=false ORDER BY d.created_at DESC`,
+      [weddingId],
+    ),
   ]);
   return {
     user,
@@ -107,6 +115,7 @@ export async function studioData(weddingId: string): Promise<StudioData> {
     guestRequests,
     responses,
     invitedHouseholds: invited.map((row) => String(row.household_id)),
+    invitationDispatches,
   } as unknown as StudioData;
 }
 export async function guestData(rawToken: string): Promise<GuestData> {

@@ -149,6 +149,15 @@ export type StudioData = {
   }[];
   /** Households holding a live invitation link, so can open what is posted there. */
   invitedHouseholds: string[];
+  invitationDispatches: {
+    id: string;
+    household_id: string;
+    email: string;
+    status: string;
+    error?: string | null;
+    created_at: string;
+    opened_at?: string | null;
+  }[];
   activity: { id: string; action: string; created_at: string }[];
   role: string;
   user: {
