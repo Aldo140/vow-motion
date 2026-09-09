@@ -142,3 +142,26 @@ test("an administrator can compose, review, and publish from the Messages screen
     ).length,
   ).toBeGreaterThan(0);
 });
+
+test("the RSVP reminder previews and sends one private link per household", async ({ page }) => {
+  await page.request.post("/api/demo");
+  const [wedding] = await (await page.request.get("/api/weddings")).json();
+  const studio: StudioData = await (await page.request.get(`/api/studio?wedding=${wedding.id}`)).json();
+  const householdCount = new Set(
+    messagingAudience(studio.guests, "pending", "email").recipients.map((guest) => guest.household_id),
+  ).size;
+  await page.goto(`/studio/messages?wid=${wedding.id}`);
+  await page.getByRole("button", { name: "Write a message" }).click();
+  await page.getByRole("button", { name: "RSVP reminder" }).click();
+
+  await expect(page.getByLabel("Subject")).toHaveValue(/\{\{household\}\}/);
+  await expect(page.getByLabel("Your message")).toHaveValue(/\{\{invitation_link\}\}/);
+  const preview = page.locator(".campaign-preview");
+  await expect(preview).toContainText("PERSONALIZED PREVIEW");
+  await expect(preview).toContainText("Open your private invitation");
+  await expect(preview).not.toContainText("{{household}}");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  const card = page.locator(".message-card").filter({ hasText: "A little reminder for {{household}}" });
+  await card.getByRole("button", { name: "Preview send" }).click();
+  await expect(card).toContainText(`${householdCount} delivered`);
+});

@@ -169,8 +169,9 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
     {
       label: "RSVP reminder",
       audience: "pending",
-      subject: `A little reminder · ${data.wedding.names}`,
-      body: `We’re counting down to celebrating with you! Please let us know your plans by ${formatDate(data.wedding.rsvp_deadline)} using your personal invitation link.\n\nIf you need help finding it, reply to this message and we’ll help.\n\nWith love,\n${data.wedding.names}`,
+      channel: "email",
+      subject: "A little reminder for {{household}} · {{couple}}",
+      body: `Hello {{household}},\n\nWe’re counting down to celebrating with you. Please let us know your plans by ${formatDate(data.wedding.rsvp_deadline)}.\n\nOpen your household’s private invitation and RSVP here:\n{{invitation_link}}\n\nIf you need help, reply directly and we’ll help.\n\nWith love,\n{{couple}}`,
     },
     {
       label: "Before you travel",
@@ -571,6 +572,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                       setSubject(t.subject);
                       setBody(t.body);
                       setAudience(t.audience);
+                      if ("channel" in t && t.channel && emailReady) setChannel(t.channel);
                     }}
                   >
                     {t.label}
@@ -579,7 +581,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 ))}
               </div>
             </div>
-            <Field label="Subject">
+            <Field label="Subject" hint="Use {{household}}, {{guest}}, or {{couple}} and each email is filled in automatically.">
               <input
                 name="subject"
                 value={subject}
@@ -624,7 +626,7 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 </select>
               </Field>
             </div>
-            <Field label="Your message">
+            <Field label="Your message" hint="Add {{invitation_link}} to give every household its own private RSVP link.">
               <textarea
                 name="body"
                 rows={6}
@@ -633,6 +635,16 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 required
               />
             </Field>
+            {(body.includes("{{") || subject.includes("{{")) && (() => {
+              const first = recipients[0];
+              const household = data.households.find((item) => item.id === first?.household_id)?.name || "The Rivera household";
+              const mergePreview = (value: string) => value
+                .replaceAll("{{household}}", household)
+                .replaceAll("{{guest}}", first?.name || "Sofia")
+                .replaceAll("{{couple}}", data.wedding.names)
+                .replaceAll("{{invitation_link}}", "Open your private invitation →");
+              return <div className="campaign-preview"><span>PERSONALIZED PREVIEW</span><strong>{mergePreview(subject)}</strong><p>{mergePreview(body)}</p></div>;
+            })()}
             <div className="audience-preview" role="status">
               <strong>
                 {recipients.length}{" "}

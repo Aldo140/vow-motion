@@ -3,6 +3,8 @@ import { id, HttpError, audit } from "./auth";
 import { deliver, isRetryable } from "./providers";
 import { messagingAudience } from "./messaging-audience";
 import { unsubscribeHeaders } from "./unsubscribe";
+import { issueInvitationToken } from "./seed";
+import { invitationEmailHtml } from "./email-html";
 
 /** A send that stopped this long ago is finished, whatever its row still says. */
 const STALLED_AFTER = "10 minutes";
@@ -43,9 +45,18 @@ export async function sendMessage(
       400,
       "This message is scheduled for later. Send it now instead if you would rather not wait.",
     );
-  const allGuests = await rows("SELECT * FROM guests WHERE wedding_id=$1", [
-    weddingId,
-  ]);
+  const allGuests = await rows(
+    `SELECT g.*,h.name household_name FROM guests g
+     JOIN households h ON h.id=g.household_id WHERE g.wedding_id=$1`,
+    [weddingId],
+  );
+  const wedding = (
+    await rows<{ names: string; location: string; owner_email: string }>(
+      `SELECT w.names,w.location,u.email owner_email FROM weddings w
+       JOIN users u ON u.id=w.owner_id WHERE w.id=$1`,
+      [weddingId],
+    )
+  )[0];
   const {
     recipients: guests,
     awaitingOptIn,
@@ -127,13 +138,46 @@ export async function sendMessage(
       )
     ).map((row) => String(row.guest_id)),
   );
-  const outstanding = guests.filter((g) => !alreadyReached.has(String(g.id)));
+  const alreadyReachedHouseholds = new Set(
+    (
+      await rows(
+        `SELECT DISTINCT g.household_id FROM deliveries d
+         JOIN guests g ON g.id=d.guest_id
+         WHERE d.message_id=$1 AND d.status IN ('sent','development')`,
+        [messageId],
+      )
+    ).map((row) => String(row.household_id)),
+  );
+  const needsPrivateLink = String(message.body).includes("{{invitation_link}}") || String(message.subject).includes("{{invitation_link}}");
+  const householdSeen = new Set<string>();
+  const outstanding = guests.filter((g) => {
+    if (alreadyReached.has(String(g.id))) return false;
+    if (!needsPrivateLink) return true;
+    const householdId = String(g.household_id);
+    if (alreadyReachedHouseholds.has(householdId)) return false;
+    if (householdSeen.has(householdId)) return false;
+    householdSeen.add(householdId);
+    return true;
+  });
 
   let accepted = 0,
     failed = 0,
     development = false,
     lastError = "";
   for (const g of outstanding) {
+    const invitation = needsPrivateLink
+      ? await issueInvitationToken(weddingId, String(g.household_id), false)
+      : null;
+    const invitationLink = invitation
+      ? `${process.env.APP_URL || "http://localhost:3000"}/i/${invitation.raw}`
+      : "";
+    const personalize = (value: unknown) => String(value)
+      .replaceAll("{{household}}", String(g.household_name || g.name))
+      .replaceAll("{{guest}}", String(g.name))
+      .replaceAll("{{couple}}", String(wedding.names))
+      .replaceAll("{{invitation_link}}", invitationLink);
+    const personalSubject = personalize(message.subject);
+    const personalBody = personalize(message.body);
     // Reuse the existing row's id, never a fresh one. That id is the
     // Idempotency-Key handed to the provider, so regenerating it on a resume
     // made Resend treat the retry as a distinct message and send the guest a
@@ -164,8 +208,18 @@ export async function sendMessage(
       const result = await deliver({
         channel: String(message.channel),
         to: String(message.channel === "email" ? g.email : g.phone),
-        subject: String(message.subject),
-        body: String(message.body),
+        subject: personalSubject,
+        body: personalBody,
+        html:
+          message.channel === "email" && invitation
+            ? invitationEmailHtml({
+                body: personalBody,
+                invitationLink,
+                couple: String(wedding.names),
+                location: String(wedding.location || ""),
+              })
+            : undefined,
+        replyTo: message.channel === "email" ? String(wedding.owner_email) : undefined,
         idempotencyKey: deliveryId,
         demo,
         // Wedding updates and announcements carry the one-click unsubscribe
@@ -187,6 +241,10 @@ export async function sendMessage(
       );
       accepted++;
     } catch (cause) {
+      if (invitation)
+        await (
+          await db()
+        ).query("UPDATE invitation_tokens SET revoked=true WHERE id=$1", [invitation.id]);
       // Keep the provider's own words. "Provider rejected request" told a
       // couple nothing about what to change.
       lastError = (cause as Error)?.message || "The provider refused it.";
