@@ -59,7 +59,12 @@ async function raw(): Promise<Database> {
             ).rows.length
           )
             continue;
-          const sql = await readFile(path.join(directory, name), "utf8");
+          // Strip `--` line comments before splitting on `;`. A comment that
+          // happens to contain a semicolon otherwise cuts a statement in half
+          // and the migration fails with a syntax error on the comment text.
+          const sql = (
+            await readFile(path.join(directory, name), "utf8")
+          ).replace(/--.*$/gm, "");
           for (const statement of sql.split(";").filter((s) => s.trim()))
             await migrationClient.query(statement);
           await migrationClient.query(

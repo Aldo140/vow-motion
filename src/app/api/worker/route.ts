@@ -67,6 +67,23 @@ export async function POST(req: NextRequest) {
     const limits = await connection.query(
       "DELETE FROM rate_limits WHERE expires_at < now() RETURNING key",
     );
+
+    // Demo explore sessions accumulate one throwaway account per visitor and
+    // never come back. After a week they are pure noise in the operator
+    // dashboard, so retire them: their weddings (and everything cascading from
+    // wedding_id) first, then the rows that reference the user without a
+    // cascade, then the user — sessions and challenges cascade on that.
+    const stale =
+      "SELECT id FROM users WHERE is_demo AND created_at < now() - interval '7 days'";
+    await connection.query(
+      `DELETE FROM pilot_feedback WHERE author_id IN (${stale})`,
+    );
+    await connection.query(`DELETE FROM referrals WHERE user_id IN (${stale})`);
+    await connection.query(`DELETE FROM weddings WHERE owner_id IN (${stale})`);
+    const demoAccounts = await connection.query(
+      "DELETE FROM users WHERE is_demo AND created_at < now() - interval '7 days' RETURNING id",
+    );
+
     return {
       sessions: sessions.rows.length,
       invitationTokens: invitationTokens.rows.length,
@@ -76,6 +93,7 @@ export async function POST(req: NextRequest) {
         resetChallenges.rows.length,
       storySessions: storySessions.rows.length,
       rateLimits: limits.rows.length,
+      demoAccounts: demoAccounts.rows.length,
     };
   });
   return NextResponse.json({ processed: results.length, results, cleanup });
