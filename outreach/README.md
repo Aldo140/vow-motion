@@ -23,6 +23,6 @@ Working files for the planner cold-email campaign.
    reply once a planner responds.
 5. Volume ramps 5/day → 15/day max. Weekdays only. New prospects only.
 
-The ~489 addresses already contacted from `jorti104@mtroyal.ca` (roster in
-`artifacts/outreach-master-2026-09-08.json`) are a *re-approach* later with new
+The 495 addresses already contacted from `jorti104@mtroyal.ca` (current roster in
+`artifacts/outreach-master-current.json`) are a *re-approach* later with new
 copy — not a resend.
