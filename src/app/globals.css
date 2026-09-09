@@ -5064,6 +5064,92 @@ td:last-child {
 /* Calm, readable task surfaces: the next decision has room to breathe. */
 .message-starters,
 .audience-preview,
+.wedding-updates-choice {
+  padding: clamp(18px, 4vw, 28px);
+  border: 1px solid var(--line);
+  background: rgba(117, 136, 100, 0.07);
+  margin: 24px 0;
+}
+.wedding-updates-choice > p {
+  line-height: 1.7;
+}
+.wedding-updates-person {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 24px 0 0;
+  padding: 16px 0 0;
+  min-width: 0;
+}
+.wedding-updates-person legend {
+  font-size: 16px;
+  font-weight: 600;
+  padding-right: 12px;
+}
+.wedding-updates-person .check-label {
+  align-items: flex-start;
+  line-height: 1.6;
+}
+.wedding-updates-person input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.wedding-updates-person small {
+  display: block;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+.reply-updates-saved {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.message-readiness {
+  margin: 20px 0 28px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.message-readiness h2 {
+  font-size: 25px;
+  margin-bottom: 12px;
+}
+.message-readiness p {
+  max-width: 760px;
+  line-height: 1.7;
+}
+.message-readiness-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 16px 0;
+}
+.message-readiness-stats strong {
+  font-size: 22px;
+  margin-right: 6px;
+}
+.message-blocked {
+  max-width: 300px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.message-card > .message-blocked {
+  flex: 0 1 240px;
+}
+@media (max-width: 600px) {
+  .message-card {
+    flex-wrap: wrap;
+  }
+  .message-card > .message-blocked {
+    flex-basis: 100%;
+    max-width: none;
+    padding-left: 48px;
+  }
+  .wedding-updates-person .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wedding-updates-person input {
+    font-size: 16px;
+  }
+}
 .reply-review {
   padding: 22px;
   background: var(--paper, #f5f3ed);

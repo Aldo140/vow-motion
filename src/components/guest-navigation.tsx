@@ -11,6 +11,7 @@ export default function GuestNavigation({
   onLocale,
   onRsvp,
   onPass,
+  onContact,
 }: {
   names: string;
   location: string;
@@ -19,6 +20,7 @@ export default function GuestNavigation({
   onLocale: () => void;
   onRsvp: () => void;
   onPass: () => void;
+  onContact: () => void;
 }) {
   const id = useId();
   const card = useRef<HTMLDivElement>(null);
@@ -102,6 +104,12 @@ export default function GuestNavigation({
           </button>
           <button onClick={() => action(onPass)}>
             {locale === "en" ? "Your wedding pass" : "Tu pase de boda"}
+            <ArrowUpRightIcon size={17} aria-hidden="true" />
+          </button>
+          <button onClick={() => action(onContact)}>
+            {locale === "en"
+              ? "Contact & wedding updates"
+              : "Contacto y novedades"}
             <ArrowUpRightIcon size={17} aria-hidden="true" />
           </button>
         </nav>

@@ -16,13 +16,27 @@ export function ContactModal({
   onSaved: () => Promise<void>;
 }) {
   const [selected, setSelected] = useState(data.guests[0].id),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [busy, setBusy] = useState(false),
+    [failed, setFailed] = useState(false);
   const guest = data.guests.find((g) => g.id === selected)!;
   return (
     <Modal title={copy[locale].contact} onClose={onClose}>
-      {message && <Notice>{message}</Notice>}
+      <p>
+        {locale === "en"
+          ? "Keep your details up to date, or turn wedding messages on or off. This does not change your RSVP."
+          : "Actualiza tus datos o activa o desactiva las novedades. Esto no cambia tu respuesta."}
+      </p>
+      {message && <Notice error={failed}>{message}</Notice>}
       <Field label={locale === "en" ? "Guest" : "Invitado"}>
-        <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+        <select
+          disabled={busy}
+          value={selected}
+          onChange={(e) => {
+            setSelected(e.target.value);
+            setMessage("");
+          }}
+        >
           {data.guests.map((g) => (
             <option value={g.id} key={g.id}>
               {g.name}
@@ -34,6 +48,9 @@ export function ContactModal({
         key={selected}
         onSubmit={async (e) => {
           e.preventDefault();
+          if (busy) return;
+          setBusy(true);
+          setFailed(false);
           const f = new FormData(e.currentTarget);
           try {
             await api("/api/guest/contact?token=" + data.token, "POST", {
@@ -46,7 +63,10 @@ export function ContactModal({
               locale === "en" ? "Contact details saved." : "Datos guardados.",
             );
           } catch (e) {
+            setFailed(true);
             setMessage((e as Error).message);
+          } finally {
+            setBusy(false);
           }
         }}
       >
@@ -69,7 +89,7 @@ export function ContactModal({
             ? "I agree to receive wedding updates by email or SMS. I can turn this off here at any time."
             : "Acepto recibir novedades de la boda por email o SMS. Puedo desactivarlo aquí cuando quiera."}
         </label>
-        <Submit disabled={!!data.preview}>
+        <Submit pending={busy} disabled={!!data.preview}>
           {locale === "en" ? "Save details" : "Guardar datos"}
           <CheckIcon size={17} />
         </Submit>

@@ -5,18 +5,24 @@ import { eventTime, formatDate } from "@/lib/worlds";
 import { CheckIcon } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { copy } from "./copy";
+import {
+  WeddingUpdatesFields,
+  type WeddingUpdatesContact,
+} from "./wedding-updates-fields";
 export function RsvpModal({
   data,
   locale,
   onClose,
   onSaved,
   onPass,
+  onContact,
 }: {
   data: GuestData;
   locale: "en" | "es";
   onClose: () => void;
   onSaved: () => Promise<void>;
   onPass: () => void;
+  onContact: () => void;
 }) {
   const c = copy[locale],
     [step, setStep] = useState(0),
@@ -54,6 +60,14 @@ export function RsvpModal({
     [data.guests, data.events, data.responses],
   );
   const [responses, setResponses] = useState<Response[]>(initial);
+  const [contacts, setContacts] = useState<WeddingUpdatesContact[]>(() =>
+    data.guests.map((g) => ({
+      guest_id: g.id,
+      email: g.email || "",
+      phone: g.phone || "",
+      consent: g.consent,
+    })),
+  );
   useEffect(() => {
     try {
       const draft = sessionStorage.getItem(key);
@@ -175,6 +189,23 @@ export function RsvpModal({
           <button className="text-link" onClick={onClose}>
             {c.close}
           </button>
+          <p className="reply-updates-saved">
+            {locale === "en"
+              ? contacts.some((c) => c.consent)
+                ? `Wedding updates enabled for ${contacts
+                    .filter((c) => c.consent)
+                    .map(
+                      (c) => data.guests.find((g) => g.id === c.guest_id)!.name,
+                    )
+                    .join(", ")}.`
+                : "Wedding updates are off. You can still check this invitation for news."
+              : contacts.some((c) => c.consent)
+                ? "Tus preferencias de novedades están guardadas."
+                : "Las novedades están desactivadas. Puedes consultar esta invitación."}
+          </p>
+          <button className="text-link" onClick={onContact}>
+            {c.contact}
+          </button>
         </div>
       ) : (
         <>
@@ -200,6 +231,7 @@ export function RsvpModal({
               try {
                 await api("/api/guest/rsvp?token=" + data.token, "POST", {
                   responses,
+                  contacts,
                 });
                 try {
                   sessionStorage.removeItem(key);
@@ -449,6 +481,45 @@ export function RsvpModal({
                     );
                   });
                 })}
+                <section
+                  className="wedding-updates-choice"
+                  aria-labelledby="wedding-updates-title"
+                >
+                  <span className="eyebrow">
+                    {locale === "en"
+                      ? "ONE LAST LITTLE DETAIL · OPTIONAL"
+                      : "UN ÚLTIMO DETALLE · OPCIONAL"}
+                  </span>
+                  <h3 id="wedding-updates-title">
+                    {locale === "en"
+                      ? "Stay in the loop."
+                      : "Recibe las novedades."}
+                  </h3>
+                  <p>
+                    {locale === "en"
+                      ? "Would you like your hosts to send wedding reminders and changes of plan? Choose for yourself, or for someone who has asked you to manage their reply."
+                      : "¿Quieres recibir recordatorios y cambios de planes de tus anfitriones? Elige por ti o por alguien que te haya pedido gestionar su respuesta."}
+                  </p>
+                  {contacts.map((contact) => (
+                    <WeddingUpdatesFields
+                      key={contact.guest_id}
+                      value={contact}
+                      name={
+                        data.guests.find((g) => g.id === contact.guest_id)!.name
+                      }
+                      locale={locale}
+                      onChange={(patch) =>
+                        setContacts((previous) =>
+                          previous.map((c) =>
+                            c.guest_id === contact.guest_id
+                              ? { ...c, ...patch }
+                              : c,
+                          ),
+                        )
+                      }
+                    />
+                  ))}
+                </section>
                 {!responses.some((r) => r.attending) && (
                   <p>
                     {locale === "en"
@@ -475,8 +546,8 @@ export function RsvpModal({
             </div>
             <p className="form-note">
               {locale === "en"
-                ? "Your draft is kept in this browser tab until you save."
-                : "Tu borrador se conserva en esta pestaña hasta que lo guardes."}
+                ? "Your plans are kept in this browser tab. Your reply and update preferences are saved together when you press Save."
+                : "Tus planes se conservan en esta pestaña. Tu respuesta y preferencias se guardan juntas al pulsar Guardar."}
             </p>
           </form>
         </>

@@ -1,6 +1,7 @@
 import { db, rows, transaction } from "./db";
 import { id, HttpError, audit } from "./auth";
 import { deliver } from "./providers";
+import { messagingAudience } from "./messaging-audience";
 export async function sendMessage(
   weddingId: string,
   messageId: string,
@@ -20,27 +21,20 @@ export async function sendMessage(
     new Date(String(message.scheduled_at)) > new Date()
   )
     throw new HttpError(400, "This message is scheduled for later.");
-  let guests = await rows("SELECT * FROM guests WHERE wedding_id=$1", [
+  const allGuests = await rows("SELECT * FROM guests WHERE wedding_id=$1", [
     weddingId,
   ]);
-  if (message.audience !== "everyone")
-    guests = guests.filter(
-      (g) =>
-        g.status === message.audience ||
-        String(g.tags)
-          .split(",")
-          .map((t) => t.trim())
-          .includes(String(message.audience)),
-    );
-  guests = guests.filter(
-    (g) =>
-      message.channel === "invitation" ||
-      (g.consent && (message.channel === "email" ? g.email : g.phone)),
+  const { recipients: guests } = messagingAudience(
+    allGuests,
+    String(message.audience),
+    String(message.channel),
   );
   if (!guests.length)
     throw new HttpError(
       400,
-      "No guests in this audience have contact details and messaging consent.",
+      message.channel === "invitation"
+        ? "There are no guests in this audience. Choose another audience."
+        : "No guests in this audience can receive this message yet. Guests can add contact details and choose wedding updates in their RSVP or under Contact & wedding updates. You can also post this note inside their invitations.",
     );
   if (message.channel === "invitation") {
     return transaction(async (connection) => {

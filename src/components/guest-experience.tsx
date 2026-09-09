@@ -390,6 +390,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               onLocale={() => setLocale(locale === "en" ? "es" : "en")}
               onRsvp={() => setModal("rsvp")}
               onPass={() => setModal("pass")}
+              onContact={() => setModal("contact")}
             />
             <main id="main">
               <GuestInvitationHero
@@ -838,6 +839,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             onClose={() => setModal(null)}
             onSaved={refresh}
             onPass={() => setModal("pass")}
+            onContact={() => setModal("contact")}
           />
         )}
         {modal === "pass" && (

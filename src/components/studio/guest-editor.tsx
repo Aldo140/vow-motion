@@ -172,6 +172,11 @@ export function GuestEditor({
           />
           This guest has agreed to receive wedding messages
         </label>
+        <p className="form-note">
+          Guests can choose this themselves when they RSVP, or in Contact &
+          wedding updates in their invitation. Only enable it here if they have
+          already given you permission.
+        </p>
         <div className="form-actions">
           <button type="button" className="button outline" onClick={onClose}>
             Close and keep draft

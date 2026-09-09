@@ -11,6 +11,17 @@ export const worldSchema = z.enum([
   "modernist",
   "garden",
 ]);
+export const weddingUpdatesSchema = z
+  .object({
+    guest_id: z.string(),
+    email: z.union([z.email(), z.literal("")]),
+    phone: z.string().trim().max(50),
+    consent: z.boolean(),
+  })
+  .refine((v) => !v.consent || Boolean(v.email || v.phone), {
+    message: "Add an email address or phone number to receive wedding updates.",
+    path: ["email"],
+  });
 export const guestSchema = z.object({
   name: z.string().trim().min(1).max(150),
   email: z.union([z.email(), z.literal("")]).default(""),

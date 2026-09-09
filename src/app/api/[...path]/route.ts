@@ -24,6 +24,7 @@ import {
   csvCell,
   escapeIcs,
   worldSchema,
+  weddingUpdatesSchema,
 } from "@/lib/validation";
 import { deliver, checkout } from "@/lib/providers";
 import { sendMessage } from "@/lib/messages";
@@ -482,13 +483,21 @@ async function handler(request: NextRequest, context: Context) {
         }
         const { password, ...fields } = input;
         const record: Record<string, unknown> = { ...fields };
-        const hasDesign = (await rows("SELECT wedding_id FROM wedding_designs WHERE wedding_id=$1", [weddingId])).length > 0;
+        const hasDesign =
+          (
+            await rows(
+              "SELECT wedding_id FROM wedding_designs WHERE wedding_id=$1",
+              [weddingId],
+            )
+          ).length > 0;
         if (hasDesign) {
           delete record.world;
           delete record.opening;
           delete record.story;
           if (record.settings) {
-            const settings = { ...record.settings as Record<string, unknown> };
+            const settings = {
+              ...(record.settings as Record<string, unknown>),
+            };
             delete settings.media;
             delete settings.identity;
             record.settings = settings;
@@ -500,7 +509,7 @@ async function handler(request: NextRequest, context: Context) {
         await (
           await db()
         ).query(
-          `UPDATE weddings SET ${keys.map((k, i) => k === "settings" ? `settings=COALESCE(settings,'{}'::jsonb) || $${i + 1}::jsonb` : `${k}=$${i + 1}`).join(",")} WHERE id=$${keys.length + 1}`,
+          `UPDATE weddings SET ${keys.map((k, i) => (k === "settings" ? `settings=COALESCE(settings,'{}'::jsonb) || $${i + 1}::jsonb` : `${k}=$${i + 1}`)).join(",")} WHERE id=$${keys.length + 1}`,
           [...Object.values(record), weddingId],
         );
         await audit(weddingId, user.id, "Wedding experience settings saved");
@@ -746,8 +755,21 @@ async function handler(request: NextRequest, context: Context) {
                 }),
               )
               .max(200),
+            contacts: z.array(weddingUpdatesSchema).max(200).optional(),
           })
           .parse(await body());
+        if (
+          input.contacts &&
+          (new Set(input.contacts.map((c) => c.guest_id)).size !==
+            input.contacts.length ||
+            input.contacts.some(
+              (c) => !data.guests.some((g) => g.id === c.guest_id),
+            ))
+        )
+          throw new HttpError(
+            403,
+            "These contact details are not part of your invitation.",
+          );
         const expected =
           data.guests.length *
           data.events.filter((e) => e.rsvp_required).length;
@@ -865,18 +887,26 @@ async function handler(request: NextRequest, context: Context) {
                 g.id,
               ]);
           }
+          for (const contact of input.contacts || []) {
+            await c.query(
+              "UPDATE guests SET email=$1,phone=$2,consent=$3 WHERE id=$4 AND household_id=$5",
+              [
+                contact.email,
+                contact.phone,
+                contact.consent,
+                contact.guest_id,
+                data.guests[0].household_id,
+              ],
+            );
+          }
         });
         await audit(weddingId, "guest", `${data.household} saved their RSVP`);
         return json({ ok: true });
       }
       if (action === "contact" && method === "POST") {
-        const input = z
-          .object({
-            guest_id: z.string(),
-            email: z.union([z.email(), z.literal("")]),
-            phone: z.string().max(50),
+        const input = weddingUpdatesSchema
+          .safeExtend({
             address: z.string().max(500),
-            consent: z.boolean(),
           })
           .parse(await body());
         if (!data.guests.some((g) => g.id === input.guest_id))

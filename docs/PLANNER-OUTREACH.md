@@ -4,9 +4,13 @@
 
 Designs by Lindy (`designsbylindy@gmail.com`) replied “STOP” on September 6, 2026. Exclude this address from every future outreach batch and follow-up. Do not send another sales reply.
 
-## Replies prepared September 8, 2026
+## Replies checked September 8, 2026
 
-Unsent Gmail reply drafts are saved in the existing threads for Maren at Bow Valley Weddings, Sheena at Champagne & Roses, and Cathy at Creative Weddings. Maren’s draft still needs two actual meeting times in Mountain Time. The drafts make no commitment to an integration or completed pilot.
+Replies to Maren at Bow Valley Weddings, Sheena at Champagne & Roses, and Cathy at Creative Weddings were sent September 8. Maren received demo links and a request for suitable meeting times. Sheena received the guest demo for feedback. Cathy received an invitation concept offer that explicitly acknowledges there is no integration with her existing software. Do not resend these replies.
+
+Fleur Weddings asked about per wedding pricing and agency partnerships. Blush & Bordeaux requested more information. Both received replies September 8 with the demo or pilot details and a choice of a conversation or written information. Await their replies; no meeting or pilot has been confirmed.
+
+The private, reconciled master list and send records are saved locally in `artifacts/outreach-master-2026-09-08.html` and the corresponding JSON and Markdown files. Check Gmail again before any future outreach. The latest batch contains 50 new businesses, with published email addresses verified on their own websites, domain mail records checked, and all-folder mailbox deduplication before sending. Sent means accepted by Gmail, not confirmed inbox delivery. Automatic replies and bounces are separate from genuine interest.
 
 Prioritize a short household walkthrough with Maren and feedback from Sheena. Cathy declined because of her existing planning workflow. No pilot or paid customer has been confirmed.
 
