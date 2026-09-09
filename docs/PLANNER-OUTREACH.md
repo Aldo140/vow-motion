@@ -17,9 +17,14 @@ Prioritize a short household walkthrough with Maren and feedback from Sheena. Ca
 The goal of every message here is one thing: get a planner to watch a ten-minute
 walkthrough. Not to explain the product, and not to sell a subscription.
 
-Send people to <https://vow-motion.vercel.app/planners>. It opens on the planner
-argument rather than the couple pitch, and it ends on the pilot rather than a
-price.
+The demo lives at `https://vow-motion.vercel.app/planners` (planner argument, not
+the couple pitch) and `https://vow-motion.vercel.app/demo/riviera` (a working
+guest example). **On the current free path
+([OUTREACH-SENDING.md](OUTREACH-SENDING.md)) that link does not go in the first
+cold email** — a free-host subdomain is a spam signal to Gmail, so the first
+email asks for a reply and the link is sent in the reply. Once the domain is
+live ([EMAIL-SETUP-RUNBOOK.md](EMAIL-SETUP-RUNBOOK.md)) it becomes
+`https://vowmotion.ca/…` and can go in the first email again.
 
 ## What we can and cannot say yet
 
@@ -39,47 +44,136 @@ provenance is recorded in [ASSETS.md](ASSETS.md).
 
 ## Cold email
 
-Keep it to what fits on a phone screen without scrolling. One image. One ask.
+Sent from `jorti104@mtroyal.ca` through the Gmail connector (Claude drafts and
+sends; see [OUTREACH-SENDING.md](OUTREACH-SENDING.md)). Plain text, no
+attachments, no images, **no hyperlink in the first email** — a personal mailbox
+with a free-host link in it is what tips Gmail into Junk. Keep it to what fits on
+a phone screen. One ask: a reply.
 
-**Subject:** A wedding experience for your clients, and one place to run it
+### Rules that changed from the old template
 
-> Hi [name],
->
-> I build wedding software, and I made something around the way planners
-> actually run a weekend rather than around a wedding website.
->
-> Your clients' guests open a private invitation addressed to them — no account,
-> no password, and only the events that household is invited to:
->
-> [screenshot: guest invitation, phone]
->
-> Behind it, you run one guest list: RSVP by person and event, travel, seating,
-> and updates that reach the right households.
->
-> [screenshot: Studio guest list or seating]
->
-> I'm looking for two or three Calgary planners to run one real wedding through
-> it. I set the first one up with you, and there's no cost for that wedding.
->
-> Would you be open to a ten-minute walkthrough?
->
-> [your name]
+1. **"I build Vow Motion." Not "part of the small team building Vow Motion."**
+   There is no team; the plural is also a worn cold-email tell. First person
+   singular is truer and reads better.
+2. **No link in email 1.** Name the product and the demo in words; the call to
+   action is "open to a quick look?". When they reply, *that* message carries
+   `https://vow-motion.vercel.app/demo/riviera`.
+3. **A real opt-out and a mailing address in the footer.** CASL requires both;
+   Gmail looks for both. At this volume (≤15/day, 1-to-1 style) a reply-based
+   opt-out is acceptable. Fill in a real address — home, a Canada Post PO box, or
+   a Calgary virtual mailbox. **This is the one field nobody can fill in for you.**
 
-Notes on the copy: name the city, because it signals this is not a blast. Say
-"one real wedding" rather than "a pilot programme" — the second sounds like
-paperwork. Do not attach a PDF; inline images only.
+### The footer — identical on every message, every variant
+
+```
+—
+Aldo Ortiz · Vow Motion
+2011 Ulster Rd NW, Calgary, AB  T2N 4C4
+Prefer no more emails from me? Reply "unsubscribe" and I'll take you off.
+```
+
+Process every opt-out into [`../outreach/suppression.txt`](../outreach/suppression.txt)
+the same day it arrives.
+
+### Subject lines — rotate all four, never one per batch
+
+Identical subjects from one sender in one morning is a bulk fingerprint Gmail is
+built to catch. Cycle through these:
+
+1. `A cleaner RSVP handoff for {{business}}`
+2. `{{first_name}} — the guest list part, done once`
+3. `Kitchen sheet, shuttle manifest, place cards — from the replies`
+4. `Built the guest side so you don't rebuild it in four spreadsheets`
+
+### Body — rotate these three; they differ in shape, not just wording. No links.
+
+**Variant A — the output angle (~105 words)**
+
+> Hi {{first_name}},
+>
+> I came across {{business}} and saw {{specific_detail}}.
+>
+> I build Vow Motion — the guest-facing side of a wedding. Each household opens
+> one private invitation to only their events, RSVPs by person, and every reply
+> becomes a working guest list: covers by meal with dietary notes, a shuttle
+> manifest from your own transport question, place cards with table and meal.
+>
+> It sits next to whatever you plan on today — lists in by spreadsheet, documents
+> out. Happy to send a link to a live sample-guest demo if it sounds useful —
+> would it be, for any of your couples?
+>
+> *(footer)*
+
+**Variant B — the problem angle (~85 words)**
+
+> Hi {{first_name}},
+>
+> {{specific_detail}} — so you know the month-before scramble where the guest
+> list, the RSVPs, the seating chart and the travel notes live in four different
+> places.
+>
+> I build Vow Motion. It keeps them in one: guests RSVP through a private
+> household invitation, and the meal counts, dietary notes and seating stay
+> attached to the same list.
+>
+> Worth a ten-minute look? I'll send over a demo you can click through.
+>
+> *(footer)*
+
+**Variant C — the short pilot ask (~70 words)**
+
+> Hi {{first_name}},
+>
+> Quick one. I build Vow Motion — private household invitations, RSVP by person
+> and event, and the caterer and seating documents built from the replies.
+>
+> I'm looking for two or three planners to run one real wedding through it, set
+> up with me, no cost for that wedding.
+>
+> Open to a short walkthrough? I can send a demo link to look at first.
+>
+> *(footer)*
+
+### The reply (when they answer)
+
+Now the link is fine — an engaged thread has strong deliverability.
+
+> Thanks {{first_name}}. Here's the sample-guest demo — open a household
+> invitation and try the RSVP, nothing real is touched:
+> https://vow-motion.vercel.app/demo/riviera
+>
+> And the planner view: https://vow-motion.vercel.app/planners
+>
+> If it's a fit, I set the first wedding up with you and there's no cost for it.
+> Would a ten-minute call next week work?
+
+Merge fields: `{{first_name}}` (use "there" if unknown — never send to a blank
+salutation and prefer a named contact over `info@`/`hello@`), `{{business}}`,
+`{{specific_detail}}` (one true, specific observation from their own site — this
+is the anti-blast signal and must never be generic).
 
 ### If they don't reply
 
-Once, about a week later, and add something rather than repeating yourself.
+Once, about a week later, in the same thread, adding something rather than
+repeating yourself. Still no link — same reason.
 
-> Hi [name] — following up once. Here's the part planners tell me is the
-> problem: the guest list, the RSVPs, the seating chart and the travel notes
-> usually live in four places by the month before.
+> Hi {{first_name}} — following up once. The part planners tell me is the
+> problem: guest list, RSVPs, seating and travel notes in four places by the
+> month before. Vow Motion is those in one, built from the guests' own replies.
 >
-> This is them in one: [link to /planners]
+> Happy to send a demo link if it's worth a look — otherwise I'll leave it here.
 >
-> Happy to leave it there if it's not useful.
+> *(footer)*
+
+### Before every batch
+
+- Weekdays only, respecting the ramp in [OUTREACH-SENDING.md](OUTREACH-SENDING.md)
+  (5/day rising to 15/day max on this path), new prospects only.
+- MX-check every recipient domain; drop dead domains, role addresses where a
+  named contact exists, and obvious typos (`gmial.com`).
+- Check every address against [`../outreach/suppression.txt`](../outreach/suppression.txt).
+- Rotate subject and body variant per message; space sends across the day rather
+  than firing them in one burst.
 
 ## The ten-minute walkthrough
 

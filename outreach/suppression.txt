@@ -1,0 +1,15 @@
+# SUPPRESSION LIST — do not email any address below, ever.
+# Check this file before sending every batch. Add a line the day any opt-out or
+# hard bounce arrives: <email>  #<reason> <date>
+# Format: one address per line, lowercase. Anything after # is a note.
+
+designsbylindy@gmail.com          # opt-out "STOP" 2026-09-06 — do not contact, no follow-up
+info@story-weddings.com           # hard bounce (earlier batch)
+emma@ivyweddingsyeg.com           # hard bounce (earlier batch)
+eventsupport@deveraplanner.com    # hard bounce 550 5.1.1 2026-09-08 — do not guess alternate
+partners@adrienneco.com           # hard bounce 550 5.1.1 2026-09-08 (batch 4)
+irina@lifeatthetableevents.com    # hard bounce, domain not found 2026-09-08 (batch 4)
+meghan@bridalbliss.com            # hard bounce
+chelsea@dreamteampdx.com          # hard bounce
+events@luxenw.com                 # hard bounce
+sarah@eventiquepro.com            # hard bounce
