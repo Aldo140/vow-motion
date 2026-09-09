@@ -242,7 +242,11 @@ function DesignEditor(props: Props) {
           </button>
         </section>
       )}
-      <div className={tab === "Preview" ? "" : "design-workbench"}>
+      <div
+        className={
+          tab === "Preview" || tab === "Photos" ? "" : "design-workbench"
+        }
+      >
         <div>
           <div hidden={tab !== "Design"}>
             <fieldset
@@ -324,6 +328,10 @@ function DesignEditor(props: Props) {
               }
               disabled={readOnly || data.user.is_demo}
               onUploading={setUploading}
+              onReview={() => {
+                goToTab("Preview");
+                setReviewed(true);
+              }}
             />
             {data.user.is_demo && (
               <p>
@@ -520,7 +528,7 @@ function DesignEditor(props: Props) {
             )}
           </div>
         </div>
-        {tab !== "Preview" && (
+        {tab !== "Preview" && tab !== "Photos" && (
           <aside className="design-side-preview">
             <p>YOUR INVITATION, TAKING SHAPE</p>
             <iframe
