@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { currentUser } from "@/lib/auth";
+import { currentUser, isAdmin } from "@/lib/auth";
 import { rows } from "@/lib/db";
 import { listWeddings } from "@/lib/wedding-access";
 import Studio from "@/components/studio";
@@ -37,6 +37,7 @@ export default async function Page({
       key={String(selected.id)}
       section={(await params).section?.[0] || ""}
       initialId={String(selected.id)}
+      admin={isAdmin(user)}
     />
   );
 }

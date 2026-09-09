@@ -5,8 +5,9 @@ import {
   ArrowSquareOutIcon,
   MagnifyingGlassIcon,
   ShieldCheckIcon,
+  SignOutIcon,
 } from "@phosphor-icons/react";
-import { Brand } from "./ui";
+import { Brand, api } from "./ui";
 import type { AdminOverview, AdminAccountRow } from "@/lib/admin";
 
 const n = (value: unknown) => Number(value ?? 0);
@@ -156,6 +157,16 @@ export default function AdminDashboard({
           <Link href="/studio" className="button outline small">
             Studio
           </Link>
+          <button
+            className="icon-button"
+            aria-label="Sign out"
+            onClick={async () => {
+              await api("/api/auth/logout", "POST");
+              window.location.href = "/";
+            }}
+          >
+            <SignOutIcon size={17} />
+          </button>
         </div>
       </header>
 

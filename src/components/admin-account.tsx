@@ -5,6 +5,7 @@ import {
   ArrowLeftIcon,
   ArrowSquareOutIcon,
   ShieldCheckIcon,
+  SignOutIcon,
 } from "@phosphor-icons/react";
 import { api } from "./ui";
 
@@ -76,6 +77,16 @@ export default function AdminAccount({
           <Link href="/studio" className="button outline small">
             Studio
           </Link>
+          <button
+            className="icon-button"
+            aria-label="Sign out"
+            onClick={async () => {
+              await api("/api/auth/logout", "POST");
+              window.location.href = "/";
+            }}
+          >
+            <SignOutIcon size={17} />
+          </button>
         </div>
       </header>
 

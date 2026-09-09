@@ -89,7 +89,9 @@ export default function AuthForm({
                     Object.fromEntries(form),
                   );
                   if (register) setStep(1);
-                  else window.location.href = "/studio";
+                  // Admins land on the operator dashboard; /admin redirects
+                  // everyone else straight back to the Studio.
+                  else window.location.href = "/admin";
                 }
               } catch (e) {
                 setError((e as Error).message);

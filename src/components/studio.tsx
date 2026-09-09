@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ListIcon,
   PlusIcon,
+  ShieldCheckIcon,
   SignOutIcon,
   WarningCircleIcon,
   XIcon,
@@ -19,9 +20,11 @@ import { api, Arrow, Brand, Field, Modal, Notice, Submit } from "./ui";
 export default function Studio({
   section = "",
   initialId,
+  admin = false,
 }: {
   section?: string;
   initialId: string;
+  admin?: boolean;
 }) {
   const [weddingId, setWeddingId] = useState(initialId),
     [toast, setToastState] = useState<{
@@ -164,6 +167,11 @@ export default function Studio({
           ))}
         </nav>
         <div className="sidebar-bottom">
+          {admin && (
+            <Link href="/admin" className="studio-admin-link">
+              <ShieldCheckIcon size={15} weight="fill" /> Admin dashboard
+            </Link>
+          )}
           <button className="new-wedding" onClick={() => setCreate(true)}>
             <PlusIcon size={16} /> Create another wedding
           </button>
