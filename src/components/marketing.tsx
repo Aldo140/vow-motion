@@ -342,12 +342,25 @@ export default function Marketing() {
           <a href="/start" className="button light-button">
             Let’s make yours <Arrow diagonal />
           </a>
+          <a
+            href="/contact"
+            style={{
+              display: "block",
+              marginTop: 24,
+              textDecoration: "underline",
+              textUnderlineOffset: 5,
+              fontSize: 13,
+            }}
+          >
+            Have a question? Let’s talk.
+          </a>
         </section>
       </main>
       <footer className="marketing-footer">
         <Brand />
         <span>Made for the moments that bring us together.</span>
         <a href="/privacy">Privacy</a>
+        <a href="/contact">Contact</a>
         <span>© {new Date().getFullYear()} Vow Motion</span>
       </footer>
     </div>

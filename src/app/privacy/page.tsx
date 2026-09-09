@@ -25,6 +25,13 @@ export default function Page() {
         outbox and does not send email or SMS. Production sending requires a
         configured provider.
       </p>
+      <h2>Contact enquiries</h2>
+      <p>
+        When you use our contact form, we store the details you submit and
+        forward your enquiry to the Vow Motion team by email so we can reply.
+        Contact enquiries do not sign you up for marketing. For questions about
+        an enquiry or to request its removal, email jorti104@mtroyal.ca.
+      </p>
       <h2>Photos</h2>
       <p>
         Uploaded images are resized and re-encoded to remove embedded metadata.

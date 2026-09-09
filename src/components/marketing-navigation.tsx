@@ -12,7 +12,18 @@ const links = [
   { href: "/planners", label: "For planners" },
 ];
 
-export default function MarketingNavigation() {
+export default function MarketingNavigation({
+  homeLinks = false,
+}: {
+  homeLinks?: boolean;
+}) {
+  const navigationLinks = [
+    ...links,
+    { href: "/contact", label: "Contact" },
+  ].map((link) => ({
+    ...link,
+    href: homeLinks && link.href.startsWith("#") ? "/" + link.href : link.href,
+  }));
   const ready = useHydrated();
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -83,7 +94,7 @@ export default function MarketingNavigation() {
       <header className="marketing-nav" ref={header}>
         <Brand />
         <nav aria-label="Main navigation">
-          {links.map(({ href, label }) => (
+          {navigationLinks.map(({ href, label }) => (
             <a key={href} href={href}>
               {label}
               {href === "/planners" && <Arrow diagonal size={13} />}
@@ -188,7 +199,7 @@ export default function MarketingNavigation() {
             <p className="marketing-menu-caption">
               A beautiful place to begin.
             </p>
-            {links.map(({ href, label }, index) => (
+            {navigationLinks.map(({ href, label }, index) => (
               <a
                 href={href}
                 key={href}

@@ -221,6 +221,7 @@ export default function Planners() {
         <Brand />
         <span>Made for the moments that bring us together.</span>
         <a href="/privacy">Privacy</a>
+        <a href="/contact">Contact</a>
         <span>© {new Date().getFullYear()} Vow Motion</span>
       </footer>
     </div>
