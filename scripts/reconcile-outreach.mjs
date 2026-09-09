@@ -84,6 +84,7 @@ const immediateAutomaticReplies = new Set([
   "info@perfectplannersweddings.com",
   "eron@encoreevent.ca",
   "planning@ctweddinggroup.com",
+  "hello@robinballardevents.com",
 ]);
 for (const email of immediateAutomaticReplies) {
   const contact = contacts.get(email);
@@ -103,6 +104,11 @@ const explicitReplies = new Map([
     status: "Interested",
     reply: "Interested in seeing a demo.",
     next_action: "Prepare a warm, specific demo reply for review",
+  }],
+  ["info@amerisierevents.com", {
+    status: "Interested: more information",
+    reply: "Ashley Merisier would love to see the product and learn more.",
+    next_action: "Reply with the live invitation, landing page, and complimentary concept offer",
   }],
 ]);
 for (const [email, update] of explicitReplies) {
