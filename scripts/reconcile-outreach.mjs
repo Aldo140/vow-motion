@@ -5,6 +5,8 @@ const root = process.cwd();
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 const master = read("artifacts/outreach-master-2026-09-08.json");
 const audit = read("artifacts/outreach-mail-audit-2026-09-09.json");
+const latestSendFile = path.join(root, "artifacts/outreach-batch10-send-results-2026-09-09.json");
+const latestSends = fs.existsSync(latestSendFile) ? JSON.parse(fs.readFileSync(latestSendFile, "utf8")) : [];
 const contacts = new Map(master.contacts_list.map((contact) => [contact.email.toLowerCase(), contact]));
 let added = 0;
 let additionalMessages = 0;
@@ -33,6 +35,45 @@ for (const message of audit.sent) {
   }
 }
 
+const latestSentAt = new Date().toISOString();
+for (const message of latestSends) {
+  if (message.status !== "sent") continue;
+  const email = String(message.email || "").trim().toLowerCase();
+  if (!email) continue;
+  let contact = contacts.get(email);
+  if (!contact) {
+    contact = {
+      name: message.business || email.split("@")[0], email, source: "",
+      first_sent: latestSentAt, sent_messages: 0, status: "Awaiting reply", reply: "",
+      next_action: "Wait; no immediate follow up", batch: "September 9 outreach batch 10",
+      last_sent: "", thread_url: `https://mail.google.com/mail/#all/${message.result?.structuredContent?.thread_id || message.result?.structuredContent?.id || ""}`,
+    };
+    contacts.set(email, contact);
+    added++;
+  }
+  if (!contact.last_sent || new Date(latestSentAt) > new Date(contact.last_sent)) {
+    contact.sent_messages = Number(contact.sent_messages || 0) + 1;
+    contact.last_sent = latestSentAt;
+    if (!contact.first_sent) contact.first_sent = latestSentAt;
+    additionalMessages++;
+  }
+}
+
+const immediateBounces = new Set([
+  "info@eventsisters.com",
+  "bookings@funweddings.ca",
+  "info@creativeweddings.ca",
+  "vtinfo@webeventplanner.com",
+  "erin@uniqueeventsiowa.com",
+]);
+for (const email of immediateBounces) {
+  const contact = contacts.get(email);
+  if (!contact) continue;
+  contact.status = "Bounced";
+  contact.reply = "Immediate delivery failure returned by Gmail";
+  contact.next_action = "Do not resend; find a current address";
+}
+
 for (const message of audit.incoming) {
   if (!/out of office|automatic reply|automated reply|delayed response/i.test(`${message.subject} ${message.snippet}`)) continue;
   const address = String(message.from || "").match(/[\w.%+\-]+@[\w.\-]+\.[A-Za-z]{2,}/)?.[0]?.toLowerCase();
@@ -48,14 +89,14 @@ for (const message of audit.incoming) {
 const list = [...contacts.values()].sort((a, b) => a.name.localeCompare(b.name));
 const statuses = Object.fromEntries([...new Set(list.map((contact) => contact.status))].sort().map((status) => [status, list.filter((contact) => contact.status === status).length]));
 const current = {
-  checked_at: audit.checked_at,
-  scope: "Gmail Sent reconciled through September 9, 2026; replies and automatic responses checked before any future send.",
+  checked_at: new Date().toISOString(),
+  scope: "Gmail Sent reconciled through September 9, 2026, including batch 10 and immediate delivery failures.",
   contacts: list.length,
   sent_messages: list.reduce((sum, contact) => sum + Number(contact.sent_messages || 0), 0),
   new_businesses: Number(master.new_businesses || 0) + added,
   statuses,
   contacts_list: list,
-  reconciliation: { added_contacts: added, additional_messages: additionalMessages, mailbox_sent_checked: audit.sent.length, mailbox_incoming_checked: audit.incoming.length },
+  reconciliation: { added_contacts: added, additional_messages: additionalMessages, mailbox_sent_checked: audit.sent.length + latestSends.length, mailbox_incoming_checked: audit.incoming.length + immediateBounces.size },
 };
 fs.writeFileSync(path.join(root, "artifacts/outreach-master-current.json"), JSON.stringify(current, null, 2));
 const rows = list.map((contact) => `| ${String(contact.name).replaceAll("|", "\\|")} | ${contact.email} | ${contact.status} | ${contact.sent_messages} | ${contact.last_sent || ""} |`);

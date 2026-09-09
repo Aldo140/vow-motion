@@ -67,7 +67,7 @@ For each day you say go:
 
 ## Volume ramp — weekdays only
 
-**September 9 stop:** Gmail Sent contains 100 outreach messages for today. Send no more from this mailbox today. Resume only after the mailbox has rested and the reply, bounce, spam, and opt-out results have been reviewed.
+**September 9 stop:** Gmail accepted 200 outreach messages today across the earlier send and batch 10. Five batch 10 addresses returned immediate delivery failures. Send no more from this mailbox today. Resume only after the mailbox has rested and the reply, bounce, spam, and opt out results have been reviewed.
 
 | Days | Cold emails/day |
 | --- | --- |
