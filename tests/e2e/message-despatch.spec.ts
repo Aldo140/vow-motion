@@ -95,3 +95,50 @@ test("a message sends once, says so, and can be discarded or retried", async ({
     card.getByRole("button", { name: "Discard this draft" }),
   ).toHaveCount(0);
 });
+
+test("an administrator can compose, review, and publish from the Messages screen", async ({
+  page,
+}) => {
+  await page.request.post("/api/demo");
+  const [wedding] = await (await page.request.get("/api/weddings")).json();
+  await page.goto(`/studio/messages?wid=${wedding.id}`);
+
+  await page.getByRole("button", { name: "Write a message" }).click();
+  await page.getByLabel("Subject").fill("A note from the hosts");
+  await page.getByLabel("Channel").selectOption("invitation");
+  await page
+    .getByLabel("Your message")
+    .fill("The ceremony will begin in the garden at four.");
+
+  const preview = page.locator(".audience-preview");
+  await expect(preview).toContainText(/guests can receive this invitation update/);
+  await expect(preview).toContainText(/Updates appear inside each household/);
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  const card = page
+    .locator(".message-card")
+    .filter({ hasText: "A note from the hosts" });
+  await expect(card.locator(".status")).toHaveText("Draft");
+  await card.getByRole("button", { name: "Publish update" }).click();
+  await expect(card.locator(".status")).toHaveText("Published");
+  await expect(card).toContainText(/delivered/);
+  await expect(
+    card.getByRole("button", { name: "Publish update" }),
+  ).toHaveCount(0);
+
+  const saved = await (
+    await page.request.get(`/api/studio?wedding=${wedding.id}`)
+  ).json();
+  const message = saved.messages.find(
+    (candidate: { subject: string }) =>
+      candidate.subject === "A note from the hosts",
+  );
+  expect(message.status).toBe("published");
+  expect(
+    saved.deliveries.filter(
+      (delivery: { message_id: string; status: string }) =>
+        delivery.message_id === message.id && delivery.status === "published",
+    ).length,
+  ).toBeGreaterThan(0);
+});

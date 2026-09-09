@@ -113,7 +113,9 @@ export function OfferQuestions({ planner = false }: { planner?: boolean }) {
       : []),
     [
       "What does it cost?",
-      "The wedding tools shown here are included at no charge in the current release. No card is required. This describes the current release, not a promise of lifetime pricing.",
+      planner
+        ? "The first founding-partner pilot wedding is free. If you continue, the founding rate is $325 CAD per wedding while your agency remains active with us. The core rate stays protected; future services with materially different scope may be priced separately. Self-service tools remain available at no charge in the current release."
+        : "The self-service wedding tools shown here are included at no charge in the current release. Our planned managed service for couples starts from $995 CAD and includes hands-on setup with our team. No card is required to explore or create a wedding today.",
     ],
     [
       "Can I try it before creating an account?",

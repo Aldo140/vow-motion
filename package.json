@@ -10,6 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "ops:probe": "node scripts/operations/probe.mjs",
+    "ops:capacity": "node scripts/operations/capacity.mjs",
+    "ops:backup": "node scripts/operations/backup.mjs",
+    "ops:restore": "node scripts/operations/restore.mjs",
     "check": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {

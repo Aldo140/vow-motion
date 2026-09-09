@@ -1,10 +1,9 @@
 import { PGlite } from "@electric-sql/pglite";
 import { readFile, readdir } from "node:fs/promises";
-import path from "node:path";
 const db = new PGlite();
-const dir = "/sessions/loving-sharp-hamilton/mnt/vow-motion/migrations";
+const dir = new URL("../migrations/", import.meta.url);
 for (const n of (await readdir(dir)).filter(f=>f.endsWith(".sql")).sort())
-  await db.exec(await readFile(path.join(dir, n), "utf8"));
+  await db.exec(await readFile(new URL(n, dir), "utf8"));
 let ok = true;
 const check = (c,m) => { if(!c){ok=false;console.log("FAIL:",m);} else console.log("pass:",m); };
 

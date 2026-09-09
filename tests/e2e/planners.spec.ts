@@ -52,6 +52,16 @@ test("the planner page reads as an addition to a planner's system, not a replace
     page.getByRole("heading", { name: /one wedding/ }),
   ).toBeVisible();
   await expect(
+    page.getByRole("heading", { name: /Then decide with evidence/ }),
+  ).toBeVisible();
+  const founding = page.locator(".founding-partner");
+  await expect(founding).toContainText("Your first pilot");
+  await expect(founding).toContainText("Free");
+  await expect(founding).toContainText("$325 CAD");
+  await expect(
+    founding.getByRole("link", { name: /Ask about a founding pilot/ }),
+  ).toHaveAttribute("href", "/contact");
+  await expect(
     page.getByRole("link", { name: /See what a guest receives/ }),
   ).toHaveAttribute("href", "/demo/riviera");
 
@@ -82,6 +92,9 @@ test("the planner ledger stacks and stays labelled on a phone", async ({
   const one = (await sheets.nth(0).boundingBox())!;
   const two = (await sheets.nth(1).boundingBox())!;
   expect(two.y).toBeGreaterThan(one.y + one.height - 2);
+  const founding = page.locator(".founding-partner");
+  await expect(founding).toBeVisible();
+  expect((await founding.boundingBox())!.width).toBeLessThanOrEqual(390);
 
   expect(
     await page.evaluate(

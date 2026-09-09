@@ -408,6 +408,75 @@ export default function Planners() {
           </div>
         </section>
 
+        <section
+          className="founding-partner"
+          aria-labelledby="founding-partner-heading"
+        >
+          <div className="founding-partner-intro">
+            <p className="collection-caption">Founding planner partnership</p>
+            <h2 id="founding-partner-heading">
+              One wedding together.
+              <br />
+              <em>Then decide with evidence.</em>
+            </h2>
+            <p>
+              A planner relationship is worth more to us than a single wedding.
+              Your first pilot is free because your operational feedback helps
+              shape the product, and because you should see it work before you
+              ask a couple to pay for it.
+            </p>
+          </div>
+          <div className="partner-offer" aria-label="Founding partner offer">
+            <div className="partner-offer-main">
+              <span className="partner-offer-kicker">Your first pilot</span>
+              <strong>Free</strong>
+              <p>
+                One real wedding, configured with our small team. Keep the
+                planning system you already use.
+              </p>
+            </div>
+            <div className="partner-offer-terms">
+              <div>
+                <span>Founding partner rate after the pilot</span>
+                <strong>$325 CAD</strong>
+                <small>per wedding</small>
+              </div>
+              <ul>
+                <li>Protected while your agency remains active with us.</li>
+                <li>
+                  The core rate stays in place; future services with materially
+                  different scope may be priced separately.
+                </li>
+                <li>
+                  Use it as an included client benefit or price it as your own
+                  guest experience add-on.
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="partner-economics">
+            <span>Why planner pricing is different</span>
+            <p>
+              Direct managed service for couples is planned from $995 CAD
+              because we handle setup with them ourselves. Planner partners
+              bring repeat weddings and an established workflow, so the
+              economics should reflect that.
+            </p>
+          </div>
+          <div className="founding-partner-actions">
+            <a href="/contact" className="button primary">
+              Ask about a founding pilot <Arrow diagonal size={14} />
+            </a>
+            <DemoButton className="text-link">
+              Explore the Studio first
+            </DemoButton>
+          </div>
+          <p className="founding-partner-note">
+            No countdown and no invented deadline. We will accept only the
+            number of pilots our team can personally support.
+          </p>
+        </section>
+
         <OfferQuestions planner />
         <section className="planner-closing">
           <span>

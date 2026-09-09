@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rows } from "@/lib/db";
+import { rows, transaction } from "@/lib/db";
 import { sendMessage, MAX_ATTEMPTS } from "@/lib/messages";
 export async function POST(req: NextRequest) {
   if (
@@ -41,7 +41,44 @@ export async function POST(req: NextRequest) {
       results.push({ id: message.id, error: (e as Error).message });
     }
   }
-  return NextResponse.json({ processed: results.length, results });
+
+  // Expired credentials and throttling rows have no product value. Cleaning
+  // them during the authenticated worker run keeps retention deterministic
+  // without introducing a second scheduler or a public maintenance endpoint.
+  const cleanup = await transaction(async (connection) => {
+    const sessions = await connection.query(
+      "DELETE FROM sessions WHERE expires_at < now() RETURNING token_hash",
+    );
+    const invitationTokens = await connection.query(
+      "DELETE FROM invitation_tokens WHERE expires_at < now() RETURNING id",
+    );
+    const lookupChallenges = await connection.query(
+      "DELETE FROM verification_challenges WHERE expires_at < now() - interval '7 days' RETURNING id",
+    );
+    const accountChallenges = await connection.query(
+      "DELETE FROM account_verification_challenges WHERE expires_at < now() - interval '7 days' RETURNING id",
+    );
+    const resetChallenges = await connection.query(
+      "DELETE FROM password_reset_challenges WHERE expires_at < now() - interval '7 days' RETURNING id",
+    );
+    const storySessions = await connection.query(
+      "DELETE FROM story_sessions WHERE expires_at < now() RETURNING token_hash",
+    );
+    const limits = await connection.query(
+      "DELETE FROM rate_limits WHERE expires_at < now() RETURNING key",
+    );
+    return {
+      sessions: sessions.rows.length,
+      invitationTokens: invitationTokens.rows.length,
+      challenges:
+        lookupChallenges.rows.length +
+        accountChallenges.rows.length +
+        resetChallenges.rows.length,
+      storySessions: storySessions.rows.length,
+      rateLimits: limits.rows.length,
+    };
+  });
+  return NextResponse.json({ processed: results.length, results, cleanup });
 }
 
 export const GET = POST;

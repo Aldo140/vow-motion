@@ -452,6 +452,147 @@
   max-width: 44ch;
 }
 
+/* Founding partner offer */
+.founding-partner {
+  max-width: 1240px;
+  margin: clamp(36px, 6vw, 84px) auto;
+  padding: clamp(40px, 6vw, 76px) 6%;
+  background: var(--ink);
+  color: var(--surface);
+}
+.founding-partner-intro {
+  max-width: 720px;
+}
+.founding-partner .collection-caption {
+  color: color-mix(in srgb, var(--surface) 65%, var(--olive-light));
+}
+.founding-partner h2 {
+  margin: 14px 0 20px;
+  font-family: var(--serif);
+  font-size: clamp(34px, 5vw, 64px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+.founding-partner h2 em {
+  font-style: italic;
+}
+.founding-partner-intro > p:last-child {
+  max-width: 62ch;
+  margin: 0;
+  color: color-mix(in srgb, var(--surface) 76%, transparent);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.partner-offer {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+  margin-top: clamp(34px, 5vw, 60px);
+  border: 1px solid color-mix(in srgb, var(--surface) 28%, transparent);
+}
+.partner-offer-main,
+.partner-offer-terms {
+  padding: clamp(26px, 4vw, 48px);
+}
+.partner-offer-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--ink);
+}
+.partner-offer-kicker,
+.partner-offer-terms span,
+.partner-economics > span {
+  font-size: 10px;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+}
+.partner-offer-main > strong {
+  margin: 10px 0 12px;
+  font-family: var(--serif);
+  font-size: clamp(58px, 8vw, 92px);
+  font-weight: 400;
+  line-height: 0.95;
+}
+.partner-offer-main p {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.partner-offer-terms > div {
+  padding-bottom: 24px;
+  border-bottom: 1px solid color-mix(in srgb, var(--surface) 24%, transparent);
+}
+.partner-offer-terms strong {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--serif);
+  font-size: clamp(38px, 5vw, 58px);
+  font-weight: 400;
+  line-height: 1;
+}
+.partner-offer-terms small {
+  display: block;
+  margin-top: 7px;
+  color: color-mix(in srgb, var(--surface) 65%, transparent);
+}
+.partner-offer-terms ul {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 0;
+}
+.partner-offer-terms li {
+  position: relative;
+  padding-left: 20px;
+  color: color-mix(in srgb, var(--surface) 78%, transparent);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.partner-offer-terms li::before {
+  content: "";
+  position: absolute;
+  top: 0.72em;
+  left: 0;
+  width: 9px;
+  height: 1px;
+  background: var(--surface);
+}
+.partner-economics {
+  display: grid;
+  grid-template-columns: 0.45fr 1fr;
+  gap: 28px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--surface) 18%, transparent);
+}
+.partner-economics p {
+  max-width: 66ch;
+  margin: 0;
+  color: color-mix(in srgb, var(--surface) 70%, transparent);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.founding-partner-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 32px;
+}
+.founding-partner .text-link {
+  color: var(--surface);
+}
+.founding-partner-note {
+  margin: 18px 0 0;
+  color: color-mix(in srgb, var(--surface) 55%, transparent);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 /* The close */
 .planner-closing {
   text-align: center;
@@ -506,6 +647,25 @@
   }
 }
 @media (max-width: 768px) {
+  .founding-partner {
+    margin: 30px 16px;
+    padding: 36px 22px;
+  }
+  .partner-offer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .partner-economics {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .founding-partner-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .founding-partner-actions .button {
+    justify-content: space-between;
+    width: 100%;
+  }
   .alongside-plate {
     padding: 30px 22px 26px;
   }

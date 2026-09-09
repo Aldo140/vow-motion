@@ -27,7 +27,7 @@ import {
   weddingUpdatesSchema,
 } from "@/lib/validation";
 import { deliver, checkout } from "@/lib/providers";
-import { sendMessage } from "@/lib/messages";
+import { studioMessagesAction } from "@/lib/studio-messages-api";
 import { listWeddings } from "@/lib/wedding-access";
 import { randomInt } from "node:crypto";
 import { savePhoto, readPhoto, deletePhoto } from "@/lib/photo-storage";
@@ -565,63 +565,16 @@ async function handler(request: NextRequest, context: Context) {
         });
         return json({ ok: true });
       }
-      if (action === "messages" && method === "POST") {
-        const input = z
-          .object({
-            subject: z.string().min(1).max(200),
-            body: z.string().min(1).max(5000),
-            audience: z.string().max(200),
-            channel: z.enum(["email", "sms", "invitation"]),
-            scheduled_at: z
-              .union([z.iso.datetime({ offset: true }), z.literal("")])
-              .optional(),
-          })
-          .parse(await body());
-        const messageId = id();
-        await (
-          await db()
-        ).query(
-          "INSERT INTO messages(id,wedding_id,subject,body,audience,channel,scheduled_at) VALUES($1,$2,$3,$4,$5,$6,$7)",
-          [
-            messageId,
-            weddingId,
-            input.subject,
-            input.body,
-            input.audience,
-            input.channel,
-            input.scheduled_at || null,
-          ],
-        );
-        await audit(weddingId, user.id, "Message draft saved");
-        return json({ id: messageId });
-      }
-      if (action === "messages" && method === "DELETE") {
-        // A draft you cannot delete is a draft you are stuck with. Anything
-        // already published or sent stays, because guests have seen it.
-        const removed = await (
-          await db()
-        ).query(
-          "DELETE FROM messages WHERE id=$1 AND wedding_id=$2 AND status IN ('draft','failed') RETURNING id",
-          [item, weddingId],
-        );
-        if (!removed.rows.length)
-          throw new HttpError(
-            409,
-            "Only a draft that has not reached anyone can be discarded.",
-          );
-        await audit(weddingId, user.id, "Message draft discarded");
-        return json({ ok: true });
-      }
-      if (action === "send" && method === "POST") {
-        // The nightly delivery run posts no body at all, so an absent or
-        // unreadable one simply means "send it the ordinary way".
-        const sendNow = await body()
-          .then((parsed) => (parsed as { now?: unknown })?.now === true)
-          .catch(() => false);
-        return json(
-          await sendMessage(weddingId, item, user.id, user.is_demo, sendNow),
-        );
-      }
+      const messageAction = await studioMessagesAction({
+        action,
+        item,
+        method,
+        weddingId,
+        userId: user.id,
+        demo: user.is_demo,
+        readBody: body,
+      });
+      if (messageAction.handled) return json(messageAction.value);
       if (action === "photos" && method === "PATCH") {
         const input = z.object({ approved: z.boolean() }).parse(await body());
         await (

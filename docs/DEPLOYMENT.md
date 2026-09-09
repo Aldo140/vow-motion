@@ -28,7 +28,7 @@ After configuring the production database, verify `/api/health`, account creatio
 
 ## Remaining operator setup
 
-Email/SMS sender verification, payment account configuration, domain ownership, backup/restore exercises, retention, abuse monitoring, and operator privacy disclosures require production account settings. A worker exists for scheduled messages, but an external scheduler must invoke it with `CRON_SECRET`; no cron is enabled until scheduling and provider readiness are established.
+Email/SMS sender verification, payment account configuration, domain ownership, backup storage, alerting, and operator privacy disclosures require production account settings. The worker handles scheduled messages, retry recovery, and expired operational-record cleanup and must be invoked with `CRON_SECRET`. Follow [OPERATIONS.md](OPERATIONS.md) for the release probe, capacity check, backup/restore drill, retention rules and incident response.
 
 See LAUNCH-STATUS.md for product features that remain outside this release. The deployment work does not claim a formal security review, full accessibility certification, or load-tested capacity.
 

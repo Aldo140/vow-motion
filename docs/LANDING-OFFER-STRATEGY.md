@@ -22,14 +22,14 @@ The strongest immediate offer is an interactive sample that answers a narrow que
 | Risk reduction | Evaluation can be bounded without making commercial guarantees. | Sample weddings, no card, no real guest contact, preview before sharing. No refund promise or guaranteed business result. |
 | Offer naming | The next action should explain what the user receives. | Concrete guest invitation and Studio labels. Keep the established Vow Motion name. |
 | Bonuses | Extras should remove a specific obstacle and be deliverable. | Explain existing setup guidance and import support. Do not attach invented dollar values to included features. |
-| Scarcity and urgency | Capacity or deadlines must be real and maintained. | Remove vague limited planner recruitment language. No countdown, fake availability counter or deadline. Revisit only with actual staffing and cohort dates. |
-| Monetization | Price and packaging affect delivery obligations as well as conversion. | Clarify the existing no charge current release offer. Do not invent a subscription, lifetime deal, discount anchor or future pricing policy. |
+| Scarcity and urgency | Capacity or deadlines must be real and maintained. | State only that founding pilots are limited to what the small team can personally support. Do not publish a countdown, numerical limit or deadline until capacity is tracked operationally. |
+| Monetization | Price and packaging affect delivery obligations as well as conversion. | Keep self-service free in the current release. Offer planners one no-charge pilot, then a protected $325 CAD founding rate per wedding while the relationship remains active. Present direct managed service for couples as planned from $995 CAD because it includes hands-on setup. Materially different future services remain separately priced. |
 
 ## Page sequence
 
 Home: tangible outcome and working preview, emotional context, design collection, three setup steps, connected capabilities, planner path, explicit current offer, objections, creation CTA.
 
-Planners: client outcome and guest preview, evaluation steps, Studio to guest feature pairs, private demo offer, existing workflow and pricing answers, Studio CTA.
+Planners: coexistence with the planner's current system, supplier-ready outputs, guest preview, evaluation steps, Studio to guest feature pairs, private demo offer, founding pilot terms, pricing answers and Studio CTA.
 
 The complimentary personalized concept offered to Cathy remains an individual outreach offer. Public pages do not promise unlimited bespoke work or a turnaround time the team has not established.
 
