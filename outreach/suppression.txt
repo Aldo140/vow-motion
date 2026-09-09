@@ -13,3 +13,8 @@ meghan@bridalbliss.com            # hard bounce
 chelsea@dreamteampdx.com          # hard bounce
 events@luxenw.com                 # hard bounce
 sarah@eventiquepro.com            # hard bounce
+info@avphtx.com                   # hard bounce, address not found 2026-09-09 (batch 6–9)
+niki@apanacheaffair.com           # hard bounce, address not found 2026-09-09 (batch 6–9)
+cori@eventsbycori.com             # hard bounce, address not found 2026-09-09 (batch 6–9)
+hello@flourisheventplanning.com   # hard bounce, address not found 2026-09-09 (batch 6–9)
+# watch, not suppressed: kristin@victoriandiamondevents.ca — temp delivery delay 2026-09-08, Gmail retrying
