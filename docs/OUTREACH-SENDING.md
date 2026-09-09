@@ -69,6 +69,8 @@ For each day you say go:
 
 **September 9 stop:** Gmail accepted 400 outreach messages today across the earlier send and batches 10 through 12. Batch 12 targeted the highest value state and adjacent affluent markets; four addresses returned immediate delivery failures. Send no more from this mailbox today. Resume only after the mailbox has rested and the reply, bounce, spam, and opt out results have been reviewed.
 
+**Quality hold:** A September 9 copy audit found 13 definitively malformed messages in batch 11. Raw search snippets created incomplete URLs, unrelated company references, and `Gmail team` greetings. No outreach may resume until the final rendered message file passes `node scripts/audit-outreach-copy.mjs <messages.json>` and the greetings and opening paragraphs receive a human review. Research snippets are source material only and must never be interpolated directly into outgoing copy.
+
 | Days | Cold emails/day |
 | --- | --- |
 | 1–3 | 5 |

@@ -93,6 +93,23 @@ for (const email of immediateAutomaticReplies) {
   contact.next_action = "Wait for a human response";
 }
 
+const explicitReplies = new Map([
+  ["hello@eleventsweddings.com", {
+    status: "Do not contact",
+    reply: "Not interested; recipient also reported a wrong company reference and an incomplete URL in the email.",
+    next_action: "Do not contact again",
+  }],
+  ["hello@fabdayevents.com", {
+    status: "Interested",
+    reply: "Interested in seeing a demo.",
+    next_action: "Prepare a warm, specific demo reply for review",
+  }],
+]);
+for (const [email, update] of explicitReplies) {
+  const contact = contacts.get(email);
+  if (contact) Object.assign(contact, update);
+}
+
 for (const message of audit.incoming) {
   if (!/out of office|automatic reply|automated reply|delayed response/i.test(`${message.subject} ${message.snippet}`)) continue;
   const address = String(message.from || "").match(/[\w.%+\-]+@[\w.\-]+\.[A-Za-z]{2,}/)?.[0]?.toLowerCase();

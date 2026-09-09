@@ -17,4 +17,16 @@ info@avphtx.com                   # hard bounce, address not found 2026-09-09 (b
 niki@apanacheaffair.com           # hard bounce, address not found 2026-09-09 (batch 6–9)
 cori@eventsbycori.com             # hard bounce, address not found 2026-09-09 (batch 6–9)
 hello@flourisheventplanning.com   # hard bounce, address not found 2026-09-09 (batch 6–9)
+hello@eleventsweddings.com        # explicit not interested 2026-09-09 — do not contact
+info@eventsisters.com             # hard bounce 2026-09-09 (batch 10)
+bookings@funweddings.ca           # hard bounce 2026-09-09 (batch 10)
+info@creativeweddings.ca          # hard bounce 2026-09-09 (batch 10)
+vtinfo@webeventplanner.com        # hard bounce 2026-09-09 (batch 10)
+erin@uniqueeventsiowa.com         # hard bounce 2026-09-09 (batch 10)
+sales@destinationweddingsmalta.com # hard bounce 2026-09-09 (batch 11)
+emily@ponderosaplanning.com       # hard bounce 2026-09-09 (batch 11)
+jessica@bijouxevents.com          # hard bounce 2026-09-09 (batch 12)
+caity@nightingaleweddingandevents.com # hard bounce 2026-09-09 (batch 12)
+usinfo@atlanticoneevents.com      # hard bounce 2026-09-09 (batch 12)
+hello@popandclinkevents.com       # hard bounce 2026-09-09 (batch 12)
 # watch, not suppressed: kristin@victoriandiamondevents.ca — temp delivery delay 2026-09-08, Gmail retrying
