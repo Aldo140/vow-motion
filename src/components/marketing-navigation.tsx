@@ -8,6 +8,7 @@ import { useHydrated } from "./use-hydrated";
 const links = [
   { href: "#worlds", label: "The design collection" },
   { href: "#experience", label: "How it works" },
+  { href: "/experience", label: "The film" },
   { href: "#pricing", label: "Pricing" },
   { href: "/planners", label: "For planners" },
 ];
