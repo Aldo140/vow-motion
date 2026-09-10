@@ -5,7 +5,7 @@ const root = process.cwd();
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 const master = read("artifacts/outreach-master-2026-09-08.json");
 const audit = read("artifacts/outreach-mail-audit-2026-09-09.json");
-const latestSendFiles = [10, 11, 12, 13].map((batch) => path.join(root, `artifacts/outreach-batch${batch}-send-results-2026-09-09.json`));
+const latestSendFiles = [10, 11, 12, 13, 14].map((batch) => path.join(root, `artifacts/outreach-batch${batch}-send-results-2026-09-09.json`));
 const latestSends = latestSendFiles.flatMap((file) => fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : []);
 const contacts = new Map(master.contacts_list.map((contact) => [contact.email.toLowerCase(), contact]));
 let added = 0;
@@ -71,6 +71,10 @@ const immediateBounces = new Set([
   "caity@nightingaleweddingandevents.com",
   "usinfo@atlanticoneevents.com",
   "hello@popandclinkevents.com",
+  "hello@modernlove.events",
+  "info@luxcielevents.com",
+  "832-544-0858events@theluxeparty.com",
+  "homeaboutservicesinquirehello@detaileddreamsevents.com",
 ]);
 for (const email of immediateBounces) {
   const contact = contacts.get(email);

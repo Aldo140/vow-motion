@@ -30,3 +30,8 @@ caity@nightingaleweddingandevents.com # hard bounce 2026-09-09 (batch 12)
 usinfo@atlanticoneevents.com      # hard bounce 2026-09-09 (batch 12)
 hello@popandclinkevents.com       # hard bounce 2026-09-09 (batch 12)
 # watch, not suppressed: kristin@victoriandiamondevents.ca — temp delivery delay 2026-09-08, Gmail retrying
+
+hello@modernlove.events # immediate bounce batch 14
+info@luxcielevents.com # immediate bounce batch 14
+832-544-0858events@theluxeparty.com # malformed extraction and bounce batch 14
+homeaboutservicesinquirehello@detaileddreamsevents.com # malformed extraction and bounce batch 14

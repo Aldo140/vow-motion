@@ -18,12 +18,15 @@ for (const input of files) {
   for (const [index, row] of rows.entries()) {
     const body = String(row.body || "");
     const detail = String(row.detail || "");
+    const email = String(row.email || "").trim().toLowerCase();
     const greeting = String(row.greeting || "").trim().toLowerCase();
     const reasons = [];
+    if (!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(email)) reasons.push("invalid email syntax");
+    if (/^\d{3}[-.\d]|homeabout|servicesinquire|inquirehello|\.comgoogle$/i.test(email)) reasons.push("page text contaminated email");
     if (/https?:\/\/|www\./i.test(body)) reasons.push("URL appears inside prose");
     if (/cite|【\d+†|\[wordlim:|\bCrawled:/i.test(body)) reasons.push("raw search metadata");
     if (badGenericGreetings.has(greeting)) reasons.push("generic mailbox used as business name");
-    if (reasons.length) problems.push({ file: path.basename(file), row: index + 1, email: row.email, reasons });
+    if (reasons.length) problems.push({ file: path.basename(file), row: index + 1, email, reasons });
   }
 }
 
