@@ -16,5 +16,11 @@ artifacts/
 .agents/
 skills-lock.json
 
+# Claude Design canvas export output
+.claude-design-export/
+
 # Scratch file left by a sandbox that could not delete it; see scripts/verify-delivery.mjs
 sql-verify.mjs
+
+# Design brief drops
+*.zip

@@ -17,5 +17,7 @@ export default defineConfig([
     "data/**",
     "playwright-report/**",
     "test-results/**",
+    ".claude-design-export/**",
+    "artifacts/**",
   ]),
 ]);

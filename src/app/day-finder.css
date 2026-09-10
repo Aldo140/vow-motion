@@ -1,0 +1,365 @@
+/* Day-of table finder — /f/<slug>. Phone-first, one job, tinted by the world's
+   palette. Kept small: guests open this on venue wifi. */
+
+.finder {
+  min-height: 100dvh;
+  background: var(--f-bg, #f4f0e4);
+  color: var(--f-ink, #33352c);
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px 64px;
+}
+.finder-inner {
+  width: 100%;
+  max-width: 460px;
+}
+.finder-head {
+  text-align: center;
+  margin-bottom: 34px;
+}
+.finder-kicker {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.finder-head h1 {
+  font-family: "Italiana", var(--serif, Georgia, serif);
+  font-size: clamp(34px, 12vw, 52px);
+  line-height: 1.1;
+  font-weight: 400;
+  margin: 14px 0 16px;
+}
+.finder-head h1 i {
+  font-family: var(--serif, Georgia, serif);
+  font-style: italic;
+  font-size: 0.62em;
+  opacity: 0.7;
+}
+.finder-lang {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 22%, transparent);
+  border-radius: 40px;
+  color: inherit;
+  background: transparent;
+}
+
+.finder-search label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0.75;
+  margin-bottom: 12px;
+}
+.finder-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 16px;
+  background: #fffdf8;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 18%, transparent);
+  border-radius: 8px;
+}
+.finder-field > svg {
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+.finder-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 16px; /* keeps iOS from zooming on focus */
+  padding: 12px 0;
+  color: var(--f-ink);
+  outline: none;
+}
+.finder-field button {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: var(--f-accent, #40553a);
+  color: #fffdf8;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  min-height: 44px;
+}
+.finder-field button:disabled {
+  opacity: 0.5;
+}
+.finder-error {
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: oklch(45% 0.15 25);
+}
+
+.finder-result {
+  margin-top: 28px;
+  padding: 28px 24px;
+  background: #fffdf8;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--f-ink) 12%, transparent);
+  animation: finder-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes finder-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.finder-welcome {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 20px;
+  margin-bottom: 18px;
+}
+.finder-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.finder-table > span {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.finder-table > strong {
+  font-family: "Italiana", var(--serif, Georgia, serif);
+  font-size: clamp(40px, 14vw, 58px);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--f-accent);
+}
+.finder-table-open {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 18px;
+  opacity: 0.8;
+}
+.finder-with,
+.finder-meal {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.finder-with > span,
+.finder-meal > span {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 4px;
+}
+.finder-miss {
+  font-size: 13px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.finder-next {
+  margin-top: 22px;
+  padding: 20px 22px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 16%, transparent);
+  border-radius: 10px;
+  text-align: center;
+}
+.finder-next > span {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.finder-next h2 {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 22px;
+  font-weight: 400;
+  margin: 8px 0 4px;
+}
+.finder-next p {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.finder-map {
+  margin: 22px 0 0;
+}
+.finder-map img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 14%, transparent);
+}
+
+.finder-notes {
+  margin-top: 22px;
+}
+.finder-notes p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--f-ink) 12%, transparent);
+}
+.finder-notes p > svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+.finder-guestbook {
+  margin-top: 26px;
+  text-align: center;
+}
+.finder-guestbook-open {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: inherit;
+  opacity: 0.8;
+}
+.finder-guestbook form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.finder-guestbook textarea {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 18%, transparent);
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  font-size: 15px;
+  background: #fffdf8;
+  color: var(--f-ink);
+  resize: vertical;
+}
+.finder-guestbook button[type="submit"] {
+  align-self: center;
+  padding: 11px 26px;
+  border-radius: 6px;
+  background: var(--f-accent);
+  color: #fffdf8;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 44px;
+}
+.finder-note-sent {
+  margin-top: 26px;
+  text-align: center;
+  font-family: var(--serif, Georgia, serif);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.finder-foot {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.7;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finder-result {
+    animation: none;
+  }
+}
+
+/* Studio → Seating: the finder's setup card */
+.finder-admin {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 24px;
+  margin-bottom: 34px;
+}
+.finder-admin-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+.finder-admin-top h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.finder-admin-top p {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 62ch;
+  margin-top: 8px;
+}
+.finder-admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.finder-admin-share {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.finder-admin-share img {
+  width: 104px;
+  height: 104px;
+  border: 1px solid var(--line);
+  padding: 6px;
+  background: #fff;
+}
+.finder-admin-share code {
+  font-size: 11px;
+  word-break: break-all;
+}
+.finder-admin-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.finder-admin-links .text-link {
+  font-size: 11px;
+  padding: 4px 0;
+}
+.finder-admin-config {
+  margin-top: 16px;
+  font-size: 11px;
+}
+.finder-admin-options {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.finder-admin-options .check-label {
+  margin: 10px 0;
+}
+.finder-admin-options .field {
+  margin-top: 18px;
+}
+.finder-admin-map {
+  max-width: 260px;
+  border: 1px solid var(--line);
+  margin-top: 8px;
+}

@@ -39,6 +39,7 @@ import {
   savePublicMedia,
 } from "@/lib/photo-storage";
 import { listSocialPosts } from "@/lib/social";
+import { finderData, lookupSeat, addGuestbookNote } from "@/lib/finder-data";
 import { readJson } from "@/lib/request-body";
 import sharp from "sharp";
 import QRCode from "qrcode";
@@ -238,6 +239,106 @@ async function handler(request: NextRequest, context: Context) {
       if (!weddingId) throw new HttpError(400, "Choose a wedding.");
       const { user, role } = await access(weddingId, method !== "GET");
       if (!action && method === "GET") return json(await studioData(weddingId));
+      if (action === "finder") {
+        const wedding = (
+          await rows<{ slug: string; settings: unknown }>(
+            "SELECT slug, settings FROM weddings WHERE id=$1",
+            [weddingId],
+          )
+        )[0];
+        if (method === "GET") {
+          const origin =
+            process.env.APP_URL ||
+            new URL(request.url).protocol + "//" + request.headers.get("host");
+          return json({
+            url: `${origin}/f/${wedding.slug}`,
+            config: (wedding.settings as { finder?: unknown })?.finder ?? {},
+            notes: await rows(
+              "SELECT id, guest_name, body, created_at FROM guestbook_notes WHERE wedding_id=$1 ORDER BY created_at DESC",
+              [weddingId],
+            ),
+          });
+        }
+        if (method === "POST") {
+          const form = await request.formData();
+          const file = form.get("file");
+          if (
+            !(file instanceof File) ||
+            !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+          )
+            throw new HttpError(400, "Choose a JPG, PNG, or WebP image.");
+          const processed = await sharp(Buffer.from(await file.arrayBuffer()), {
+            limitInputPixels: 60_000_000,
+          })
+            .rotate()
+            .resize(1600, 2000, { fit: "inside", withoutEnlargement: true })
+            .jpeg({ quality: 82 })
+            .toBuffer();
+          const url = await savePublicMedia(
+            `map-${id()}.jpg`,
+            processed,
+            "image/jpeg",
+          );
+          await (
+            await db()
+          ).query(
+            `UPDATE weddings SET settings = COALESCE(settings,'{}'::jsonb)
+               || jsonb_build_object('finder',
+                    COALESCE(settings->'finder','{}'::jsonb) || jsonb_build_object('map',$1::text))
+             WHERE id=$2`,
+            [url, weddingId],
+          );
+          return json({ url });
+        }
+        if (method === "PATCH") {
+          const input = z
+            .object({
+              enabled: z.boolean().optional(),
+              always_on: z.boolean().optional(),
+              tablemates: z.boolean().optional(),
+              guestbook: z.boolean().optional(),
+              map: z.string().max(500).optional(),
+              notes: z.string().max(2000).optional(),
+              notes_es: z.string().max(2000).optional(),
+            })
+            .parse(await body());
+          await (
+            await db()
+          ).query(
+            `UPDATE weddings SET settings = COALESCE(settings,'{}'::jsonb)
+               || jsonb_build_object('finder',
+                    COALESCE(settings->'finder','{}'::jsonb) || $1::jsonb)
+             WHERE id=$2`,
+            [JSON.stringify(input), weddingId],
+          );
+          await audit(weddingId, user.id, "Day-of finder settings saved");
+          return json({ ok: true });
+        }
+      }
+      if (action === "day-of-qr" && method === "GET") {
+        const slug = (
+          await rows<{ slug: string }>(
+            "SELECT slug FROM weddings WHERE id=$1",
+            [weddingId],
+          )
+        )[0].slug;
+        const origin =
+          process.env.APP_URL ||
+          new URL(request.url).protocol + "//" + request.headers.get("host");
+        return new NextResponse(
+          await QRCode.toString(`${origin}/f/${slug}`, {
+            type: "svg",
+            margin: 1,
+            color: { dark: "#292b23", light: "#ffffff" },
+          }),
+          {
+            headers: {
+              "Content-Type": "image/svg+xml",
+              "Cache-Control": "no-store",
+            },
+          },
+        );
+      }
       if (
         ["identity", "setup", "publish", "feedback", "requests"].includes(
           action,
@@ -1205,6 +1306,37 @@ async function handler(request: NextRequest, context: Context) {
           "Cache-Control": "private, no-store",
         },
       });
+    }
+    if (area === "finder") {
+      const slug = request.nextUrl.searchParams.get("slug") || "";
+      const data = await finderData(slug);
+      if (!data || !data.active)
+        throw new HttpError(404, "This table finder is not open.");
+      if (action === "lookup" && method === "GET") {
+        await rateLimit(
+          "finder:" + request.headers.get("x-forwarded-for") + ":" + slug,
+          60,
+        );
+        const q = request.nextUrl.searchParams.get("q") || "";
+        return json(await lookupSeat(slug, q));
+      }
+      if (action === "note" && method === "POST") {
+        if (!data.config.guestbook)
+          throw new HttpError(404, "Notes are closed.");
+        await rateLimit(
+          "note:" + request.headers.get("x-forwarded-for") + ":" + slug,
+          10,
+        );
+        const input = z
+          .object({
+            name: z.string().max(120).default(""),
+            body: z.string().trim().min(2).max(1000),
+          })
+          .parse(await body());
+        await addGuestbookNote(data.wedding.id, input.name, input.body);
+        return json({ ok: true });
+      }
+      throw new HttpError(404, "This action is unavailable.");
     }
     if (area === "lookup" && method === "POST") {
       await rateLimit("lookup:" + request.headers.get("x-forwarded-for"), 20);

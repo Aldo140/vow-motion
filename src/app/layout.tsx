@@ -32,6 +32,7 @@ import "./studio-story.css";
 import "./studio-post-room.css";
 import "./guest-preview-stage.css";
 import "./admin.css";
+import "./day-finder.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {

@@ -1,10 +1,11 @@
 "use client";
 import { PageHeading, type PanelProps } from "@/components/studio/shared";
 import { Arrow, Field, Modal, Submit } from "@/components/ui";
-import { ArmchairIcon, PlusIcon } from "@phosphor-icons/react";
+import { ArmchairIcon, PlusIcon, QrCodeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import { finderConfig } from "@/lib/finder";
 
-export function SeatingManager({ data, mutate, notify }: PanelProps) {
+export function SeatingManager({ data, mutate, notify, refresh }: PanelProps) {
   const [add, setAdd] = useState(false),
     [search, setSearch] = useState("");
   const attending = data.guests.filter((g) => g.status === "attending"),
@@ -38,6 +39,12 @@ export function SeatingManager({ data, mutate, notify }: PanelProps) {
           Add table
         </button>
       </PageHeading>
+      <DayOfFinder
+        data={data}
+        mutate={mutate}
+        notify={notify}
+        refresh={refresh}
+      />
       <div className="seating-layout">
         <aside className="unassigned">
           <h2>
@@ -178,5 +185,217 @@ export function SeatingManager({ data, mutate, notify }: PanelProps) {
         </Modal>
       )}
     </>
+  );
+}
+
+function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
+  const config = finderConfig(data.wedding.settings);
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState(config.notes);
+  const [notesEs, setNotesEs] = useState(config.notes_es);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const url =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/f/${data.wedding.slug}`
+      : `/f/${data.wedding.slug}`;
+
+  const patch = async (body: Record<string, unknown>, message: string) => {
+    try {
+      await mutate("finder", body, "PATCH");
+      await refresh();
+      notify(message);
+    } catch (e) {
+      notify((e as Error).message, "error");
+    }
+  };
+
+  return (
+    <section className="finder-admin">
+      <div className="finder-admin-top">
+        <div>
+          <h2>
+            <QrCodeIcon size={16} /> Day-of table finder
+          </h2>
+          <p>
+            A page guests scan at the venue to find their table, their people,
+            and what is next. Anyone with the link can look up a name, so it
+            only goes live from the day before to two days after the wedding.
+          </p>
+        </div>
+        <label className="finder-admin-switch">
+          <input
+            type="checkbox"
+            checked={config.enabled}
+            onChange={(e) =>
+              patch(
+                { enabled: e.target.checked },
+                e.target.checked ? "Table finder is on." : "Table finder is off.",
+              )
+            }
+          />
+          {config.enabled ? "On" : "Off"}
+        </label>
+      </div>
+
+      {config.enabled && (
+        <>
+          <div className="finder-admin-share">
+            <img
+              src={`/api/studio/day-of-qr?wedding=${data.wedding.id}`}
+              alt="Finder QR code"
+              width={104}
+              height={104}
+            />
+            <div>
+              <code>{url}</code>
+              <div className="finder-admin-links">
+                <a
+                  href={`/api/studio/day-of-qr?wedding=${data.wedding.id}`}
+                  download="table-finder-qr.svg"
+                  className="text-link"
+                >
+                  Download QR
+                </a>
+                <button
+                  className="text-link"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(url);
+                    notify("Link copied.");
+                  }}
+                >
+                  Copy link
+                </button>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-link"
+                >
+                  Open it
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <button
+            className="text-link finder-admin-config"
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? "Hide options" : "Map, notes and options"}
+          </button>
+
+          {open && (
+            <div className="finder-admin-options">
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={config.always_on}
+                  onChange={(e) =>
+                    patch(
+                      { always_on: e.target.checked },
+                      "Saved.",
+                    )
+                  }
+                />
+                Keep it live all the time (not just around the wedding date)
+              </label>
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={config.tablemates}
+                  onChange={(e) =>
+                    patch({ tablemates: e.target.checked }, "Saved.")
+                  }
+                />
+                Show each guest who else is at their table
+              </label>
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={config.guestbook}
+                  onChange={(e) =>
+                    patch({ guestbook: e.target.checked }, "Saved.")
+                  }
+                />
+                Let guests leave you a note
+              </label>
+
+              <Field label="Venue plan (optional)">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploading}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploading(true);
+                    try {
+                      const form = new FormData();
+                      form.append("file", file);
+                      const r = await fetch(
+                        `/api/studio/finder?wedding=${data.wedding.id}`,
+                        { method: "POST", body: form },
+                      );
+                      if (!r.ok) throw new Error((await r.json()).error);
+                      await refresh();
+                      notify("Venue plan added.");
+                    } catch (err) {
+                      notify((err as Error).message, "error");
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                />
+              </Field>
+              {config.map && (
+                <img
+                  className="finder-admin-map"
+                  src={config.map}
+                  alt="Venue plan"
+                />
+              )}
+
+              <Field label="Notes for guests — one per line (optional)">
+                <textarea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={
+                    "Bar on the terrace\nCoat check by the entrance\nLast shuttle 11 PM"
+                  }
+                />
+              </Field>
+              {data.wedding.locale === "es" ||
+              data.guests.some((g) => g.language === "es") ? (
+                <Field label="Notes in Spanish (optional)">
+                  <textarea
+                    rows={3}
+                    value={notesEs}
+                    onChange={(e) => setNotesEs(e.target.value)}
+                  />
+                </Field>
+              ) : null}
+              <div className="form-actions">
+                <button
+                  className="button primary small"
+                  disabled={saving}
+                  onClick={async () => {
+                    setSaving(true);
+                    await patch(
+                      { notes, notes_es: notesEs },
+                      "Notes saved.",
+                    );
+                    setSaving(false);
+                  }}
+                >
+                  {saving ? "Saving…" : "Save notes"}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }
