@@ -1,6 +1,7 @@
 "use client";
 import MarketingNavigation from "./marketing-navigation";
 import BrandExplainer from "./composition/explainer";
+import BrandAd from "./composition/ad";
 import { Brand, Arrow, DemoButton } from "./ui";
 
 const MOMENTS: [string, string, string][] = [
@@ -62,6 +63,26 @@ export default function Experience() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="xp-vertical section-pad">
+          <div className="xp-vertical-copy">
+            <p className="eyebrow">FOR YOUR FEED</p>
+            <h2>
+              The same story, <em>cut for a phone</em>.
+            </h2>
+            <p>
+              A thirty-five-second vertical cut — the group chat, the envelope,
+              the invitation becoming six worlds, one reply and one pass. Built
+              to be screen-recorded straight into a Reel or a story.
+            </p>
+            <a href="/planners" className="text-link">
+              What planners get <Arrow diagonal size={15} />
+            </a>
+          </div>
+          <div className="xp-phone">
+            <BrandAd />
+          </div>
         </section>
 
         <section className="xp-cta">
