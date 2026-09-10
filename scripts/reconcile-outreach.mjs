@@ -5,7 +5,7 @@ const root = process.cwd();
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 const master = read("artifacts/outreach-master-2026-09-08.json");
 const audit = read("artifacts/outreach-mail-audit-2026-09-09.json");
-const latestSendFiles = [10, 11, 12].map((batch) => path.join(root, `artifacts/outreach-batch${batch}-send-results-2026-09-09.json`));
+const latestSendFiles = [10, 11, 12, 13].map((batch) => path.join(root, `artifacts/outreach-batch${batch}-send-results-2026-09-09.json`));
 const latestSends = latestSendFiles.flatMap((file) => fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : []);
 const contacts = new Map(master.contacts_list.map((contact) => [contact.email.toLowerCase(), contact]));
 let added = 0;
@@ -45,8 +45,8 @@ for (const message of latestSends) {
     contact = {
       name: message.business || email.split("@")[0], email, source: "",
       first_sent: latestSentAt, sent_messages: 0, status: "Awaiting reply", reply: "",
-      next_action: "Wait; no immediate follow up", batch: "September 9 outreach batch 10",
-      last_sent: "", thread_url: `https://mail.google.com/mail/#all/${message.result?.structuredContent?.thread_id || message.result?.structuredContent?.id || ""}`,
+      next_action: "Wait; no immediate follow up", batch: message.batch || "September 9 outreach",
+      last_sent: "", thread_url: `https://mail.google.com/mail/#all/${message.thread_id || message.id || message.result?.structuredContent?.thread_id || message.result?.structuredContent?.id || ""}`,
     };
     contacts.set(email, contact);
     added++;
