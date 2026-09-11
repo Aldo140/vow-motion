@@ -9,8 +9,10 @@
  */
 import {
   createContext,
+  forwardRef,
   useContext,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type CSSProperties,
@@ -74,34 +76,47 @@ function cueTable(scenes: Scene[]) {
   return { CUES, authoredTotal: acc };
 }
 
-export function Composition({
-  scenes,
-  width,
-  height,
-  bg = "#f3f0e9",
-  className,
-  children,
-  onTick,
-  fit = "contain",
-}: {
-  scenes: Scene[];
-  width: number;
-  height: number;
-  bg?: string;
-  className?: string;
-  children: ReactNode;
-  /** Called with the authored second on every advance (and once, on the held
-      frame, under reduced motion). Optional and backwards-compatible — lets a
-      page react to what the composition is currently showing without needing
-      the composition itself to know anything about the page. */
-  onTick?: (T: number) => void;
-  /** "contain" (default, unchanged): the stage keeps its authored aspect
-      ratio and scales to the container's width. "cover" — opt-in only —
-      fills whatever box the container is given (which must set its own
-      height), cropping the composition the way `object-fit: cover` crops an
-      image, for full-bleed placements. */
-  fit?: "contain" | "cover";
-}) {
+export type CompositionHandle = {
+  /** Jumps the authored clock straight to `t` seconds (clamped to the
+      composition's length) — lets a page turn its own UI into a scrubber for
+      the film, rather than only ever reading what's currently playing. */
+  seek: (t: number) => void;
+};
+
+export const Composition = forwardRef<
+  CompositionHandle,
+  {
+    scenes: Scene[];
+    width: number;
+    height: number;
+    bg?: string;
+    className?: string;
+    children: ReactNode;
+    /** Called with the authored second on every advance (and once, on the held
+        frame, under reduced motion). Optional and backwards-compatible — lets a
+        page react to what the composition is currently showing without needing
+        the composition itself to know anything about the page. */
+    onTick?: (T: number) => void;
+    /** "contain" (default, unchanged): the stage keeps its authored aspect
+        ratio and scales to the container's width. "cover" — opt-in only —
+        fills whatever box the container is given (which must set its own
+        height), cropping the composition the way `object-fit: cover` crops an
+        image, for full-bleed placements. */
+    fit?: "contain" | "cover";
+  }
+>(function Composition(
+  {
+    scenes,
+    width,
+    height,
+    bg = "#f3f0e9",
+    className,
+    children,
+    onTick,
+    fit = "contain",
+  },
+  ref,
+) {
   const { CUES, authoredTotal } = cueTable(scenes);
   const [T, setT] = useState(0);
   const [scale, setScale] = useState(0);
@@ -109,6 +124,9 @@ export function Composition({
   const onScreen = useRef(true);
   const onTickRef = useRef(onTick);
   onTickRef.current = onTick;
+  // Read and written by both the rAF loop and seek() below, so a seek takes
+  // effect on the very next frame regardless of which one last touched it.
+  const baseRef = useRef(0);
 
   useEffect(() => {
     const el = wrap.current;
@@ -149,14 +167,13 @@ export function Composition({
       return;
     }
     let raf = 0;
-    let base = 0;
     let last = 0;
     const loop = (now: number) => {
       if (!last) last = now;
       // Only advance while visible, so a scrolled-away hero costs nothing.
-      if (onScreen.current) base += now - last;
+      if (onScreen.current) baseRef.current += now - last;
       last = now;
-      const next = (base / 1000) % authoredTotal;
+      const next = (baseRef.current / 1000) % authoredTotal;
       setT(next);
       onTickRef.current?.(next);
       raf = requestAnimationFrame(loop);
@@ -166,6 +183,19 @@ export function Composition({
     // The callback is read through a ref so changing page observers never
     // restarts the authored clock or changes this dependency array.
   }, [authoredTotal]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      seek(t: number) {
+        const next = ((t % authoredTotal) + authoredTotal) % authoredTotal;
+        baseRef.current = next * 1000;
+        setT(next);
+        onTickRef.current?.(next);
+      },
+    }),
+    [authoredTotal],
+  );
 
   return (
     <div
@@ -201,7 +231,7 @@ export function Composition({
       </div>
     </div>
   );
-}
+});
 
 /** Children stay mounted; they are only hidden outside their authored window. */
 export function Shot({

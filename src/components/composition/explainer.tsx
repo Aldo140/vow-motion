@@ -1,19 +1,20 @@
 "use client";
-import { Composition } from "./runtime";
+import { forwardRef } from "react";
+import { Composition, type CompositionHandle } from "./runtime";
 import ExplainerScene, { EXPLAINER_SCENES } from "./explainer-scene";
 
 /** The 40-second brand explainer, scaled to its container. */
-export default function BrandExplainer({
-  className,
-  onTick,
-  fit,
-}: {
-  className?: string;
-  onTick?: (T: number) => void;
-  fit?: "contain" | "cover";
-}) {
+const BrandExplainer = forwardRef<
+  CompositionHandle,
+  {
+    className?: string;
+    onTick?: (T: number) => void;
+    fit?: "contain" | "cover";
+  }
+>(function BrandExplainer({ className, onTick, fit }, ref) {
   return (
     <Composition
+      ref={ref}
       scenes={EXPLAINER_SCENES}
       width={1920}
       height={1080}
@@ -25,4 +26,5 @@ export default function BrandExplainer({
       <ExplainerScene />
     </Composition>
   );
-}
+});
+export default BrandExplainer;

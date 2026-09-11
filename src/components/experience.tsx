@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import MarketingNavigation from "./marketing-navigation";
 import BrandExplainer from "./composition/explainer";
 import BrandAd from "./composition/ad";
+import type { CompositionHandle } from "./composition/runtime";
 import { Brand, Arrow, DemoButton } from "./ui";
 import { worlds } from "@/lib/worlds";
 
@@ -121,6 +122,12 @@ function adAmbient(T: number): Ambient {
   };
 }
 
+// The exact cue seconds for the explainer's 8 scenes (composition/
+// explainer-scene.tsx's EXPLAINER_SCENES: Scatter 5, Envelope 5.5,
+// Invitation 6, Reply 5, Pass 5, Studio 5.5, Worlds 5, Close 3), so clicking
+// a moment below jumps the film to the beat it actually names.
+const MOMENT_CUES = [0, 5, 10.5, 16.5, 21.5, 26.5, 32, 37];
+
 const MOMENTS: [string, string, string][] = [
   ["01", "The scatter", "One wedding, and the guest list living in six places at once — a spreadsheet, a group chat, an inbox, a kitchen note."],
   ["02", "The envelope", "A sealed invitation addressed to one household. The wax breaks, the flap lifts, the letter rises."],
@@ -140,7 +147,27 @@ export default function Experience() {
   const phoneFrameRef = useRef<HTMLDivElement>(null);
   const phonePanelRef = useRef<HTMLDivElement>(null);
   const momentListRef = useRef<HTMLOListElement>(null);
+  const explainerRef = useRef<CompositionHandle>(null);
   const [activeMoment, setActiveMoment] = useState(0);
+  const [scrubbed, setScrubbed] = useState(false);
+  // Set for the moment a click jumps the film and the page smooth-scrolls
+  // back to the hero — otherwise that scroll immediately re-triggers the
+  // scroll-linked storyboard sync below and stomps the moment just picked.
+  const manualJumpRef = useRef(false);
+
+  // The storyboard is also the film's own scrubber: click a beat and the
+  // hero jumps straight to it, rather than only ever narrating what's
+  // already playing.
+  const jumpTo = useCallback((i: number) => {
+    explainerRef.current?.seek(MOMENT_CUES[i]);
+    setActiveMoment(i);
+    setScrubbed(true);
+    manualJumpRef.current = true;
+    heroRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => {
+      manualJumpRef.current = false;
+    }, 1000);
+  }, []);
 
   // Stable identities: the composition's own render loop calls these directly
   // (see composition/runtime.tsx), so they must not need to change on every
@@ -183,6 +210,12 @@ export default function Experience() {
                 start: "top center",
                 end: "bottom center",
                 onUpdate: (self) => {
+                  // Only while genuinely scrolling through the section —
+                  // otherwise a scroll elsewhere on the page (including the
+                  // one jumpTo() itself triggers, back up to the hero) would
+                  // clamp progress to 0 or 1 and stomp a moment picked by
+                  // clicking rather than scrolling.
+                  if (!self.isActive || manualJumpRef.current) return;
                   const i = Math.min(
                     items.length - 1,
                     Math.floor(self.progress * items.length),
@@ -314,9 +347,17 @@ export default function Experience() {
           </div>
           <div className="xp-hero-stage" ref={stageFrameRef}>
             <div className="xp-stage">
-              <BrandExplainer onTick={onExplainerTick} />
+              <BrandExplainer ref={explainerRef} onTick={onExplainerTick} />
             </div>
           </div>
+          {/* Never on the video itself — this sits below the frame, the same
+              rule the title above it already follows. */}
+          {scrubbed && (
+            <p className="xp-now-playing" aria-live="polite">
+              <span>{MOMENTS[activeMoment][0]}</span>
+              {MOMENTS[activeMoment][1]}
+            </p>
+          )}
           <p className="xp-note">
             Loops on its own. Pauses when it scrolls out of view, and holds
             still if you have reduced motion turned on.
@@ -335,6 +376,9 @@ export default function Experience() {
               Nothing cuts. Each element carries into the next beat and settles —
               the way the product itself carries one guest list from the
               invitation all the way to the door.
+              <span className="xp-moment-scrub-hint">
+                {" "}Click a beat to jump the film straight to it.
+              </span>
             </p>
           </div>
           <div className="xp-moment-hint" aria-hidden="true">
@@ -359,11 +403,17 @@ export default function Experience() {
             <ol className="xp-moment-list" ref={momentListRef}>
               {MOMENTS.map(([n, title, copy], i) => (
                 <li key={n} className={i === activeMoment ? "is-active" : undefined}>
-                  <span className="xp-moment-n">{n}</span>
-                  <div>
-                    <h3>{title}</h3>
-                    <p>{copy}</p>
-                  </div>
+                  <button
+                    type="button"
+                    className="xp-moment-btn"
+                    onClick={() => jumpTo(i)}
+                  >
+                    <span className="xp-moment-n">{n}</span>
+                    <div>
+                      <h3>{title}</h3>
+                      <p>{copy}</p>
+                    </div>
+                  </button>
                 </li>
               ))}
             </ol>

@@ -79,6 +79,47 @@
   color: var(--xp-muted-ambient, var(--muted));
   transition: color 0.4s ease;
 }
+/* Confirms a click landed, without ever sitting on the film itself — appears
+   under the frame the first time a visitor scrubs it. */
+.xp-now-playing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px auto 0;
+  padding: 6px 14px 6px 6px;
+  border: 1px solid color-mix(in srgb, var(--xp-muted-ambient, var(--muted)) 35%, transparent);
+  border-radius: 40px;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  color: var(--xp-muted-ambient, var(--muted));
+  animation: xp-now-playing-in 0.35s ease;
+}
+.xp-now-playing span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--olive);
+  color: #fffdf8;
+  font-size: 9px;
+}
+@keyframes xp-now-playing-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-now-playing {
+    animation: none;
+  }
+}
 
 .xp-moments {
   border-top: 1px solid var(--line);
@@ -88,6 +129,10 @@
 }
 .xp-moment-track {
   display: none;
+}
+.xp-moment-scrub-hint {
+  color: var(--olive);
+  font-style: italic;
 }
 .xp-moment-body {
   position: relative;
@@ -134,10 +179,6 @@
   padding: 0;
 }
 .xp-moment-list li {
-  display: grid;
-  grid-template-columns: 70px 1fr;
-  gap: 28px;
-  padding: 30px 0;
   border-bottom: 1px solid var(--line);
   opacity: 0.4;
   filter: saturate(0.6);
@@ -150,6 +191,28 @@
   opacity: 1;
   filter: none;
   transform: translateX(6px);
+}
+/* Every beat is also a control for the film itself — a real button, reset
+   back to the row layout the plain <li> used to carry directly. */
+.xp-moment-btn {
+  all: unset;
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 28px;
+  padding: 30px 0;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+}
+.xp-moment-btn:hover .xp-moment-n {
+  color: var(--olive);
+}
+.xp-moment-btn:focus-visible {
+  outline: 2px solid var(--olive);
+  outline-offset: 6px;
+  border-radius: 3px;
 }
 .xp-moment-n {
   font-family: var(--serif);
@@ -392,6 +455,9 @@
     display: block;
     border-top: none;
   }
+  .xp-moment-scrub-hint {
+    display: none;
+  }
   .xp-moment-list li {
     opacity: 1;
     filter: none;
@@ -469,6 +535,10 @@
     transition:
       border-color 0.25s ease,
       box-shadow 0.25s ease;
+  }
+  .xp-moment-btn {
+    display: block;
+    padding: 0;
   }
   .xp-moment-list li.is-active {
     border-color: var(--olive);
