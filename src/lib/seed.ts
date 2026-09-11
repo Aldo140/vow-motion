@@ -979,6 +979,29 @@ export async function createShowcaseWedding(ownerId: string) {
       "INSERT INTO audit_log(id,wedding_id,actor_id,action) VALUES($1,$2,$3,$4)",
       [id(), weddingId, ownerId, "Riviera showcase wedding created"],
     );
+    // The table finder is opt-in and starts empty, so a prospect clicking
+    // through the showcase wedding would otherwise find it switched off with
+    // nothing configured. Seed it on, with the kind of note a couple would
+    // actually leave, so the demo shows what the feature is for.
+    await c.query("UPDATE weddings SET settings=$1 WHERE id=$2", [
+      JSON.stringify({
+        finder: {
+          enabled: true,
+          always_on: true,
+          tablemates: true,
+          guestbook: true,
+          welcome:
+            "So glad you made the trip — the bar opens the second the ceremony ends.",
+          welcome_es:
+            "Qué alegría que hayas venido — la barra abre en cuanto termina la ceremonia.",
+          notes:
+            "Bar on the terrace\nCoat check by the villa entrance\nLast boat back to Hotel Riva at 1am",
+          notes_es:
+            "Barra en la terraza\nGuardarropa en la entrada de la villa\nÚltimo barco a Hotel Riva a la 1am",
+        },
+      }),
+      weddingId,
+    ]);
   });
   return weddingId;
 }
