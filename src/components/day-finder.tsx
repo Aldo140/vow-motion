@@ -137,6 +137,30 @@ function firstNames(names: string, separator: string) {
     .filter(Boolean);
 }
 
+/** Fires once the wrapped element is first scrolled into view, then stops
+    watching — used to stagger sections in as the page scrolls rather than
+    having everything already sitting there on load. */
+function useReveal<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return [ref, visible] as const;
+}
+
 export default function DayFinder({
   slug,
   names,
@@ -182,6 +206,38 @@ export default function DayFinder({
   useEffect(() => {
     if (result) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [result]);
+
+  // A slow parallax drift on the cover photo as the page scrolls past it —
+  // the image is pre-scaled in CSS so this never uncovers an edge.
+  const coverImgRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = coverImgRef.current;
+        if (el)
+          el.style.transform = `scale(1.12) translateY(${Math.min(window.scrollY * 0.18, 40)}px)`;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Sections settle in as they're scrolled to, rather than all sitting
+  // fully rendered on first paint.
+  const [scheduleRef, scheduleVisible] = useReveal<HTMLElement>();
+  const [mapRef, mapVisible] = useReveal<HTMLElement>();
+  const [notesRef, notesVisible] = useReveal<HTMLElement>();
+  const [bookRef, bookVisible] = useReveal<HTMLDivElement>();
+  const reveal = (visible: boolean) =>
+    "finder-reveal" + (visible ? " is-visible" : "");
 
   // Everything still ahead (or just started) rather than only the very next
   // thing — a guest checking their phone once wants the rest of the evening,
@@ -311,8 +367,18 @@ export default function DayFinder({
         } as React.CSSProperties
       }
     >
+      <div className="finder-orbs" aria-hidden="true">
+        <span className="finder-orb finder-orb-1" />
+        <span className="finder-orb finder-orb-2" />
+      </div>
+
       <div className="finder-cover">
-        <img src={mood} alt="" className="finder-cover-img" />
+        <img
+          src={mood}
+          alt=""
+          className="finder-cover-img"
+          ref={coverImgRef}
+        />
         <div className="finder-cover-scrim" aria-hidden="true" />
         <button
           className="finder-lang finder-lang-float"
@@ -463,7 +529,10 @@ export default function DayFinder({
         )}
 
         {nextLabel && (
-          <section className="finder-schedule">
+          <section
+            className={"finder-schedule " + reveal(scheduleVisible)}
+            ref={scheduleRef}
+          >
             <div className="finder-next">
               <span>
                 {nextLabel.live && (
@@ -522,13 +591,13 @@ export default function DayFinder({
         )}
 
         {config.map && (
-          <figure className="finder-map">
+          <figure className={"finder-map " + reveal(mapVisible)} ref={mapRef}>
             <img src={config.map} alt="Venue plan" />
           </figure>
         )}
 
         {notes && (
-          <section className="finder-notes">
+          <section className={"finder-notes " + reveal(notesVisible)} ref={notesRef}>
             {notes.split("\n").filter(Boolean).map((line, i) => (
               <p key={i}>
                 <MapPinIcon size={13} /> {line}
@@ -537,7 +606,15 @@ export default function DayFinder({
           </section>
         )}
 
-        {config.guestbook && <Guestbook slug={slug} name={result && result.found ? result.first_name : ""} t={t} />}
+        {config.guestbook && (
+          <div className={reveal(bookVisible)} ref={bookRef}>
+            <Guestbook
+              slug={slug}
+              name={result && result.found ? result.first_name : ""}
+              t={t}
+            />
+          </div>
+        )}
 
         <p className="finder-foot">{t.addHome}</p>
       </div>
