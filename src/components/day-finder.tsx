@@ -23,6 +23,21 @@ type Event = {
 /** A maps link that opens whatever the guest already has installed. */
 const directionsHref = (query: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+// A small confetti pop for the moment a seat is found — ten pieces flung out
+// at even angles, computed once (pure math, so server and client render the
+// exact same values — no hydration mismatch from Math.random).
+const CONFETTI = Array.from({ length: 10 }, (_, i) => {
+  const angle = (i / 10) * Math.PI * 2;
+  const dist = 22 + (i % 3) * 7;
+  return {
+    x: Math.round(Math.cos(angle) * dist),
+    y: Math.round(Math.sin(angle) * dist),
+    rot: (i * 53) % 360,
+    delay: (i % 4) * 0.03,
+    tone: i % 3,
+  };
+});
 type Result =
   | { found: false; ambiguous?: boolean }
   | {
@@ -35,10 +50,10 @@ type Result =
 
 const T = {
   en: {
-    prompt: "Find your seat",
+    prompt: "Find your seat 🎉",
     field: "Your name",
-    find: "Find",
-    welcome: (n: string) => `Welcome, ${n}.`,
+    find: "Find me!",
+    welcome: (n: string) => `You made it, ${n}! 🎉`,
     table: "Table",
     noTable: "Seat yourself where you like",
     withYou: "With you",
@@ -60,10 +75,10 @@ const T = {
     addHome: "Add to your home screen from your browser's share menu.",
   },
   es: {
-    prompt: "Encuentra tu asiento",
+    prompt: "Encuentra tu asiento 🎉",
     field: "Tu nombre",
-    find: "Buscar",
-    welcome: (n: string) => `Hola, ${n}.`,
+    find: "¡Buscarme!",
+    welcome: (n: string) => `¡Llegaste, ${n}! 🎉`,
     table: "Mesa",
     noTable: "Siéntate donde quieras",
     withYou: "Contigo",
@@ -309,7 +324,22 @@ export default function DayFinder({
           >
             {result.found ? (
               <>
-                <span className="finder-seal" aria-hidden="true" />
+                <span className="finder-confetti" aria-hidden="true">
+                  {CONFETTI.map((c, i) => (
+                    <i
+                      key={i}
+                      className={"tone-" + c.tone}
+                      style={
+                        {
+                          "--x": `${c.x}px`,
+                          "--y": `${c.y}px`,
+                          "--rot": `${c.rot}deg`,
+                          animationDelay: `${c.delay}s`,
+                        } as React.CSSProperties
+                      }
+                    />
+                  ))}
+                </span>
                 <p className="finder-welcome">{t.welcome(result.first_name)}</p>
                 {welcomeLine && (
                   <p className="finder-welcome-note">{welcomeLine}</p>

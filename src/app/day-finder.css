@@ -228,9 +228,13 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   min-height: 44px;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .finder-field button:disabled {
   opacity: 0.5;
+}
+.finder-field button:active:not(:disabled) {
+  transform: scale(0.92);
 }
 .finder-error {
   margin-top: 10px;
@@ -253,8 +257,26 @@
   outline-offset: -9px;
   animation: finder-fade 0.3s ease;
 }
+@media (prefers-reduced-motion: no-preference) {
+  /* A found seat gets a little pop, not just a fade — the miss/ambiguous
+     states keep the plain finder-fade above, since there's nothing to
+     celebrate there. */
+  .finder-result.is-found {
+    animation: finder-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+@keyframes finder-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 /* A found seat is the peak moment of the whole page — a warm bloom behind
-   the card, like the room itself is glad you're here. */
+   the card, like the room itself just lit up because you're here. */
 .finder-result.is-found::before {
   content: "";
   position: absolute;
@@ -265,42 +287,63 @@
   z-index: -1;
   background: radial-gradient(
     60% 60% at 50% 20%,
-    color-mix(in srgb, var(--f-accent) 22%, transparent) 0%,
+    color-mix(in srgb, var(--f-accent) 34%, transparent) 0%,
     transparent 70%
   );
 }
-/* A small wax-seal press, the same motif the invitation itself opens with —
-   stamped rather than faded in. */
-.finder-seal {
+/* A confetti pop instead of a solemn stamp — ten pieces flung out and
+   settling, the way an actual party would greet you. */
+.finder-confetti {
+  position: relative;
   display: block;
-  width: 30px;
-  height: 30px;
-  margin: 0 auto 14px;
+  width: 4px;
+  height: 4px;
+  margin: 0 auto 24px;
+}
+.finder-confetti i {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  opacity: 0;
+}
+.finder-confetti i.tone-0 {
+  background: var(--f-accent);
+}
+.finder-confetti i.tone-1 {
+  background: var(--f-ink);
   border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 30%,
-    color-mix(in srgb, var(--f-accent) 70%, white) 0%,
-    var(--f-accent) 60%,
-    color-mix(in srgb, var(--f-accent) 82%, black) 100%
-  );
-  box-shadow: 0 3px 8px color-mix(in srgb, var(--f-accent) 45%, transparent);
+}
+.finder-confetti i.tone-2 {
+  background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--f-accent) 40%, transparent);
 }
 @media (prefers-reduced-motion: no-preference) {
-  /* Specificity over the generic .finder-result > * fade-rise below, which
-     would otherwise win on source order and replace this stamp entirely. */
-  .finder-result > .finder-seal {
-    animation: finder-seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
-    animation-delay: 0.05s;
+  /* animation-delay is set inline per piece (see day-finder.tsx); only the
+     animation itself lives here. */
+  .finder-confetti i {
+    animation: finder-confetti-burst 0.65s cubic-bezier(0.2, 0.85, 0.3, 1) backwards;
   }
 }
-@keyframes finder-seal-stamp {
-  from {
+@keyframes finder-confetti-burst {
+  0% {
     opacity: 0;
-    transform: scale(2.2) rotate(-14deg);
+    transform: translate(0, 0) rotate(0deg) scale(0.4);
   }
-  to {
+  35% {
     opacity: 1;
-    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) rotate(var(--rot)) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finder-confetti i {
+    opacity: 1;
+    transform: translate(calc(var(--x) * 0.4), calc(var(--y) * 0.4));
   }
 }
 @keyframes finder-fade {
