@@ -1,5 +1,10 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -148,6 +153,9 @@ export default function Experience() {
   const phonePanelRef = useRef<HTMLDivElement>(null);
   const momentListRef = useRef<HTMLOListElement>(null);
   const explainerRef = useRef<CompositionHandle>(null);
+  const scrubTrackRef = useRef<HTMLDivElement>(null);
+  const scrubFillRef = useRef<HTMLDivElement>(null);
+  const scrubHeadRef = useRef<HTMLDivElement>(null);
   const [activeMoment, setActiveMoment] = useState(0);
   const [scrubbed, setScrubbed] = useState(false);
   // Set for the moment a click jumps the film and the page smooth-scrolls
@@ -155,29 +163,77 @@ export default function Experience() {
   // scroll-linked storyboard sync below and stomps the moment just picked.
   const manualJumpRef = useRef(false);
 
+  // Every route into "jump the film somewhere" — a moment button below, or a
+  // drag on the scrubber under the frame itself — goes through here.
+  const seekFilm = useCallback((t: number, opts?: { scroll?: boolean }) => {
+    explainerRef.current?.seek(t);
+    let nearest = 0;
+    for (let i = 1; i < MOMENT_CUES.length; i++)
+      if (Math.abs(MOMENT_CUES[i] - t) < Math.abs(MOMENT_CUES[nearest] - t))
+        nearest = i;
+    setActiveMoment(nearest);
+    setScrubbed(true);
+    if (opts?.scroll) {
+      // Otherwise the smooth-scroll back to the hero immediately re-triggers
+      // the scroll-linked storyboard sync below and stomps the moment just
+      // picked.
+      manualJumpRef.current = true;
+      heroRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      window.setTimeout(() => {
+        manualJumpRef.current = false;
+      }, 1000);
+    }
+  }, []);
+
   // The storyboard is also the film's own scrubber: click a beat and the
   // hero jumps straight to it, rather than only ever narrating what's
   // already playing.
-  const jumpTo = useCallback((i: number) => {
-    explainerRef.current?.seek(MOMENT_CUES[i]);
-    setActiveMoment(i);
-    setScrubbed(true);
-    manualJumpRef.current = true;
-    heroRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.setTimeout(() => {
-      manualJumpRef.current = false;
-    }, 1000);
-  }, []);
+  const jumpTo = useCallback(
+    (i: number) => seekFilm(MOMENT_CUES[i], { scroll: true }),
+    [seekFilm],
+  );
 
   // Stable identities: the composition's own render loop calls these directly
   // (see composition/runtime.tsx), so they must not need to change on every
   // render — they read the current DOM node from the ref each time instead.
   const onExplainerTick = useCallback((T: number) => {
     applyAmbient(heroRef.current, explainerAmbient(T));
+    // A live playhead, mutated directly rather than through React state —
+    // this fires every animation frame, same reasoning as applyAmbient.
+    const pct = `${(T / EXPLAINER_TOTAL) * 100}%`;
+    if (scrubFillRef.current) scrubFillRef.current.style.width = pct;
+    if (scrubHeadRef.current) scrubHeadRef.current.style.left = pct;
   }, []);
   const onAdTick = useCallback((T: number) => {
     applyAmbient(verticalRef.current, adAmbient(T));
   }, []);
+
+  // Click or drag anywhere on the strip under the frame to scrub the film —
+  // a real timeline, not just eight fixed stops.
+  const scrubAt = useCallback(
+    (clientX: number) => {
+      const track = scrubTrackRef.current;
+      if (!track) return;
+      const r = track.getBoundingClientRect();
+      const ratio = clamp01((clientX - r.left) / r.width);
+      seekFilm(ratio * EXPLAINER_TOTAL);
+    },
+    [seekFilm],
+  );
+  const onScrubPointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      scrubAt(e.clientX);
+    },
+    [scrubAt],
+  );
+  const onScrubPointerMove = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (e.buttons !== 1) return;
+      scrubAt(e.clientX);
+    },
+    [scrubAt],
+  );
 
   useGSAP(
     () => {
@@ -345,9 +401,44 @@ export default function Experience() {
               different ways.
             </p>
           </div>
-          <div className="xp-hero-stage" ref={stageFrameRef}>
-            <div className="xp-stage">
-              <BrandExplainer ref={explainerRef} onTick={onExplainerTick} />
+          <div className="xp-hero-media" ref={stageFrameRef}>
+            <div className="xp-hero-stage">
+              <div className="xp-stage">
+                <BrandExplainer ref={explainerRef} onTick={onExplainerTick} />
+              </div>
+            </div>
+            {/* A real timeline under the frame — drag it, or click a chapter
+                tick, and the film jumps there. Never on the video itself. */}
+            <div
+              className="xp-scrub-track"
+              ref={scrubTrackRef}
+              onPointerDown={onScrubPointerDown}
+              onPointerMove={onScrubPointerMove}
+              role="slider"
+              aria-label="Scrub the film"
+              aria-valuemin={0}
+              aria-valuemax={EXPLAINER_TOTAL}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowRight") jumpTo(Math.min(7, activeMoment + 1));
+                if (e.key === "ArrowLeft") jumpTo(Math.max(0, activeMoment - 1));
+              }}
+            >
+              <span className="xp-scrub-fill" ref={scrubFillRef} />
+              {MOMENT_CUES.map((cue, i) => (
+                <button
+                  key={cue}
+                  type="button"
+                  className="xp-scrub-tick"
+                  style={{ left: `${(cue / EXPLAINER_TOTAL) * 100}%` }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    jumpTo(i);
+                  }}
+                  aria-label={`Jump to ${MOMENTS[i][1]}`}
+                />
+              ))}
+              <span className="xp-scrub-head" ref={scrubHeadRef} />
             </div>
           </div>
           {/* Never on the video itself — this sits below the frame, the same

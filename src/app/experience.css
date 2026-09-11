@@ -50,11 +50,15 @@
    as large as the space allows, and only ever gets smaller with scroll, down
    to a fixed resting width (1040px, set inline by the scroll animation on
    desktop; the CSS width below is what phones, tablets and reduced-motion
-   desktops show outright). */
-.xp-hero-stage {
-  position: relative;
+   desktops show outright). The scrubber beneath rides along at the same
+   width since it's a sibling inside this same animated wrapper. */
+.xp-hero-media {
   width: min(94vw, 1040px);
   margin: 0 auto;
+}
+.xp-hero-stage {
+  position: relative;
+  width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 14px;
   overflow: hidden;
@@ -68,9 +72,76 @@
   background: #f3f0e9;
 }
 @media (min-width: 901px) {
-  .xp-hero-stage {
+  .xp-hero-media {
     will-change: width;
   }
+}
+/* A real timeline for the film — drag anywhere on the strip, or click a
+   chapter tick, and it seeks. */
+.xp-scrub-track {
+  position: relative;
+  height: 20px;
+  margin-top: 14px;
+  cursor: pointer;
+  touch-action: none;
+}
+.xp-scrub-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--xp-muted-ambient, var(--muted)) 30%, transparent);
+  border-radius: 2px;
+}
+.xp-scrub-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--olive);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.xp-scrub-tick {
+  all: unset;
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--xp-muted-ambient, var(--muted)) 55%, transparent);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.xp-scrub-tick:hover,
+.xp-scrub-tick:focus-visible {
+  background: var(--olive);
+  transform: translate(-50%, -50%) scale(1.6);
+  outline: none;
+}
+.xp-scrub-head {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--olive);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--olive) 22%, transparent);
+  pointer-events: none;
+}
+.xp-scrub-track:focus-visible {
+  outline: none;
+}
+.xp-scrub-track:focus-visible .xp-scrub-head {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--olive) 40%, transparent);
 }
 .xp-note {
   margin-top: 20px;
@@ -437,11 +508,16 @@
   .xp-note {
     padding-inline: 24px;
   }
-  .xp-hero-stage {
+  .xp-hero-media {
     width: 100%;
     max-width: none;
+  }
+  .xp-hero-stage {
     border-radius: 0;
     box-shadow: none;
+  }
+  .xp-scrub-track {
+    margin-inline: 24px;
   }
 
   /* The storyboard spine/focus treatment is a desktop-only reading of the
