@@ -279,6 +279,9 @@ export default function Experience() {
               invitation all the way to the door.
             </p>
           </div>
+          <p className="xp-moment-hint" aria-hidden="true">
+            Swipe through all eight <Arrow size={12} />
+          </p>
           <ol className="xp-moment-list">
             {MOMENTS.map(([n, title, copy]) => (
               <li key={n}>

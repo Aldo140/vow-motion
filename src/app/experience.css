@@ -83,6 +83,9 @@
 .xp-moments {
   border-top: 1px solid var(--line);
 }
+.xp-moment-hint {
+  display: none;
+}
 .xp-moment-list {
   list-style: none;
   margin: 0;
@@ -268,9 +271,88 @@
     margin-inline: auto;
   }
 }
-@media (max-width: 640px) {
+
+/* ---------- mobile & tablet: a dedicated composition, not a shrunk desktop ---------- */
+
+@media (max-width: 900px) {
+  /* The film reads as a big, edge-to-edge object rather than a card sitting
+     in a margin — the title and caption keep their own gutter either side
+     of it. */
+  .xp-hero {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .xp-hero-intro,
+  .xp-note {
+    padding-inline: 24px;
+  }
+  .xp-hero-stage {
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* The eight moments become a filmstrip you swipe through instead of a long
+     list you scroll past — the same content, read the way a phone reads a
+     set of cards rather than a document. */
+  .xp-moment-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 20px;
+    font: 500 10px/1 var(--sans, "Manrope", sans-serif);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .xp-moment-list {
+    display: flex;
+    gap: 14px;
+    list-style: none;
+    margin: 0;
+    padding: 4px 24px 10px;
+    border-top: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Full-bleed within the section, independent of its own padding. */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+  .xp-moment-list::-webkit-scrollbar {
+    display: none;
+  }
   .xp-moment-list li {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    scroll-snap-align: center;
+    flex: 0 0 auto;
+    width: min(80vw, 320px);
+    display: block;
+    padding: 26px 24px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--bg);
+  }
+  .xp-moment-n {
+    display: block;
+    margin-bottom: 16px;
+    font-size: 30px;
+  }
+  .xp-moment-list h3 {
+    font-size: 21px;
+  }
+  .xp-moment-list p {
+    max-width: none;
+  }
+}
+@media (max-width: 480px) {
+  .xp-moment-list li {
+    width: min(84vw, 320px);
   }
 }
