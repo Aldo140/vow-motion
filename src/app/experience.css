@@ -89,23 +89,76 @@
 .xp-moment-track {
   display: none;
 }
+.xp-moment-body {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 28px;
+  border-top: 1px solid var(--line);
+}
+/* A spine beside the numbers, like the sprocket edge of a film strip — the
+   filled length marks how far through the eight beats the section has
+   scrolled, the same read as .xp-moment-track gives on mobile. */
+.xp-moment-spine {
+  position: relative;
+  width: 1px;
+  margin: 0 auto;
+  background: var(--line);
+}
+.xp-moment-spine-fill {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 7px;
+  height: 0;
+  transform: translateX(-50%);
+  background: var(--olive);
+  border-radius: 4px;
+  transition: height 0.2s linear;
+}
+.xp-moment-spine-fill::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+  transform: translate(-50%, 50%);
+  border-radius: 50%;
+  background: var(--olive);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--olive) 18%, transparent);
+}
 .xp-moment-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
 }
 .xp-moment-list li {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: 70px 1fr;
   gap: 28px;
   padding: 30px 0;
   border-bottom: 1px solid var(--line);
+  opacity: 0.4;
+  filter: saturate(0.6);
+  transition:
+    opacity 0.35s ease,
+    filter 0.35s ease,
+    transform 0.35s ease;
+}
+.xp-moment-list li.is-active {
+  opacity: 1;
+  filter: none;
+  transform: translateX(6px);
 }
 .xp-moment-n {
   font-family: var(--serif);
   font-size: 22px;
   color: var(--muted);
+  transition: color 0.35s ease;
+}
+.xp-moment-list li.is-active .xp-moment-n {
+  color: var(--olive);
 }
 .xp-moment-list h3 {
   font-family: var(--serif);
@@ -118,6 +171,13 @@
   line-height: 1.85;
   color: var(--muted);
   max-width: 62ch;
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-moment-list li,
+  .xp-moment-n,
+  .xp-moment-spine-fill {
+    transition: none;
+  }
 }
 
 .xp-vertical.section-pad {
@@ -227,14 +287,39 @@
 }
 
 .xp-cta {
+  position: relative;
   background: var(--ink);
   color: var(--bg);
   text-align: center;
   padding: clamp(70px, 9vw, 120px) 6%;
+  overflow: clip;
+  /* The same pressed-paper dot grid the day-of finder is printed on — one
+     signature texture, not a flat corporate colour field. */
+  background-image: radial-gradient(
+    circle at 12px 12px,
+    color-mix(in srgb, var(--bg) 10%, transparent) 1.1px,
+    transparent 1.3px
+  );
+  background-size: 26px 26px;
+}
+/* One swatch per world, the same six palettes the rest of the product runs
+   on — a signature rather than a plain eyebrow line. */
+.xp-cta-worlds {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.xp-cta-worlds span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 25%, transparent) inset;
 }
 .xp-cta > span {
   font-size: 9px;
   letter-spacing: 2px;
+  text-transform: uppercase;
 }
 .xp-cta h2 {
   font-family: var(--serif);
@@ -294,6 +379,23 @@
     max-width: none;
     border-radius: 0;
     box-shadow: none;
+  }
+
+  /* The storyboard spine/focus treatment is a desktop-only reading of the
+     scroll position; the carousel below already gives its own progress
+     read (.xp-moment-track/.xp-moment-fill) and its own per-card highlight,
+     so undo the desktop-only rules that would otherwise fight it. */
+  .xp-moment-spine {
+    display: none;
+  }
+  .xp-moment-body {
+    display: block;
+    border-top: none;
+  }
+  .xp-moment-list li {
+    opacity: 1;
+    filter: none;
+    transform: none;
   }
 
   /* The eight moments become a filmstrip you swipe through instead of a long

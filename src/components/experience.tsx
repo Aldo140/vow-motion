@@ -7,6 +7,7 @@ import MarketingNavigation from "./marketing-navigation";
 import BrandExplainer from "./composition/explainer";
 import BrandAd from "./composition/ad";
 import { Brand, Arrow, DemoButton } from "./ui";
+import { worlds } from "@/lib/worlds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -167,6 +168,31 @@ export default function Experience() {
           >;
           if (!desktop || !motion) return;
 
+          // The eight moments read as a storyboard, not a list: a spine runs
+          // beside the numbers, the beat currently under the middle of the
+          // viewport comes fully into focus, and the rest recede — the same
+          // "in focus vs out of focus" a shot list actually has.
+          const moments = momentListRef.current;
+          if (moments) {
+            const items = Array.from(
+              moments.querySelectorAll<HTMLLIElement>("li"),
+            );
+            if (items.length) {
+              ScrollTrigger.create({
+                trigger: moments,
+                start: "top center",
+                end: "bottom center",
+                onUpdate: (self) => {
+                  const i = Math.min(
+                    items.length - 1,
+                    Math.floor(self.progress * items.length),
+                  );
+                  setActiveMoment(i);
+                },
+              });
+            }
+          }
+
           // The film opens at the largest size that fits the screen without
           // ever cropping or distorting it — the true 16:9 frame, just as
           // big as the space below the title allows — then the inverse
@@ -323,17 +349,25 @@ export default function Experience() {
               style={{ transform: `scaleX(${(activeMoment + 1) / MOMENTS.length})` }}
             />
           </div>
-          <ol className="xp-moment-list" ref={momentListRef}>
-            {MOMENTS.map(([n, title, copy], i) => (
-              <li key={n} className={i === activeMoment ? "is-active" : undefined}>
-                <span className="xp-moment-n">{n}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{copy}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <div className="xp-moment-body">
+            <div className="xp-moment-spine" aria-hidden="true">
+              <span
+                className="xp-moment-spine-fill"
+                style={{ height: `${((activeMoment + 0.5) / MOMENTS.length) * 100}%` }}
+              />
+            </div>
+            <ol className="xp-moment-list" ref={momentListRef}>
+              {MOMENTS.map(([n, title, copy], i) => (
+                <li key={n} className={i === activeMoment ? "is-active" : undefined}>
+                  <span className="xp-moment-n">{n}</span>
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{copy}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
 
         <section className="xp-vertical section-pad" ref={verticalRef}>
@@ -364,7 +398,15 @@ export default function Experience() {
         </section>
 
         <section className="xp-cta">
-          <span>See it for real</span>
+          <div className="xp-cta-worlds" aria-hidden="true">
+            {worlds.map((w) => (
+              <span
+                key={w.id}
+                style={{ background: w.palette[2] || w.palette[1] }}
+              />
+            ))}
+          </div>
+          <span>See it for real, in any of six worlds</span>
           <h2>Open a wedding, not a slideshow.</h2>
           <p>
             The film is built from the real thing — the same invitation, reply

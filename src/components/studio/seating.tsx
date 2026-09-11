@@ -3,7 +3,7 @@ import { PageHeading, type PanelProps } from "@/components/studio/shared";
 import { Arrow, Field, Modal, Submit } from "@/components/ui";
 import { ArmchairIcon, PlusIcon, QrCodeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
-import { finderConfig } from "@/lib/finder";
+import { finderConfig, finderActive } from "@/lib/finder";
 
 export function SeatingManager({ data, mutate, notify, refresh }: PanelProps) {
   const [add, setAdd] = useState(false),
@@ -190,6 +190,14 @@ export function SeatingManager({ data, mutate, notify, refresh }: PanelProps) {
 
 function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
   const config = finderConfig(data.wedding.settings);
+  // Enabled and live are two different questions — the switch above turns
+  // the feature on at all, this is whether the guest link actually resolves
+  // right now, which is the thing people actually come here to check.
+  const active = finderActive({
+    settings: data.wedding.settings,
+    date: data.wedding.date,
+    timezone: data.wedding.timezone,
+  });
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(config.notes);
   const [notesEs, setNotesEs] = useState(config.notes_es);
@@ -242,6 +250,24 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
 
       {config.enabled && (
         <>
+          {active ? (
+            <p className="finder-admin-status is-live">
+              <span className="finder-admin-dot" /> Live now — the link below
+              works for guests.
+            </p>
+          ) : (
+            <p className="finder-admin-status">
+              <span className="finder-admin-dot" /> Turned on, but not live
+              yet — it only opens from the day before to two days after the
+              wedding.{" "}
+              <button
+                className="text-link"
+                onClick={() => patch({ always_on: true }, "It's live now.")}
+              >
+                Make it live now
+              </button>
+            </p>
+          )}
           <div className="finder-admin-share">
             <img
               src={`/api/studio/day-of-qr?wedding=${data.wedding.id}`}
