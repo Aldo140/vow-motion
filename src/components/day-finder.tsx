@@ -295,9 +295,15 @@ export default function DayFinder({
         </form>
 
         {result && (
-          <div className="finder-result" ref={resultRef}>
+          <div
+            className={
+              "finder-result" + (result.found ? " is-found" : "")
+            }
+            ref={resultRef}
+          >
             {result.found ? (
               <>
+                <span className="finder-seal" aria-hidden="true" />
                 <p className="finder-welcome">{t.welcome(result.first_name)}</p>
                 {welcomeLine && (
                   <p className="finder-welcome-note">{welcomeLine}</p>

@@ -191,6 +191,7 @@
 }
 
 .finder-result {
+  position: relative;
   margin-top: 28px;
   padding: 28px 24px;
   background: #fffdf8;
@@ -202,6 +203,56 @@
   outline: 1px solid color-mix(in srgb, var(--f-accent) 26%, transparent);
   outline-offset: -9px;
   animation: finder-fade 0.3s ease;
+}
+/* A found seat is the peak moment of the whole page — a warm bloom behind
+   the card, like the room itself is glad you're here. */
+.finder-result.is-found::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  bottom: -30px;
+  left: -8px;
+  right: -8px;
+  z-index: -1;
+  background: radial-gradient(
+    60% 60% at 50% 20%,
+    color-mix(in srgb, var(--f-accent) 22%, transparent) 0%,
+    transparent 70%
+  );
+}
+/* A small wax-seal press, the same motif the invitation itself opens with —
+   stamped rather than faded in. */
+.finder-seal {
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    color-mix(in srgb, var(--f-accent) 70%, white) 0%,
+    var(--f-accent) 60%,
+    color-mix(in srgb, var(--f-accent) 82%, black) 100%
+  );
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--f-accent) 45%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Specificity over the generic .finder-result > * fade-rise below, which
+     would otherwise win on source order and replace this stamp entirely. */
+  .finder-result > .finder-seal {
+    animation: finder-seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    animation-delay: 0.05s;
+  }
+}
+@keyframes finder-seal-stamp {
+  from {
+    opacity: 0;
+    transform: scale(2.2) rotate(-14deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @keyframes finder-fade {
   from {
