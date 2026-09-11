@@ -327,6 +327,22 @@
   font-size: 12px;
   opacity: 0.8;
 }
+.finder-directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 5px 12px;
+  border-radius: 40px;
+  border: 1px solid color-mix(in srgb, var(--f-accent) 35%, transparent);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--f-accent);
+  min-height: 30px;
+}
+.finder-directions svg {
+  flex-shrink: 0;
+}
 .finder-next p.finder-dress {
   margin-top: 10px;
   padding-top: 10px;
@@ -381,6 +397,13 @@
   grid-column: 2;
   font-size: 11px;
   opacity: 0.65;
+  color: inherit;
+  text-underline-offset: 3px;
+}
+.finder-later-venue:hover,
+.finder-later-venue:focus-visible {
+  text-decoration-color: currentColor;
+  opacity: 0.9;
 }
 .finder-calendar {
   display: flex;

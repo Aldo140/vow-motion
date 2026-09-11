@@ -4,6 +4,7 @@ import {
   MagnifyingGlassIcon,
   MapPinIcon,
   CalendarPlusIcon,
+  NavigationArrowIcon,
 } from "@phosphor-icons/react";
 import type { FinderConfig } from "@/lib/finder";
 import type { World } from "@/lib/types";
@@ -15,8 +16,13 @@ type Event = {
   title_es: string;
   starts_at: string;
   venue: string;
+  address: string;
   dress_code: string;
 };
+
+/** A maps link that opens whatever the guest already has installed. */
+const directionsHref = (query: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 type Result =
   | { found: false; ambiguous?: boolean }
   | {
@@ -43,6 +49,7 @@ const T = {
     dressCode: "Dress code",
     comingUp: "Then, later",
     addCalendar: "Add the schedule to your phone",
+    directions: "Directions",
     notFound:
       "We couldn't find that name. Try your full name, or ask someone in the wedding party.",
     ambiguous: "More than one guest matches — please type your full name.",
@@ -67,6 +74,7 @@ const T = {
     dressCode: "Código de vestimenta",
     comingUp: "Más tarde",
     addCalendar: "Añade el horario a tu teléfono",
+    directions: "Cómo llegar",
     notFound:
       "No encontramos ese nombre. Prueba con tu nombre completo o pregunta a alguien del cortejo.",
     ambiguous: "Hay más de un invitado con ese nombre — escribe tu nombre completo.",
@@ -180,12 +188,13 @@ export default function DayFinder({
               : nextEvent.title,
           venue: nextEvent.venue,
           dressCode: nextEvent.dress_code,
+          directions: directionsHref(nextEvent.address || nextEvent.venue),
           heading: live && !cd ? t.happeningNow : t.next,
           detail: cd
-            ? `${time} · ${cd} · ${nextEvent.venue}`
+            ? `${time} · ${cd}`
             : live
-              ? `${t.happeningNow} · ${nextEvent.venue}`
-              : `${day} · ${nextEvent.venue}`,
+              ? t.happeningNow
+              : day,
         };
       })()
     : null;
@@ -195,6 +204,7 @@ export default function DayFinder({
     title: lang === "es" && e.title_es ? e.title_es : e.title,
     venue: e.venue,
     dressCode: e.dress_code,
+    directions: directionsHref(e.address || e.venue),
     time: new Date(e.starts_at).toLocaleTimeString(
       lang === "es" ? "es" : "en-CA",
       { hour: "numeric", minute: "2-digit" },
@@ -327,6 +337,16 @@ export default function DayFinder({
               <span>{nextLabel.heading}</span>
               <h2>{nextLabel.title}</h2>
               <p>{nextLabel.detail}</p>
+              <a
+                className="finder-directions"
+                href={nextLabel.directions}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${t.directions}: ${nextLabel.venue}`}
+              >
+                <NavigationArrowIcon size={12} weight="fill" />
+                {nextLabel.venue}
+              </a>
               {nextLabel.dressCode && (
                 <p className="finder-dress">
                   <span>{t.dressCode}</span> {nextLabel.dressCode}
@@ -341,10 +361,16 @@ export default function DayFinder({
                     <li key={e.id}>
                       <span className="finder-later-time">{e.time}</span>
                       <span className="finder-later-title">{e.title}</span>
-                      <span className="finder-later-venue">
+                      <a
+                        className="finder-later-venue"
+                        href={e.directions}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`${t.directions}: ${e.venue}`}
+                      >
                         {e.venue}
                         {e.dressCode ? ` · ${e.dressCode}` : ""}
-                      </span>
+                      </a>
                     </li>
                   ))}
                 </ol>
