@@ -30,6 +30,7 @@ export default async function Page({
       events={data.events as never[]}
       palette={world.palette}
       separator={world.separator}
+      world={world.id}
     />
   );
 }

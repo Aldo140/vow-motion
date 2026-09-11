@@ -8,6 +8,15 @@
   display: flex;
   justify-content: center;
   padding: 40px 20px 64px;
+  /* The same pressed-paper dot grid the invitation itself is printed on
+     (see composition/explainer-scene.tsx's envelope) — a signature texture,
+     kept faint enough to add weight without costing legibility or bytes. */
+  background-image: radial-gradient(
+    circle at 12px 12px,
+    color-mix(in srgb, var(--f-ink) 14%, transparent) 1.1px,
+    transparent 1.3px
+  );
+  background-size: 26px 26px;
 }
 .finder-inner {
   width: 100%;
@@ -16,6 +25,87 @@
 .finder-head {
   text-align: center;
   margin-bottom: 34px;
+}
+.finder-crest {
+  margin: 0 auto 18px;
+  color: var(--f-accent);
+}
+.finder-crest .crest-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.75;
+}
+.finder-crest .crest-inner {
+  stroke-width: 0.6;
+  opacity: 0.45;
+}
+.finder-crest .crest-ornament {
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+.finder-crest .crest-dot {
+  fill: currentColor;
+  opacity: 0.5;
+}
+.finder-crest .crest-initials {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: "Italiana", var(--serif, Georgia, serif);
+  line-height: 1;
+  color: var(--f-ink);
+}
+.finder-crest .crest-initials b {
+  font-weight: 400;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+}
+.finder-crest .crest-initials i {
+  font-size: 9px;
+  opacity: 0.65;
+  font-style: italic;
+}
+.finder-crest.crest-plain .crest-initials b {
+  font-family: var(--sans, inherit);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .finder-crest .crest-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: finder-crest-draw 1.1s var(--ease, ease) forwards;
+  }
+  .finder-crest .crest-inner {
+    animation-delay: 0.12s;
+  }
+  .finder-crest .crest-ornament {
+    animation-delay: 0.22s;
+  }
+  .finder-crest .crest-dot,
+  .finder-crest .crest-initials {
+    opacity: 0;
+    animation: finder-crest-settle 0.6s var(--ease, ease) 0.4s forwards;
+  }
+}
+@keyframes finder-crest-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes finder-crest-settle {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .finder-kicker {
   font-size: 10px;
@@ -107,12 +197,41 @@
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--f-ink) 12%, transparent);
-  animation: finder-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  /* An inset hairline, like the card is printed rather than just a box —
+     the same framing device the invitation paper itself uses. */
+  outline: 1px solid color-mix(in srgb, var(--f-accent) 26%, transparent);
+  outline-offset: -9px;
+  animation: finder-fade 0.3s ease;
+}
+@keyframes finder-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Each line settles in on its own beat rather than the card arriving as one
+   flat block — welcome, then table, then who's with you, then the meal. */
+.finder-result > * {
+  animation: finder-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.finder-result > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.finder-result > *:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.finder-result > *:nth-child(3) {
+  animation-delay: 0.24s;
+}
+.finder-result > *:nth-child(4) {
+  animation-delay: 0.33s;
 }
 @keyframes finder-rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -274,7 +393,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .finder-result {
+  .finder-result,
+  .finder-result > * {
     animation: none;
   }
 }

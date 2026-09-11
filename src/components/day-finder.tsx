@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MagnifyingGlassIcon, MapPinIcon } from "@phosphor-icons/react";
 import type { FinderConfig } from "@/lib/finder";
+import type { World } from "@/lib/types";
+import GuestCrest from "./guest-crest";
 
 type Event = {
   id: string;
@@ -85,6 +87,7 @@ export default function DayFinder({
   events,
   palette,
   separator,
+  world,
 }: {
   slug: string;
   names: string;
@@ -95,6 +98,7 @@ export default function DayFinder({
   events: Event[];
   palette: string[];
   separator: string;
+  world: World;
 }) {
   const [lang, setLang] = useState<"en" | "es">(locale);
   const t = T[lang];
@@ -172,6 +176,17 @@ export default function DayFinder({
 
   const notes = lang === "es" && config.notes_es ? config.notes_es : config.notes;
 
+  // GuestCrest reads initials by splitting on " & " specifically; worlds like
+  // Modernist use "+" instead, so build the monogram from the same parts the
+  // heading below already splits on, rather than relying on that.
+  const monogram = names.includes(separator)
+    ? names
+        .split(separator)
+        .map((part) => part.trim()[0])
+        .filter(Boolean)
+        .join(separator)
+    : names.trim()[0] || "";
+
   return (
     <main
       id="main"
@@ -186,6 +201,13 @@ export default function DayFinder({
     >
       <div className="finder-inner">
         <header className="finder-head">
+          <GuestCrest
+            names={names}
+            world={world}
+            monogram={monogram}
+            size={72}
+            className="finder-crest"
+          />
           <p className="finder-kicker">
             {new Date(date + "T12:00:00Z").toLocaleDateString(
               lang === "es" ? "es" : "en-CA",
