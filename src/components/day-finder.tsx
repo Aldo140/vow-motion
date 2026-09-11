@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MagnifyingGlassIcon, MapPinIcon } from "@phosphor-icons/react";
+import {
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  CalendarPlusIcon,
+} from "@phosphor-icons/react";
 import type { FinderConfig } from "@/lib/finder";
 import type { World } from "@/lib/types";
 import GuestCrest from "./guest-crest";
@@ -38,6 +42,7 @@ const T = {
     startsIn: "starts in",
     dressCode: "Dress code",
     comingUp: "Then, later",
+    addCalendar: "Add the schedule to your phone",
     notFound:
       "We couldn't find that name. Try your full name, or ask someone in the wedding party.",
     ambiguous: "More than one guest matches — please type your full name.",
@@ -61,6 +66,7 @@ const T = {
     startsIn: "empieza en",
     dressCode: "Código de vestimenta",
     comingUp: "Más tarde",
+    addCalendar: "Añade el horario a tu teléfono",
     notFound:
       "No encontramos ese nombre. Prueba con tu nombre completo o pregunta a alguien del cortejo.",
     ambiguous: "Hay más de un invitado con ese nombre — escribe tu nombre completo.",
@@ -344,6 +350,12 @@ export default function DayFinder({
                 </ol>
               </div>
             )}
+            <a
+              className="finder-calendar"
+              href={`/api/finder/calendar?slug=${encodeURIComponent(slug)}`}
+            >
+              <CalendarPlusIcon size={14} /> {t.addCalendar}
+            </a>
           </section>
         )}
 

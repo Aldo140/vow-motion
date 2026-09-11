@@ -1338,6 +1338,49 @@ async function handler(request: NextRequest, context: Context) {
         await addGuestbookNote(data.wedding.id, input.name, input.body);
         return json({ ok: true });
       }
+      if (action === "calendar" && method === "GET") {
+        await rateLimit(
+          "finder-cal:" + request.headers.get("x-forwarded-for") + ":" + slug,
+          20,
+        );
+        const events = data.events as {
+          id: string;
+          title: string;
+          starts_at: string;
+          ends_at: string;
+          venue: string;
+          address: string;
+        }[];
+        const stamp = (s: string) =>
+          new Date(s)
+            .toISOString()
+            .replaceAll("-", "")
+            .replaceAll(":", "")
+            .replace(/\.\d{3}/, "");
+        const content = [
+          "BEGIN:VCALENDAR",
+          "VERSION:2.0",
+          "PRODID:-//Vow Motion//Wedding//EN",
+          ...events.flatMap((e) => [
+            "BEGIN:VEVENT",
+            `UID:${e.id}@vowmotion`,
+            `DTSTAMP:${stamp(new Date().toISOString())}`,
+            `DTSTART:${stamp(e.starts_at)}`,
+            `DTEND:${stamp(e.ends_at)}`,
+            `SUMMARY:${escapeIcs(e.title + " — " + data.wedding.names)}`,
+            `LOCATION:${escapeIcs([e.venue, e.address].filter(Boolean).join(", "))}`,
+            "END:VEVENT",
+          ]),
+          "END:VCALENDAR",
+        ].join("\r\n");
+        return new NextResponse(content, {
+          headers: {
+            "Content-Type": "text/calendar; charset=utf-8",
+            "Content-Disposition": 'attachment; filename="the-schedule.ics"',
+            "Cache-Control": "no-store",
+          },
+        });
+      }
       throw new HttpError(404, "This action is unavailable.");
     }
     if (area === "lookup" && method === "POST") {

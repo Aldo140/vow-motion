@@ -36,7 +36,7 @@ export async function finderData(slug: string) {
   const active = finderActive(wedding);
   const events = active
     ? await rows(
-        `SELECT id, title, title_es, starts_at, venue, dress_code
+        `SELECT id, title, title_es, starts_at, ends_at, venue, address, dress_code
          FROM events WHERE wedding_id=$1 ORDER BY starts_at`,
         [wedding.id],
       )
