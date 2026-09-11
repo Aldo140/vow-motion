@@ -36,6 +36,8 @@ const T = {
     next: "Next",
     happeningNow: "Happening now",
     startsIn: "starts in",
+    dressCode: "Dress code",
+    comingUp: "Then, later",
     notFound:
       "We couldn't find that name. Try your full name, or ask someone in the wedding party.",
     ambiguous: "More than one guest matches — please type your full name.",
@@ -57,6 +59,8 @@ const T = {
     next: "A continuación",
     happeningNow: "Ahora",
     startsIn: "empieza en",
+    dressCode: "Código de vestimenta",
+    comingUp: "Más tarde",
     notFound:
       "No encontramos ese nombre. Prueba con tu nombre completo o pregunta a alguien del cortejo.",
     ambiguous: "Hay más de un invitado con ese nombre — escribe tu nombre completo.",
@@ -117,12 +121,17 @@ export default function DayFinder({
     if (result) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [result]);
 
-  const nextEvent = useMemo(() => {
-    const upcoming = events.find(
+  // Everything still ahead (or just started) rather than only the very next
+  // thing — a guest checking their phone once wants the rest of the evening,
+  // not a single fact they have to keep re-asking for.
+  const upcomingEvents = useMemo(() => {
+    const upcoming = events.filter(
       (e) => new Date(e.starts_at).getTime() > now - 5_400_000,
     );
-    return upcoming || events[events.length - 1] || null;
+    return upcoming.length ? upcoming : events.slice(-1);
   }, [events, now]);
+  const nextEvent = upcomingEvents[0] || null;
+  const laterEvents = upcomingEvents.slice(1);
 
   async function find(e: React.FormEvent) {
     e.preventDefault();
@@ -164,6 +173,7 @@ export default function DayFinder({
               ? nextEvent.title_es
               : nextEvent.title,
           venue: nextEvent.venue,
+          dressCode: nextEvent.dress_code,
           heading: live && !cd ? t.happeningNow : t.next,
           detail: cd
             ? `${time} · ${cd} · ${nextEvent.venue}`
@@ -174,7 +184,20 @@ export default function DayFinder({
       })()
     : null;
 
+  const laterList = laterEvents.map((e) => ({
+    id: e.id,
+    title: lang === "es" && e.title_es ? e.title_es : e.title,
+    venue: e.venue,
+    dressCode: e.dress_code,
+    time: new Date(e.starts_at).toLocaleTimeString(
+      lang === "es" ? "es" : "en-CA",
+      { hour: "numeric", minute: "2-digit" },
+    ),
+  }));
+
   const notes = lang === "es" && config.notes_es ? config.notes_es : config.notes;
+  const welcomeLine =
+    lang === "es" && config.welcome_es ? config.welcome_es : config.welcome;
 
   // GuestCrest reads initials by splitting on " & " specifically; worlds like
   // Modernist use "+" instead, so build the monogram from the same parts the
@@ -260,6 +283,9 @@ export default function DayFinder({
             {result.found ? (
               <>
                 <p className="finder-welcome">{t.welcome(result.first_name)}</p>
+                {welcomeLine && (
+                  <p className="finder-welcome-note">{welcomeLine}</p>
+                )}
                 {result.table ? (
                   <p className="finder-table">
                     <span>{t.table}</span>
@@ -290,10 +316,34 @@ export default function DayFinder({
         )}
 
         {nextLabel && (
-          <section className="finder-next">
-            <span>{nextLabel.heading}</span>
-            <h2>{nextLabel.title}</h2>
-            <p>{nextLabel.detail}</p>
+          <section className="finder-schedule">
+            <div className="finder-next">
+              <span>{nextLabel.heading}</span>
+              <h2>{nextLabel.title}</h2>
+              <p>{nextLabel.detail}</p>
+              {nextLabel.dressCode && (
+                <p className="finder-dress">
+                  <span>{t.dressCode}</span> {nextLabel.dressCode}
+                </p>
+              )}
+            </div>
+            {laterList.length > 0 && (
+              <div className="finder-later-wrap">
+                <p className="finder-later-heading">{t.comingUp}</p>
+                <ol className="finder-later">
+                  {laterList.map((e) => (
+                    <li key={e.id}>
+                      <span className="finder-later-time">{e.time}</span>
+                      <span className="finder-later-title">{e.title}</span>
+                      <span className="finder-later-venue">
+                        {e.venue}
+                        {e.dressCode ? ` · ${e.dressCode}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </section>
         )}
 

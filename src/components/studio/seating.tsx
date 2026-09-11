@@ -193,6 +193,8 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(config.notes);
   const [notesEs, setNotesEs] = useState(config.notes_es);
+  const [welcome, setWelcome] = useState(config.welcome);
+  const [welcomeEs, setWelcomeEs] = useState(config.welcome_es);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const url =
@@ -356,6 +358,26 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
                 />
               )}
 
+              <Field label="A line to greet them by name (optional)">
+                <input
+                  type="text"
+                  maxLength={240}
+                  value={welcome}
+                  onChange={(e) => setWelcome(e.target.value)}
+                  placeholder="So glad you're here — go easy on the wine, Uncle Tom is DJing."
+                />
+              </Field>
+              {data.wedding.locale === "es" ||
+              data.guests.some((g) => g.language === "es") ? (
+                <Field label="That line, in Spanish (optional)">
+                  <input
+                    type="text"
+                    maxLength={240}
+                    value={welcomeEs}
+                    onChange={(e) => setWelcomeEs(e.target.value)}
+                  />
+                </Field>
+              ) : null}
               <Field label="Notes for guests — one per line (optional)">
                 <textarea
                   rows={3}
@@ -383,7 +405,7 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
                   onClick={async () => {
                     setSaving(true);
                     await patch(
-                      { notes, notes_es: notesEs },
+                      { notes, notes_es: notesEs, welcome, welcome_es: welcomeEs },
                       "Notes saved.",
                     );
                     setSaving(false);

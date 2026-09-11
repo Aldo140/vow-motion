@@ -300,6 +300,8 @@ async function handler(request: NextRequest, context: Context) {
               map: z.string().max(500).optional(),
               notes: z.string().max(2000).optional(),
               notes_es: z.string().max(2000).optional(),
+              welcome: z.string().max(240).optional(),
+              welcome_es: z.string().max(240).optional(),
             })
             .parse(await body());
           await (

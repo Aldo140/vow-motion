@@ -9,6 +9,8 @@ export type FinderConfig = {
   map: string;
   notes: string;
   notes_es: string;
+  welcome: string;
+  welcome_es: string;
   tablemates: boolean;
   guestbook: boolean;
 };
@@ -21,6 +23,8 @@ export function finderConfig(settings: unknown): FinderConfig {
     map: typeof f.map === "string" ? f.map : "",
     notes: typeof f.notes === "string" ? f.notes : "",
     notes_es: typeof f.notes_es === "string" ? f.notes_es : "",
+    welcome: typeof f.welcome === "string" ? f.welcome : "",
+    welcome_es: typeof f.welcome_es === "string" ? f.welcome_es : "",
     tablemates: f.tablemates !== false,
     guestbook: f.guestbook !== false,
   };

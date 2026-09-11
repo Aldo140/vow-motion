@@ -228,6 +228,9 @@
 .finder-result > *:nth-child(4) {
   animation-delay: 0.33s;
 }
+.finder-result > *:nth-child(n + 5) {
+  animation-delay: 0.42s;
+}
 @keyframes finder-rise {
   from {
     opacity: 0;
@@ -241,7 +244,19 @@
 .finder-welcome {
   font-family: var(--serif, Georgia, serif);
   font-size: 20px;
-  margin-bottom: 18px;
+  margin-bottom: 6px;
+}
+/* The couple's own line, in their voice rather than the app's — set apart
+   from the generic "Welcome, X." above it like a note tucked into a place
+   setting. */
+.finder-welcome-note {
+  font-family: var(--serif, Georgia, serif);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--f-ink) 82%, transparent);
+  max-width: 34ch;
+  margin: 0 auto 18px;
 }
 .finder-table {
   display: flex;
@@ -287,8 +302,10 @@
   opacity: 0.85;
 }
 
-.finder-next {
+.finder-schedule {
   margin-top: 22px;
+}
+.finder-next {
   padding: 20px 22px;
   border: 1px solid color-mix(in srgb, var(--f-ink) 16%, transparent);
   border-radius: 10px;
@@ -309,6 +326,61 @@
 .finder-next p {
   font-size: 12px;
   opacity: 0.8;
+}
+.finder-next p.finder-dress {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--f-ink) 14%, transparent);
+  font-size: 11px;
+}
+.finder-dress > span {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-right: 4px;
+}
+
+/* The rest of the evening, read at a glance rather than re-opened one event
+   at a time. */
+.finder-later-wrap {
+  margin-top: 16px;
+}
+.finder-later-heading {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  text-align: center;
+  margin: 0 0 10px;
+}
+.finder-later {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.finder-later li {
+  display: grid;
+  grid-template-columns: 68px 1fr;
+  gap: 4px 12px;
+  padding: 10px 4px;
+  border-top: 1px solid color-mix(in srgb, var(--f-ink) 12%, transparent);
+  font-size: 12px;
+}
+.finder-later-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+.finder-later-title {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 15px;
+}
+.finder-later-venue {
+  grid-column: 2;
+  font-size: 11px;
+  opacity: 0.65;
 }
 
 .finder-map {
