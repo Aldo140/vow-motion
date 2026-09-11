@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -138,6 +138,8 @@ export default function Experience() {
   const verticalRef = useRef<HTMLElement>(null);
   const phoneFrameRef = useRef<HTMLDivElement>(null);
   const phonePanelRef = useRef<HTMLDivElement>(null);
+  const momentListRef = useRef<HTMLOListElement>(null);
+  const [activeMoment, setActiveMoment] = useState(0);
 
   // Stable identities: the composition's own render loop calls these directly
   // (see composition/runtime.tsx), so they must not need to change on every
@@ -234,6 +236,36 @@ export default function Experience() {
           }
         },
       );
+
+      // The swipeable filmstrip of moments (mobile/tablet only — see
+      // experience.css) reports which card is centred, so the folio above it
+      // can name it instead of sitting there as a static hint forever.
+      mm.add({ mobile: "(max-width: 900px)" }, (context) => {
+        if (!context.conditions?.mobile) return;
+        const list = momentListRef.current;
+        if (!list) return;
+        const items = Array.from(list.querySelectorAll<HTMLLIElement>("li"));
+        if (!items.length) return;
+        const io = new IntersectionObserver(
+          (entries) => {
+            let bestIndex = -1;
+            let bestRatio = 0;
+            entries.forEach((entry) => {
+              const i = items.indexOf(entry.target as HTMLLIElement);
+              if (i === -1) return;
+              if (entry.intersectionRatio > bestRatio) {
+                bestRatio = entry.intersectionRatio;
+                bestIndex = i;
+              }
+            });
+            if (bestIndex !== -1 && bestRatio > 0.5) setActiveMoment(bestIndex);
+          },
+          { root: list, threshold: [0.5, 0.6, 0.75, 0.9, 1] },
+        );
+        items.forEach((el) => io.observe(el));
+        return () => io.disconnect();
+      });
+
       return () => mm.revert();
     },
     { scope: rootRef },
@@ -279,12 +311,21 @@ export default function Experience() {
               invitation all the way to the door.
             </p>
           </div>
-          <p className="xp-moment-hint" aria-hidden="true">
-            Swipe through all eight <Arrow size={12} />
-          </p>
-          <ol className="xp-moment-list">
-            {MOMENTS.map(([n, title, copy]) => (
-              <li key={n}>
+          <div className="xp-moment-hint" aria-hidden="true">
+            <span>
+              {MOMENTS[activeMoment][0]} — {MOMENTS[activeMoment][1]}
+            </span>
+            <Arrow size={12} />
+          </div>
+          <div className="xp-moment-track" aria-hidden="true">
+            <span
+              className="xp-moment-fill"
+              style={{ transform: `scaleX(${(activeMoment + 1) / MOMENTS.length})` }}
+            />
+          </div>
+          <ol className="xp-moment-list" ref={momentListRef}>
+            {MOMENTS.map(([n, title, copy], i) => (
+              <li key={n} className={i === activeMoment ? "is-active" : undefined}>
                 <span className="xp-moment-n">{n}</span>
                 <div>
                   <h3>{title}</h3>
