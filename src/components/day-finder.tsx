@@ -106,6 +106,7 @@ export default function DayFinder({
   palette,
   separator,
   world,
+  mood,
 }: {
   slug: string;
   names: string;
@@ -117,6 +118,7 @@ export default function DayFinder({
   palette: string[];
   separator: string;
   world: World;
+  mood: string;
 }) {
   const [lang, setLang] = useState<"en" | "es">(locale);
   const t = T[lang];
@@ -238,8 +240,16 @@ export default function DayFinder({
         } as React.CSSProperties
       }
     >
-      <div className="finder-inner">
-        <header className="finder-head">
+      <div className="finder-cover">
+        <img src={mood} alt="" className="finder-cover-img" />
+        <div className="finder-cover-scrim" aria-hidden="true" />
+        <button
+          className="finder-lang finder-lang-float"
+          onClick={() => setLang((l) => (l === "en" ? "es" : "en"))}
+        >
+          {lang === "en" ? "Español" : "English"}
+        </button>
+        <header className="finder-cover-content">
           <GuestCrest
             names={names}
             world={world}
@@ -266,14 +276,10 @@ export default function DayFinder({
               names
             )}
           </h1>
-          <button
-            className="finder-lang"
-            onClick={() => setLang((l) => (l === "en" ? "es" : "en"))}
-          >
-            {lang === "en" ? "Español" : "English"}
-          </button>
         </header>
+      </div>
 
+      <div className="finder-inner">
         <form className="finder-search" onSubmit={find}>
           <label htmlFor="finder-q">{t.prompt}</label>
           <div className="finder-field">
@@ -318,6 +324,10 @@ export default function DayFinder({
                     {t.noTable}
                   </p>
                 )}
+                {(config.tablemates && result.tablemates.length > 0) ||
+                result.meal ? (
+                  <span className="finder-tear" aria-hidden="true" />
+                ) : null}
                 {config.tablemates && result.tablemates.length > 0 && (
                   <p className="finder-with">
                     <span>{t.withYou}</span> {result.tablemates.join(" · ")}
@@ -328,6 +338,16 @@ export default function DayFinder({
                     <span>{t.meal}</span> {result.meal}
                   </p>
                 )}
+                <p className="finder-ticket-code">
+                  {monogram.split(separator).join(" · ")} ·{" "}
+                  {new Date(date + "T12:00:00Z")
+                    .toLocaleDateString("en-CA", {
+                      month: "short",
+                      day: "2-digit",
+                      year: "numeric",
+                    })
+                    .toUpperCase()}
+                </p>
               </>
             ) : (
               <p className="finder-miss">

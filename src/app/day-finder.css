@@ -5,9 +5,7 @@
   min-height: 100dvh;
   background: var(--f-bg, #f4f0e4);
   color: var(--f-ink, #33352c);
-  display: flex;
-  justify-content: center;
-  padding: 40px 20px 64px;
+  padding-bottom: 64px;
   /* The same pressed-paper dot grid the invitation itself is printed on
      (see composition/explainer-scene.tsx's envelope) — a signature texture,
      kept faint enough to add weight without costing legibility or bytes. */
@@ -21,10 +19,49 @@
 .finder-inner {
   width: 100%;
   max-width: 460px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
-.finder-head {
+/* A real cover photo — the same mood shot the couple's own site opens
+   with — instead of a flat tinted panel. It fades into the page's own
+   colour toward the bottom, so the crest and names still land on solid
+   ground and nothing on top of the film needs a special light-text
+   treatment. */
+.finder-cover {
+  position: relative;
+  width: 100%;
+  height: min(58vh, 480px);
+  overflow: hidden;
+}
+.finder-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.finder-cover-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 18, 14, 0.3) 0%,
+    rgba(20, 18, 14, 0.04) 22%,
+    transparent 42%,
+    color-mix(in srgb, var(--f-bg) 70%, transparent) 62%,
+    var(--f-bg) 80%
+  );
+}
+.finder-cover-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   text-align: center;
-  margin-bottom: 34px;
+  padding: 24px 24px 22px;
 }
 .finder-crest {
   margin: 0 auto 18px;
@@ -113,14 +150,14 @@
   text-transform: uppercase;
   opacity: 0.7;
 }
-.finder-head h1 {
+.finder-cover-content h1 {
   font-family: "Italiana", var(--serif, Georgia, serif);
-  font-size: clamp(34px, 12vw, 52px);
+  font-size: clamp(30px, 10vw, 46px);
   line-height: 1.1;
   font-weight: 400;
-  margin: 14px 0 16px;
+  margin: 12px 0 0;
 }
-.finder-head h1 i {
+.finder-cover-content h1 i {
   font-family: var(--serif, Georgia, serif);
   font-style: italic;
   font-size: 0.62em;
@@ -135,6 +172,18 @@
   border-radius: 40px;
   color: inherit;
   background: transparent;
+}
+/* Floats over the cover photo itself rather than sitting in the text flow —
+   a small utility chip, not part of the moment. */
+.finder-lang-float {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  color: #fffdf8;
+  background: rgba(20, 18, 14, 0.32);
+  border-color: rgba(255, 253, 248, 0.4);
+  backdrop-filter: blur(6px);
 }
 
 .finder-search label {
@@ -346,6 +395,44 @@
   text-transform: uppercase;
   opacity: 0.55;
   margin-bottom: 4px;
+}
+/* The result reads as an actual pass rather than a lookup result — a torn
+   ticket-stub perforation, notched into the card's own edges, the same
+   idea the "WEDDING PASS" scene in the brand film prints on. */
+.finder-tear {
+  display: block;
+  position: relative;
+  height: 0;
+  margin: 22px -24px 6px;
+  border-top: 1.5px dashed color-mix(in srgb, var(--f-ink) 22%, transparent);
+}
+.finder-tear::before,
+.finder-tear::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--f-bg);
+  transform: translateY(-50%);
+}
+.finder-tear::before {
+  left: -9px;
+}
+.finder-tear::after {
+  right: -9px;
+}
+/* A small ticket reference at the very foot of the pass — the couple's
+   initials and date, like the stub you'd actually keep in a pocket. */
+.finder-ticket-code {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--f-ink) 12%, transparent);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.45;
 }
 .finder-miss {
   font-size: 13px;

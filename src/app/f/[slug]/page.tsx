@@ -31,6 +31,7 @@ export default async function Page({
       palette={world.palette}
       separator={world.separator}
       world={world.id}
+      mood={world.mood}
     />
   );
 }
