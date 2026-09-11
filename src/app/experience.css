@@ -5,8 +5,13 @@
   overflow: clip;
 }
 .xp-main {
-  max-width: 1600px;
-  margin: auto;
+  /* No max-width here: .xp-hero and .xp-vertical carry a live ambient
+     background colour (see experience.tsx) and need to reach the edges of
+     the viewport on large screens, not sit in a capped column with plain
+     page background showing on either side. Their own content still keeps
+     to a readable width via each section's own rules; .xp-moments and
+     .xp-cta already do the same via .section-pad / their own centred
+     children, so removing the cap here does not change how they look. */
 }
 .xp-hero {
   padding: clamp(48px, 7vw, 96px) 4.5% clamp(40px, 5vw, 72px);
@@ -109,18 +114,31 @@
   max-width: 62ch;
 }
 
+.xp-vertical.section-pad {
+  /* .section-pad (shared, global) caps this at 1600px and centres it — right
+     for a static section, wrong here, where the section itself carries a
+     live ambient background (see experience.tsx) that needs to reach the
+     edges of the viewport. Keep its padding, drop its width cap; the actual
+     content goes back to a readable column via .xp-vertical-inner below. */
+  max-width: none;
+  margin: 0;
+}
 .xp-vertical {
   border-top: 1px solid var(--line);
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: clamp(30px, 6vw, 80px);
-  align-items: center;
   /* Same ambient mechanism as .xp-hero, driven by the vertical cut instead —
      see experience.tsx. This one genuinely swings dark and light, because
      that film does. */
   transition:
     background-color 0.4s ease,
     color 0.4s ease;
+}
+.xp-vertical-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: clamp(30px, 6vw, 80px);
+  align-items: center;
 }
 .xp-vertical-copy h2 {
   font-family: var(--serif);
@@ -241,7 +259,7 @@
 }
 
 @media (max-width: 860px) {
-  .xp-vertical {
+  .xp-vertical-inner {
     grid-template-columns: 1fr;
     justify-items: center;
     text-align: center;
