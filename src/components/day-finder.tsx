@@ -65,6 +65,12 @@ const T = {
     comingUp: "Then, later",
     addCalendar: "Add the schedule to your phone",
     directions: "Directions",
+    share: "Share the night",
+    shareCopy: (n: string, tbl: string, tag: string) =>
+      `🎉 At ${n}'s wedding tonight — Table ${tbl}! ${tag}`,
+    shareCopyNoTable: (n: string, tag: string) =>
+      `🎉 At ${n}'s wedding tonight! ${tag}`,
+    copied: "Copied!",
     notFound:
       "We couldn't find that name. Try your full name, or ask someone in the wedding party.",
     ambiguous: "More than one guest matches — please type your full name.",
@@ -90,6 +96,12 @@ const T = {
     comingUp: "Más tarde",
     addCalendar: "Añade el horario a tu teléfono",
     directions: "Cómo llegar",
+    share: "Comparte la noche",
+    shareCopy: (n: string, tbl: string, tag: string) =>
+      `🎉 En la boda de ${n} esta noche — ¡Mesa ${tbl}! ${tag}`,
+    shareCopyNoTable: (n: string, tag: string) =>
+      `🎉 ¡En la boda de ${n} esta noche! ${tag}`,
+    copied: "¡Copiado!",
     notFound:
       "No encontramos ese nombre. Prueba con tu nombre completo o pregunta a alguien del cortejo.",
     ambiguous: "Hay más de un invitado con ese nombre — escribe tu nombre completo.",
@@ -107,7 +119,22 @@ function countdown(target: number, now: number, label: string) {
   if (diff <= 0 || diff > 48 * 3_600_000) return null;
   const h = Math.floor(diff / 3_600_000);
   const m = Math.floor((diff % 3_600_000) / 60_000);
+  // In the last five minutes, count seconds too — the one moment a guest is
+  // actually watching this number rather than glancing at it once.
+  if (h === 0 && m < 5) {
+    const s = Math.floor((diff % 60_000) / 1000);
+    return `${label} ${m}m ${s}s`;
+  }
   return `${label} ${h > 0 ? `${h}h ` : ""}${m}m`;
+}
+
+/** First names only, joined naturally — "Elena Moretti & Matteo Ricci"
+    becomes "Elena & Matteo", which is what a caption or hashtag wants. */
+function firstNames(names: string, separator: string) {
+  return names
+    .split(separator)
+    .map((part) => part.trim().split(/\s+/)[0])
+    .filter(Boolean);
 }
 
 export default function DayFinder({
@@ -145,9 +172,13 @@ export default function DayFinder({
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 30_000);
+    // A real ticking clock, not a stale number refreshed every so often —
+    // the countdown to the ceremony should feel alive when you're staring
+    // at it in the last minutes.
+    const id = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(id);
   }, []);
+  const [copied, setCopied] = useState(false);
   useEffect(() => {
     if (result) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [result]);
@@ -207,6 +238,7 @@ export default function DayFinder({
           dressCode: nextEvent.dress_code,
           directions: directionsHref(nextEvent.address || nextEvent.venue),
           heading: live && !cd ? t.happeningNow : t.next,
+          live: live && !cd,
           detail: cd
             ? `${time} · ${cd}`
             : live
@@ -242,6 +274,30 @@ export default function DayFinder({
         .filter(Boolean)
         .join(separator)
     : names.trim()[0] || "";
+
+  // "Elena & Matteo" for a caption, "#ElenaMatteo2027" for a hashtag —
+  // built from the same first-names split.
+  const firsts = firstNames(names, separator);
+  const casualNames = firsts.length ? firsts.join(" & ") : names;
+  const hashtag =
+    "#" +
+    (firsts.length ? firsts.join("") : names.replace(/\s+/g, "")) +
+    new Date(date + "T12:00:00Z").getFullYear();
+
+  const copyShare = async () => {
+    const line = result && result.found
+      ? result.table
+        ? t.shareCopy(casualNames, result.table, hashtag)
+        : t.shareCopyNoTable(casualNames, hashtag)
+      : t.shareCopyNoTable(casualNames, hashtag);
+    try {
+      await navigator.clipboard?.writeText(line);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard access can be denied; the button just won't confirm.
+    }
+  };
 
   return (
     <main
@@ -359,9 +415,21 @@ export default function DayFinder({
                   <span className="finder-tear" aria-hidden="true" />
                 ) : null}
                 {config.tablemates && result.tablemates.length > 0 && (
-                  <p className="finder-with">
-                    <span>{t.withYou}</span> {result.tablemates.join(" · ")}
-                  </p>
+                  <div className="finder-with">
+                    <span>{t.withYou}</span>
+                    <div className="finder-avatars">
+                      {result.tablemates.map((name, i) => (
+                        <span
+                          key={name + i}
+                          className="finder-avatar"
+                          style={{ "--i": i } as React.CSSProperties}
+                        >
+                          <i>{name.trim()[0]?.toUpperCase()}</i>
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
                 {result.meal && (
                   <p className="finder-meal">
@@ -378,6 +446,13 @@ export default function DayFinder({
                     })
                     .toUpperCase()}
                 </p>
+                <button
+                  type="button"
+                  className="finder-share"
+                  onClick={copyShare}
+                >
+                  {copied ? t.copied : `${t.share} · ${hashtag}`}
+                </button>
               </>
             ) : (
               <p className="finder-miss">
@@ -390,7 +465,12 @@ export default function DayFinder({
         {nextLabel && (
           <section className="finder-schedule">
             <div className="finder-next">
-              <span>{nextLabel.heading}</span>
+              <span>
+                {nextLabel.live && (
+                  <i className="finder-live-dot" aria-hidden="true" />
+                )}
+                {nextLabel.heading}
+              </span>
               <h2>{nextLabel.title}</h2>
               <p>{nextLabel.detail}</p>
               <a
