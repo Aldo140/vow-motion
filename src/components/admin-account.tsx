@@ -219,16 +219,15 @@ export default function AdminAccount({
                     >
                       Studio <ArrowSquareOutIcon size={13} />
                     </Link>
-                    {(wd.status === "published" || wd.status === "memories") && (
-                      <a
-                        href={`/w/${String(wd.slug)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-link"
-                      >
-                        Live site <ArrowSquareOutIcon size={13} />
-                      </a>
-                    )}
+                    <a
+                      href={`/w/${String(wd.slug)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-link"
+                    >
+                      {wd.status === "draft" ? "Preview" : "Live site"}{" "}
+                      <ArrowSquareOutIcon size={13} />
+                    </a>
                   </div>
                 </div>
 

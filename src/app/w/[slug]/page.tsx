@@ -7,6 +7,7 @@ import { Brand } from "@/components/ui";
 import Lookup from "@/components/lookup";
 import StoryUnlock from "@/components/story-unlock";
 import { storyUnlocked } from "@/lib/wedding-access";
+import { currentUser, isAdmin } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "A wedding story",
@@ -25,7 +26,8 @@ export default async function Page({
   const w = (
     await rows("SELECT * FROM weddings WHERE slug=$1", [(await params).slug])
   )[0];
-  if (!w || w.status === "draft") notFound();
+  if (!w) notFound();
+  if (w.status === "draft" && !isAdmin(await currentUser())) notFound();
   const unlocked =
     w.privacy === "public" ||
     (w.privacy === "password" &&
@@ -33,6 +35,12 @@ export default async function Page({
   return (
     <main id="main" className="public-wedding">
       <Brand />
+      {w.status === "draft" && (
+        <p className="admin-preview-banner">
+          Admin preview — this wedding hasn’t published yet, so guests can’t
+          see this.
+        </p>
+      )}
       {unlocked ? (
         <>
           <WeddingPhoto wedding={w as unknown as Wedding} placement="invitation" alt="Our wedding invitation" />

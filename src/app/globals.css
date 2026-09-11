@@ -3405,6 +3405,18 @@ td:last-child {
   max-width: 700px;
   height: 350px;
 }
+.admin-preview-banner {
+  order: -1;
+  max-width: 420px;
+  margin: 0 0 28px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  background: var(--surface, transparent);
+}
 .lookup-form {
   max-width: 400px;
   width: 100%;
