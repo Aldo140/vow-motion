@@ -81,6 +81,8 @@ export function Composition({
   bg = "#f3f0e9",
   className,
   children,
+  onTick,
+  fit = "contain",
 }: {
   scenes: Scene[];
   width: number;
@@ -88,22 +90,40 @@ export function Composition({
   bg?: string;
   className?: string;
   children: ReactNode;
+  /** Called with the authored second on every advance (and once, on the held
+      frame, under reduced motion). Optional and backwards-compatible — lets a
+      page react to what the composition is currently showing without needing
+      the composition itself to know anything about the page. */
+  onTick?: (T: number) => void;
+  /** "contain" (default, unchanged): the stage keeps its authored aspect
+      ratio and scales to the container's width. "cover" — opt-in only —
+      fills whatever box the container is given (which must set its own
+      height), cropping the composition the way `object-fit: cover` crops an
+      image, for full-bleed placements. */
+  fit?: "contain" | "cover";
 }) {
   const { CUES, authoredTotal } = cueTable(scenes);
   const [T, setT] = useState(0);
   const [scale, setScale] = useState(0);
   const wrap = useRef<HTMLDivElement>(null);
   const onScreen = useRef(true);
+  const onTickRef = useRef(onTick);
+  onTickRef.current = onTick;
 
   useEffect(() => {
     const el = wrap.current;
     if (!el) return;
-    const fit = () => setScale(el.clientWidth / width);
-    fit();
-    const ro = new ResizeObserver(fit);
+    const measure = () =>
+      setScale(
+        fit === "cover"
+          ? Math.max(el.clientWidth / width, el.clientHeight / height)
+          : el.clientWidth / width,
+      );
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [width]);
+  }, [width, height, fit]);
 
   useEffect(() => {
     const el = wrap.current;
@@ -123,7 +143,9 @@ export function Composition({
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      setT(Math.max(0, authoredTotal - 0.05));
+      const held = Math.max(0, authoredTotal - 0.05);
+      setT(held);
+      onTickRef.current?.(held);
       return;
     }
     let raf = 0;
@@ -134,11 +156,15 @@ export function Composition({
       // Only advance while visible, so a scrolled-away hero costs nothing.
       if (onScreen.current) base += now - last;
       last = now;
-      setT((base / 1000) % authoredTotal);
+      const next = (base / 1000) % authoredTotal;
+      setT(next);
+      onTickRef.current?.(next);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
+    // The callback is read through a ref so changing page observers never
+    // restarts the authored clock or changes this dependency array.
   }, [authoredTotal]);
 
   return (
@@ -148,7 +174,8 @@ export function Composition({
       style={{
         position: "relative",
         width: "100%",
-        aspectRatio: `${width} / ${height}`,
+        height: fit === "cover" ? "100%" : undefined,
+        aspectRatio: fit === "cover" ? undefined : `${width} / ${height}`,
         background: bg,
         overflow: "hidden",
       }}
@@ -156,12 +183,15 @@ export function Composition({
       <div
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
+          top: fit === "cover" ? "50%" : 0,
+          left: fit === "cover" ? "50%" : 0,
           width,
           height,
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
+          transform:
+            fit === "cover"
+              ? `translate(-50%, -50%) scale(${scale})`
+              : `scale(${scale})`,
+          transformOrigin: fit === "cover" ? "center" : "top left",
           visibility: scale ? "visible" : "hidden",
         }}
       >

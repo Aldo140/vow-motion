@@ -1,8 +1,124 @@
 "use client";
+import { useCallback, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import MarketingNavigation from "./marketing-navigation";
 import BrandExplainer from "./composition/explainer";
 import BrandAd from "./composition/ad";
 import { Brand, Arrow, DemoButton } from "./ui";
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+/* Ambient light: each section's background and text colour track whatever the
+   composition beside it is actually showing at that instant, the way a bias
+   light behind a screen picks up its colour. The compositions render entirely
+   in inline styles (composition/*-scene.tsx) and expose no colour of their
+   own, so each section derives an approximate colour from the same authored
+   cue points the scene itself uses — mirroring, not guessing, what's on
+   screen. Cue seconds below are the cumulative scene durations from
+   EXPLAINER_SCENES / AD_SCENES; they only need updating if those change. */
+
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+const ramp = (T: number, start: number, dur: number) =>
+  clamp01((T - start) / dur);
+
+type RGB = [number, number, number];
+const hexToRgb = (hex: string): RGB => {
+  const h = hex.replace("#", "");
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as RGB;
+};
+const lerpRgb = (a: RGB, b: RGB, t: number): RGB => {
+  const k = clamp01(t);
+  return [0, 1, 2].map((i) =>
+    Math.round(a[i] + (b[i] - a[i]) * k),
+  ) as RGB;
+};
+const mixHex = (a: string, b: string, t: number) => lerpRgb(hexToRgb(a), hexToRgb(b), t);
+const rgbStr = ([r, g, b]: RGB) => `rgb(${r} ${g} ${b})`;
+const rgbaStr = ([r, g, b]: RGB, a: number) => `rgb(${r} ${g} ${b} / ${a})`;
+// A brighter, more saturated read of a colour, for the glow it casts — the
+// way a bright, colourful frame throws more visible light than a pale one.
+const vivid = (c: RGB, boost = 1.5): RGB =>
+  c.map((v) => Math.max(0, Math.min(255, Math.round(128 + (v - 128) * boost)))) as RGB;
+
+type Ambient = { bg: RGB; ink: RGB; muted: RGB };
+
+function applyAmbient(el: HTMLElement | null, a: Ambient) {
+  if (!el) return;
+  el.style.backgroundColor = rgbStr(a.bg);
+  el.style.color = rgbStr(a.ink);
+  el.style.setProperty("--xp-muted-ambient", rgbStr(a.muted));
+  el.style.setProperty("--xp-glow", rgbaStr(vivid(a.bg), 0.6));
+  el.style.setProperty("--xp-glow-soft", rgbaStr(vivid(a.bg), 0.32));
+}
+
+type Stop = { t: number; bg: string; muted: string; ink?: string };
+
+/** Samples a cyclic list of authored colour stops at second T (0..total),
+    interpolating between neighbours and wrapping the last stop back to the
+    first. Stops carry the accent colour actually present in that beat of the
+    film (a wax seal, a reply card, a world's palette) — pulled forward as
+    ambient light, the way a screen's bias light reads its edge colours rather
+    than an average grey. */
+function sampleStops(T: number, stops: Stop[], total: number): Ambient {
+  const n = stops.length;
+  for (let i = 0; i < n; i++) {
+    const cur = stops[i];
+    const next = stops[(i + 1) % n];
+    const nextT = i === n - 1 ? total : next.t;
+    if (T >= cur.t && T < nextT) {
+      const k = (T - cur.t) / (nextT - cur.t || 1e-6);
+      return {
+        bg: mixHex(cur.bg, next.bg, k),
+        muted: mixHex(cur.muted, next.muted, k),
+        ink: mixHex(cur.ink ?? "#1d1b17", next.ink ?? "#1d1b17", k),
+      };
+    }
+  }
+  return {
+    bg: hexToRgb(stops[0].bg),
+    muted: hexToRgb(stops[0].muted),
+    ink: hexToRgb(stops[0].ink ?? "#1d1b17"),
+  };
+}
+
+// The explainer's own accents, pulled forward as the room's light: the wax
+// seal's olive at the envelope, the venue photo's warm sand at the
+// invitation, the reply card's steel blue, the six worlds' palette of greens.
+const EXPLAINER_TOTAL = 40;
+const EXPLAINER_STOPS: Stop[] = [
+  { t: 0, bg: "#f3f0e9", muted: "#7c7669" }, // Scatter
+  { t: 5, bg: "#f2e2b8", muted: "#8a7233" }, // Envelope opens
+  { t: 8, bg: "#e9d69e", muted: "#6f7449" }, // wax seal, olive
+  { t: 10.5, bg: "#f4e6c4", muted: "#8a7233" }, // Invitation, warm venue sand
+  { t: 14, bg: "#f0e0bd", muted: "#7c7669" },
+  { t: 16.5, bg: "#c9dbe2", muted: "#3c5866" }, // Reply card, steel blue
+  { t: 19.5, bg: "#b7d0da", muted: "#2f4d5c" },
+  { t: 21.5, bg: "#f6efd8", muted: "#7c7669" }, // Pass, warm paper
+  { t: 26.5, bg: "#dfe6c9", muted: "#556b2f" }, // Studio ledger, olive
+  { t: 29.5, bg: "#cfe0b8", muted: "#4c6428" }, // Six worlds' greens
+  { t: 35, bg: "#e2ebd2", muted: "#556b2f" },
+  { t: 37, bg: "#f3f0e9", muted: "#7c7669" }, // Close, settles to ivory
+];
+function explainerAmbient(T: number): Ambient {
+  return sampleStops(T, EXPLAINER_STOPS, EXPLAINER_TOTAL);
+}
+
+// The vertical cut genuinely swings dark/light: a night photograph, then
+// paper flooding in once the invitation is reached, then the dark Studio
+// panel, then paper again — the same "onDark" beats the scene itself keys to.
+function adAmbient(T: number): Ambient {
+  const paper = ramp(T, 2.6 + 0.2, 0.22);
+  const plannersGround = ramp(T, 21 - 0.3, 0.8) * (1 - ramp(T, 26.4 - 0.35, 0.7));
+  const endFade = ramp(T, 35 - 0.45, 0.45);
+  const darkness = Math.max(1 - paper, plannersGround, endFade);
+  return {
+    bg: mixHex("#f6f3ea", "#15120e", darkness),
+    ink: mixHex("#1d1b17", "#f3f0e9", darkness),
+    muted: mixHex("#7c7669", "#b9b4a6", darkness),
+  };
+}
 
 const MOMENTS: [string, string, string][] = [
   ["01", "The scatter", "One wedding, and the guest list living in six places at once — a spreadsheet, a group chat, an inbox, a kitchen note."],
@@ -16,21 +132,132 @@ const MOMENTS: [string, string, string][] = [
 ];
 
 export default function Experience() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const stageFrameRef = useRef<HTMLDivElement>(null);
+  const verticalRef = useRef<HTMLElement>(null);
+  const phoneFrameRef = useRef<HTMLDivElement>(null);
+  const phonePanelRef = useRef<HTMLDivElement>(null);
+
+  // Stable identities: the composition's own render loop calls these directly
+  // (see composition/runtime.tsx), so they must not need to change on every
+  // render — they read the current DOM node from the ref each time instead.
+  const onExplainerTick = useCallback((T: number) => {
+    applyAmbient(heroRef.current, explainerAmbient(T));
+  }, []);
+  const onAdTick = useCallback((T: number) => {
+    applyAmbient(verticalRef.current, adAmbient(T));
+  }, []);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(
+        {
+          desktop: "(min-width: 901px)",
+          motion: "(prefers-reduced-motion: no-preference)",
+          pointer: "(hover: hover) and (pointer: fine)",
+        },
+        (context) => {
+          const { desktop, motion, pointer } = context.conditions as Record<
+            string,
+            boolean
+          >;
+          if (!desktop || !motion) return;
+
+          // The film opens at the largest size that fits the screen without
+          // ever cropping or distorting it — the true 16:9 frame, just as
+          // big as the space below the title allows — then the inverse
+          // happens: scrolling eases its width back down to a fixed, resting
+          // size. Nothing sits on the film itself; the title stays above it
+          // throughout, sized so it never has to move out of the way.
+          const stage = stageFrameRef.current;
+          if (stage) {
+            const restW = 1040;
+            // As wide as comfortably fits the screen, capped so it never
+            // gets absurd on very wide monitors; height simply follows the
+            // real 16:9 ratio, so the frame is never cropped or stretched.
+            const startW = Math.max(restW, Math.round(Math.min(window.innerWidth * 0.86, 1480)));
+            gsap.fromTo(
+              stage,
+              { width: startW },
+              {
+                width: restW,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: heroRef.current,
+                  start: "top top",
+                  end: "+=560",
+                  scrub: true,
+                },
+              },
+            );
+          }
+
+          // A restrained pointer tilt on the floating vertical-cut panel —
+          // the room reacts to the cursor the way a physical object would.
+          // (The hero film is edge-to-edge, so it has nothing to tilt into.)
+          if (pointer) {
+            const rigs: [HTMLElement | null, HTMLElement | null][] = [
+              [phoneFrameRef.current, phonePanelRef.current],
+            ];
+            const cleanups: (() => void)[] = [];
+            rigs.forEach(([frameEl, panelEl]) => {
+              if (!frameEl || !panelEl) return;
+              const rx = gsap.quickTo(panelEl, "rotateX", {
+                duration: 0.6,
+                ease: "power3",
+              });
+              const ry = gsap.quickTo(panelEl, "rotateY", {
+                duration: 0.6,
+                ease: "power3",
+              });
+              const onMove = (e: PointerEvent) => {
+                const r = frameEl.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width - 0.5;
+                const py = (e.clientY - r.top) / r.height - 0.5;
+                rx(py * -5);
+                ry(px * 5);
+              };
+              const onLeave = () => {
+                rx(0);
+                ry(0);
+              };
+              frameEl.addEventListener("pointermove", onMove);
+              frameEl.addEventListener("pointerleave", onLeave);
+              cleanups.push(() => {
+                frameEl.removeEventListener("pointermove", onMove);
+                frameEl.removeEventListener("pointerleave", onLeave);
+              });
+            });
+            return () => cleanups.forEach((fn) => fn());
+          }
+        },
+      );
+      return () => mm.revert();
+    },
+    { scope: rootRef },
+  );
+
   return (
-    <div className="xp">
+    <div className="xp" ref={rootRef}>
       <MarketingNavigation homeLinks />
 
       <main id="main" className="xp-main">
-        <section className="xp-hero">
-          <p className="eyebrow">VOW MOTION · THE FILM</p>
-          <h1>Your story, in motion.</h1>
-          <p className="xp-lede">
-            Forty seconds, one continuous take — the invitation opening, the
-            reply landing, the pass in hand, and the same wedding drawn six
-            different ways.
-          </p>
-          <div className="xp-stage">
-            <BrandExplainer />
+        <section className="xp-hero" ref={heroRef}>
+          <div className="xp-hero-intro">
+            <p className="eyebrow">VOW MOTION · THE FILM</p>
+            <h1>Your story, in motion.</h1>
+            <p className="xp-lede">
+              Forty seconds, one continuous take — the invitation opening, the
+              reply landing, the pass in hand, and the same wedding drawn six
+              different ways.
+            </p>
+          </div>
+          <div className="xp-hero-stage" ref={stageFrameRef}>
+            <div className="xp-stage">
+              <BrandExplainer onTick={onExplainerTick} />
+            </div>
           </div>
           <p className="xp-note">
             Loops on its own. Pauses when it scrolls out of view, and holds
@@ -65,7 +292,7 @@ export default function Experience() {
           </ol>
         </section>
 
-        <section className="xp-vertical section-pad">
+        <section className="xp-vertical section-pad" ref={verticalRef}>
           <div className="xp-vertical-copy">
             <p className="eyebrow">FOR YOUR FEED</p>
             <h2>
@@ -80,8 +307,12 @@ export default function Experience() {
               What planners get <Arrow diagonal size={15} />
             </a>
           </div>
-          <div className="xp-phone">
-            <BrandAd />
+          <div className="xp-phone-frame" ref={phoneFrameRef}>
+            <div className="xp-phone-float">
+              <div className="xp-phone" ref={phonePanelRef}>
+                <BrandAd onTick={onAdTick} />
+              </div>
+            </div>
           </div>
         </section>
 

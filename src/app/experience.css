@@ -2,6 +2,7 @@
 
 .xp {
   background: var(--bg);
+  overflow: clip;
 }
 .xp-main {
   max-width: 1600px;
@@ -10,12 +11,22 @@
 .xp-hero {
   padding: clamp(48px, 7vw, 96px) 4.5% clamp(40px, 5vw, 72px);
   text-align: center;
+  overflow: clip;
+  /* Ambient light: experience.tsx sets background-color, color and
+     --xp-muted-ambient on this element every frame, from what the film
+     beside it is actually showing — like a bias light behind a screen. The
+     transition only smooths the loop's restart; day-to-day playback already
+     changes gradually because the underlying value does. */
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
-.xp-hero .eyebrow {
-  color: var(--muted);
+.xp-hero-intro .eyebrow {
+  color: var(--xp-muted-ambient, var(--muted));
   margin-bottom: 22px;
+  transition: color 0.4s ease;
 }
-.xp-hero h1 {
+.xp-hero-intro h1 {
   font-family: var(--serif);
   font-size: clamp(44px, 6.4vw, 92px);
   line-height: 1.04;
@@ -26,19 +37,42 @@
   margin: 24px auto 40px;
   font-size: 13px;
   line-height: 1.9;
-  color: var(--muted);
+  color: var(--xp-muted-ambient, var(--muted));
+  transition: color 0.4s ease;
+}
+/* The film itself, sitting on its own paper regardless of the room's mood —
+   the true, undistorted 16:9 frame, never cropped. It is centred and sized
+   as large as the space allows, and only ever gets smaller with scroll, down
+   to a fixed resting width (1040px, set inline by the scroll animation on
+   desktop; the CSS width below is what phones, tablets and reduced-motion
+   desktops show outright). */
+.xp-hero-stage {
+  position: relative;
+  width: min(94vw, 1040px);
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 10px rgba(29, 27, 23, 0.06),
+    0 50px 100px -24px rgba(29, 27, 23, 0.4);
 }
 .xp-stage {
-  border: 1px solid var(--line);
+  position: absolute;
+  inset: 0;
   background: #f3f0e9;
-  box-shadow: 0 40px 90px rgba(29, 27, 23, 0.14);
-  overflow: hidden;
+}
+@media (min-width: 901px) {
+  .xp-hero-stage {
+    will-change: width;
+  }
 }
 .xp-note {
   margin-top: 20px;
   font-size: 10px;
   letter-spacing: 0.4px;
-  color: var(--muted);
+  color: var(--xp-muted-ambient, var(--muted));
+  transition: color 0.4s ease;
 }
 
 .xp-moments {
@@ -81,6 +115,12 @@
   grid-template-columns: 1fr 360px;
   gap: clamp(30px, 6vw, 80px);
   align-items: center;
+  /* Same ambient mechanism as .xp-hero, driven by the vertical cut instead —
+     see experience.tsx. This one genuinely swings dark and light, because
+     that film does. */
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
 }
 .xp-vertical-copy h2 {
   font-family: var(--serif);
@@ -89,24 +129,77 @@
   margin: 16px 0 18px;
 }
 .xp-vertical-copy h2 em {
-  color: var(--muted);
+  color: var(--xp-muted-ambient, var(--muted));
+  transition: color 0.4s ease;
 }
 .xp-vertical-copy > p {
   font-size: 12px;
   line-height: 1.9;
-  color: var(--muted);
+  color: var(--xp-muted-ambient, var(--muted));
   max-width: 46ch;
   margin-bottom: 22px;
+  transition: color 0.4s ease;
 }
-.xp-phone {
+.xp-vertical .eyebrow {
+  color: var(--xp-muted-ambient, var(--muted));
+  transition: color 0.4s ease;
+}
+.xp-vertical .text-link {
+  /* Follows the room, not the site's fixed link colour, so it stays legible
+     against whichever background the film has put behind it. */
+  color: inherit;
+}
+.xp-phone-frame {
+  position: relative;
   width: 100%;
   max-width: 360px;
-  border: 10px solid #17150f;
-  border-radius: 34px;
+  justify-self: center;
+}
+.xp-phone-frame::before {
+  content: "";
+  position: absolute;
+  inset: -26% -34%;
+  z-index: -1;
+  background:
+    radial-gradient(36% 40% at 50% 50%, var(--xp-glow, transparent) 0%, transparent 66%),
+    radial-gradient(62% 62% at 50% 50%, var(--xp-glow-soft, transparent) 0%, transparent 75%);
+  filter: blur(46px);
+  pointer-events: none;
+}
+.xp-phone-float {
+  animation: xp-float 8.5s ease-in-out 0.4s infinite;
+}
+.xp-phone {
+  /* No phone bezel — a floating panel, exactly like .xp-stage, just tall. */
+  width: 100%;
+  border-radius: 14px;
   overflow: hidden;
   background: #100f0d;
-  box-shadow: 0 40px 80px rgba(29, 27, 23, 0.22);
-  justify-self: center;
+  box-shadow:
+    0 4px 10px rgba(29, 27, 23, 0.08),
+    0 60px 110px -26px rgba(29, 27, 23, 0.45);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+@keyframes xp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+@media (min-width: 901px) {
+  .xp-phone-frame {
+    perspective: 1400px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-phone-float {
+    animation: none;
+  }
 }
 
 .xp-cta {
