@@ -230,6 +230,22 @@ export default function DayFinder({
     };
   }, []);
 
+  // A slim header appears once the cover photo has scrolled out of view —
+  // the page keeps a sense of place instead of just becoming a plain
+  // scroll of paper.
+  const coverRef = useRef<HTMLDivElement>(null);
+  const [pastCover, setPastCover] = useState(false);
+  useEffect(() => {
+    const el = coverRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setPastCover(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   // Sections settle in as they're scrolled to, rather than all sitting
   // fully rendered on first paint.
   const [scheduleRef, scheduleVisible] = useReveal<HTMLElement>();
@@ -372,7 +388,12 @@ export default function DayFinder({
         <span className="finder-orb finder-orb-2" />
       </div>
 
-      <div className="finder-cover">
+      <div className={"finder-sticky" + (pastCover ? " is-visible" : "")}>
+        <i className="finder-sticky-mono">{monogram}</i>
+        <span>{casualNames}</span>
+      </div>
+
+      <div className="finder-cover" ref={coverRef}>
         <img
           src={mood}
           alt=""
