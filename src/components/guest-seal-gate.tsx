@@ -1,4 +1,6 @@
 "use client";
+import { weddingBotanical } from "@/lib/wedding-design";
+import { CherryBlossomBranch, CherryBlossomPetals } from "./guest-botanical";
 import WeddingPhoto from "./wedding-photo";
 
 import Link from "next/link";
@@ -58,6 +60,28 @@ export default function GuestSealGate({
     // The seal breaks, the flap falls open, the card rises out.
     gsap
       .timeline({ defaults: { ease: "power3.out" }, onComplete: onOpen })
+      .to(
+        ".sealed-bough",
+        { rotation: "+=3", duration: 0.14, yoyo: true, repeat: 3 },
+        0,
+      )
+      .to(
+        ".cherry-resting-petal",
+        {
+          x: () => gsap.utils.random(-25, 55),
+          y: () => gsap.utils.random(75, 150),
+          rotation: () => gsap.utils.random(180, 420),
+          stagger: 0.06,
+          duration: 0.85,
+          ease: "power1.in",
+        },
+        0,
+      )
+      .to(
+        ".cherry-resting-petal",
+        { opacity: 0, duration: 0.25, stagger: 0.06 },
+        0.5,
+      )
       .to(".seal-wax", { scale: 1.08, duration: 0.12 }, 0)
       .to(
         ".seal-wax",
@@ -91,6 +115,12 @@ export default function GuestSealGate({
       <p className="opening-dedication">{voice.arrival}</p>
 
       <div className="seal-envelope">
+        {weddingBotanical(data.wedding.settings) === "cherry-blossom" && (
+          <>
+            <CherryBlossomBranch className="sealed-bough" budding />
+            <CherryBlossomPetals className="sealed-petals" />
+          </>
+        )}
         {/* The botanical repeat is drawn rather than photographed, so every
             world prints the same paper in its own ink. */}
         <svg className="seal-pattern" aria-hidden="true" focusable="false">

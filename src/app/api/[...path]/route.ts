@@ -342,7 +342,7 @@ async function handler(request: NextRequest, context: Context) {
         );
       }
       if (
-        ["identity", "setup", "publish", "feedback", "requests"].includes(
+        ["identity", "setup", "publish", "feedback", "requests", "momentum-review"].includes(
           action,
         )
       ) {
@@ -761,6 +761,7 @@ async function handler(request: NextRequest, context: Context) {
             };
             delete settings.media;
             delete settings.identity;
+            delete settings.botanical;
             record.settings = settings;
           }
         }

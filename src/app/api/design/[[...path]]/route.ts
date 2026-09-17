@@ -97,7 +97,12 @@ async function handle(request: NextRequest, context: Context) {
         "SELECT id,name,width,height,bytes FROM design_assets WHERE wedding_id=$1 ORDER BY created_at DESC",
         [weddingId],
       );
-      return json({ ...state, assets });
+      return json({
+        ...state,
+        draft: designSchema.parse(state.draft),
+        published: designSchema.parse(state.published),
+        assets,
+      });
     }
     if (action === "assets" && method === "POST") {
       if (user.is_demo)
@@ -292,6 +297,8 @@ async function handle(request: NextRequest, context: Context) {
           )
         ).rows[0];
         let next = input.draft;
+        state.draft = designSchema.parse(state.draft);
+        state.published = designSchema.parse(state.published);
         if (state.revision !== input.revision) {
           if (action === "publish") return { conflict: true, state };
           const merge = mergeDesign(
@@ -335,7 +342,7 @@ async function handle(request: NextRequest, context: Context) {
               next.world,
               next.opening,
               next.story,
-              JSON.stringify({ identity: next.identity, media: next.media }),
+              JSON.stringify({ identity: next.identity, media: next.media, botanical: next.botanical }),
             ],
           );
         }

@@ -14,6 +14,7 @@ import WeddingPhoto from "../wedding-photo";
 import { useDesignDraft } from "./use-design-draft";
 import { DesignPhotos } from "./design-photos";
 import { OPENINGS } from "./opening-choices";
+import { CherryBlossomMark } from "../guest-botanical";
 export { OPENINGS } from "./opening-choices";
 type Props = PanelProps & {
   onSaved?: () => Promise<void>;
@@ -292,6 +293,43 @@ function DesignEditor(props: Props) {
                       <p>{choice.description}</p>
                     </button>
                   ))}
+                </div>
+              </section>
+              <section className="botanical-choice">
+                <div>
+                  <span className="eyebrow">A SEASON ON THE PAPER</span>
+                  <h2>Cherry blossom stationery.</h2>
+                  <p>
+                    A branch in bud at the opening. Blossom across the
+                    invitation. A pressed flower beside the reply. Your world
+                    keeps its own voice.
+                  </p>
+                </div>
+                <div className="botanical-choice-options">
+                  <button
+                    type="button"
+                    aria-pressed={design.botanical !== "cherry-blossom"}
+                    onClick={() => update({ ...design, botanical: "none" })}
+                  >
+                    <span className="botanical-plain" aria-hidden="true">
+                      Aa
+                    </span>
+                    <strong>World signature</strong>
+                    <span>The original silk, linework or clean geometry.</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={design.botanical === "cherry-blossom"}
+                    onClick={() =>
+                      update({ ...design, botanical: "cherry-blossom" })
+                    }
+                  >
+                    <CherryBlossomMark />
+                    <strong>Cherry blossom</strong>
+                    <span>
+                      Seasonal branches, cotton paper and three resting petals.
+                    </span>
+                  </button>
                 </div>
               </section>
             </fieldset>

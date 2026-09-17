@@ -4,6 +4,7 @@ import { HttpError, id, audit } from "./auth";
 import { identitySchema } from "./identity";
 import { studioData } from "./data";
 import { setupSteps } from "./pilot";
+import { readinessSignature, weddingMomentum } from "./momentum";
 
 export async function pilotAction(
   action: string,
@@ -15,9 +16,42 @@ export async function pilotAction(
   input: unknown,
 ) {
   const connection = await db();
+  if (action === "momentum-review" && method === "POST") {
+    const { signature } = z
+      .object({ signature: z.string().max(30) })
+      .strict()
+      .parse(input);
+    const data = await studioData(weddingId);
+    if (!weddingMomentum(data).chapters.find((c) => c.id === "plan")?.complete)
+      throw new HttpError(
+        400,
+        "Resolve the outstanding guest plans before completing your final review.",
+      );
+    if (signature !== readinessSignature(data))
+      throw new HttpError(
+        409,
+        "The plans changed while you were reviewing. Refresh and check the latest documents.",
+      );
+    await connection.query(
+      "UPDATE weddings SET settings=jsonb_set(COALESCE(settings,'{}'::jsonb),'{momentum}',jsonb_build_object('readySignature',$2::text)) WHERE id=$1",
+      [weddingId, signature],
+    );
+    await audit(weddingId, userId, "Current day-of plans reviewed");
+    return { ok: true };
+  }
   if (action === "identity" && method === "PATCH") {
-    if ((await connection.query("SELECT wedding_id FROM wedding_designs WHERE wedding_id=$1", [weddingId])).rows.length)
-      throw new HttpError(409, "Use Your experience to save identity choices in your design draft.");
+    if (
+      (
+        await connection.query(
+          "SELECT wedding_id FROM wedding_designs WHERE wedding_id=$1",
+          [weddingId],
+        )
+      ).rows.length
+    )
+      throw new HttpError(
+        409,
+        "Use Your experience to save identity choices in your design draft.",
+      );
     const identity = identitySchema.parse(input);
     await connection.query(
       "UPDATE weddings SET settings=COALESCE(settings,'{}'::jsonb) || jsonb_build_object('identity',$2::jsonb) WHERE id=$1",

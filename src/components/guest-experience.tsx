@@ -1,6 +1,7 @@
 "use client";
 import { identityStyle, weddingIdentity } from "@/lib/identity";
 import type { GuestData } from "@/lib/types";
+import { weddingBotanical } from "@/lib/wedding-design";
 import { eventTime, formatDate, getWorld } from "@/lib/worlds";
 import { useGSAP } from "@gsap/react";
 import {
@@ -15,6 +16,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CherryBlossomMark } from "./guest-botanical";
 import GuestCountdown from "./guest-countdown";
 import GuestCrest from "./guest-crest";
 import WeddingPhoto, { WeddingMediaProvider } from "./wedding-photo";
@@ -136,6 +138,32 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
         (context) => {
           if (!context.conditions?.motion) return;
           const desktop = context.conditions.desktop;
+          if (root.current?.querySelector(".invitation-bough")) {
+            gsap.from(".invitation-bough", {
+              rotation: desktop ? -6 : -3,
+              x: desktop ? 18 : 8,
+              duration: 1.6,
+              ease: "power2.out",
+            });
+            gsap.to(".invitation-bough", {
+              y: desktop ? -46 : -16,
+              rotation: desktop ? 3 : 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".guest-hero",
+                start: "top top",
+                end: "bottom top",
+                scrub: 1.5,
+              },
+            });
+            gsap.from(".letter-petals .cherry-resting-petal", {
+              y: -18,
+              rotation: -20,
+              duration: 1.3,
+              stagger: 0.13,
+              ease: "power2.out",
+            });
+          }
           gsap.from(".guest-hero-title h1 > *", {
             y: desktop ? 22 : 12,
             duration: 1,
@@ -225,6 +253,16 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               start: "top 80%",
               once: true,
             },
+          });
+          // Each day's connecting hairline draws downward as its moments settle in.
+          ScrollTrigger.create({
+            trigger: ".order-of-day",
+            start: "top 80%",
+            once: true,
+            onEnter: () =>
+              root.current
+                ?.querySelectorAll(".order-moments")
+                .forEach((el) => el.classList.add("line-drawn")),
           });
           gsap.to(".hero-medallion", {
             rotation: desktop ? 24 : 10,
@@ -488,6 +526,12 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                     world={data.wedding.world}
                     className="programme-crest"
                     size={116}
+                    accessory={
+                      weddingBotanical(data.wedding.settings) ===
+                      "cherry-blossom" ? (
+                        <CherryBlossomMark className="programme-blossom" />
+                      ) : undefined
+                    }
                   />
                   <span>
                     {formatDate(data.wedding.date, locale, {

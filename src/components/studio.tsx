@@ -15,6 +15,7 @@ import { FeedbackButton } from "./studio-pilot";
 import { navigation } from "./studio/navigation";
 import { PreviewButton, type PanelProps } from "./studio/shared";
 import { useStudioData } from "./studio/use-studio-data";
+import { JourneyNavigation, MomentumObserver } from "./studio/momentum";
 import { api, Arrow, Brand, Field, Modal, Notice, Submit } from "./ui";
 
 export default function Studio({
@@ -239,6 +240,8 @@ export default function Studio({
           </div>
         )}
         <main id="main" className="studio-main">
+          <JourneyNavigation data={data} />
+          <MomentumObserver key={data.wedding.id} data={data} section={section} />
           {error && <Notice error>{error}</Notice>}
           {data.role === "viewer" && (
             <Notice>You have view-only access to this wedding.</Notice>

@@ -1,4 +1,5 @@
 import { rows } from "./db";
+import { momentumReport } from "./momentum-report";
 
 /**
  * Everything the operator dashboard shows. One module, read-only aggregates,
@@ -41,6 +42,7 @@ export async function adminOverview() {
     accountRows,
     enquiries,
     activity,
+    momentum,
   ] = await Promise.all([
     rows(`SELECT
         count(*) FILTER (WHERE NOT is_demo)                                            AS real_accounts,
@@ -122,6 +124,7 @@ export async function adminOverview() {
     rows(`SELECT a.action, a.created_at, a.actor_id, w.id AS wedding_id, w.names, w.owner_id
       FROM audit_log a LEFT JOIN weddings w ON w.id=a.wedding_id
       ORDER BY a.created_at DESC LIMIT 40`),
+    momentumReport(),
   ]);
 
   return {
@@ -136,6 +139,7 @@ export async function adminOverview() {
     enquiries,
     activity,
     generatedAt: new Date().toISOString(),
+    momentum,
   };
 }
 

@@ -10,6 +10,8 @@ import { formatDate, getWorld } from "@/lib/worlds";
 import { Arrow } from "./ui";
 import { weddingIdentity } from "@/lib/identity";
 import { useHydrated } from "./use-hydrated";
+import { weddingBotanical } from "@/lib/wedding-design";
+import { CherryBlossomBranch, CherryBlossomPetals } from "./guest-botanical";
 
 gsap.registerPlugin(useGSAP);
 
@@ -51,6 +53,28 @@ export default function GuestInvitationGate({
     }
     gsap
       .timeline({ defaults: { ease: "power3.out" }, onComplete: onOpen })
+      .to(
+        ".opening-bough",
+        { rotation: "+=3", duration: 0.14, yoyo: true, repeat: 3 },
+        0,
+      )
+      .to(
+        ".cherry-resting-petal",
+        {
+          x: () => gsap.utils.random(-30, 55),
+          y: () => gsap.utils.random(70, 150),
+          rotation: () => gsap.utils.random(180, 420),
+          stagger: 0.05,
+          duration: 0.85,
+          ease: "power1.in",
+        },
+        0,
+      )
+      .to(
+        ".cherry-resting-petal",
+        { opacity: 0, duration: 0.25, stagger: 0.05 },
+        0.45,
+      )
       .to(".envelope-open", { scale: 0.92, opacity: 0, duration: 0.16 }, 0)
       .to(".envelope-flap", { rotationX: -175, duration: 0.42 }, 0.06)
       .to(".envelope-letter", { y: -75, rotation: -2, duration: 0.5 }, 0.18)
@@ -82,6 +106,12 @@ export default function GuestInvitationGate({
       </div>
       <p className="opening-dedication">{voice.arrival}</p>
       <div className="envelope-composition">
+        {weddingBotanical(data.wedding.settings) === "cherry-blossom" && (
+          <>
+            <CherryBlossomBranch className="opening-bough" budding />
+            <CherryBlossomPetals className="opening-petals" />
+          </>
+        )}
         <figure className="envelope-photograph" aria-hidden="true">
           <WeddingPhoto placement="invitation" alt="" />
           <figcaption>{data.wedding.location}</figcaption>

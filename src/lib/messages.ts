@@ -46,7 +46,7 @@ export async function sendMessage(
       "This message is scheduled for later. Send it now instead if you would rather not wait.",
     );
   const allGuests = await rows(
-    `SELECT g.*,h.name household_name FROM guests g
+    `SELECT g.*,h.name household_name, EXISTS(SELECT 1 FROM invitation_tokens t WHERE t.household_id=g.household_id AND t.wedding_id=g.wedding_id AND t.revoked=false AND t.preview=false AND t.expires_at>now()) invited FROM guests g
      JOIN households h ON h.id=g.household_id WHERE g.wedding_id=$1`,
     [weddingId],
   );

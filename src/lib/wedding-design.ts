@@ -38,6 +38,7 @@ export const mediaSchema = z.object({
 export const designSchema = z.object({
   world: worldSchema,
   opening: z.enum(["envelope", "seal"]),
+  botanical: z.enum(["none", "cherry-blossom"]).default("none"),
   story: z.string().max(10000),
   identity: identitySchema,
   media: mediaSchema,
@@ -62,6 +63,7 @@ export function designFromWedding(
   return {
     world: wedding.world,
     opening: wedding.opening,
+    botanical: weddingBotanical(wedding.settings),
     story: wedding.story,
     identity: weddingIdentity(wedding.settings),
     media: mediaSchema.catch({}).parse(wedding.settings.media ?? {}),
@@ -77,8 +79,14 @@ export function withDesign(wedding: Wedding, design: WeddingDesign): Wedding {
       ...wedding.settings,
       identity: design.identity,
       media: design.media,
+      botanical: design.botanical,
     },
   };
+}
+
+/** An optional stationery direction, independent of the six wedding worlds. */
+export function weddingBotanical(settings: Record<string, unknown>) {
+  return settings.botanical === "cherry-blossom" ? "cherry-blossom" : "none";
 }
 export function resolveWeddingMedia(
   wedding: Omit<Wedding, "owner_id">,
@@ -125,10 +133,15 @@ export function mergeDesign(
   local: WeddingDesign,
   remote: WeddingDesign,
 ) {
+  // Older saved/local drafts predate optional art directions. Normalize before
+  // comparing so a recovered draft cannot silently erase a published choice.
+  base = designSchema.parse(base);
+  local = designSchema.parse(local);
+  remote = designSchema.parse(remote);
   const merged = structuredClone(remote);
   const conflicts: string[] = [];
   const equal = designEqual;
-  for (const field of ["world", "opening", "story"] as const) {
+  for (const field of ["world", "opening", "botanical", "story"] as const) {
     if (!equal(local[field], base[field])) {
       if (
         !equal(remote[field], base[field]) &&

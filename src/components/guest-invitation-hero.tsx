@@ -9,6 +9,12 @@ import {
 import type { GuestData } from "@/lib/types";
 import { formatDate, getWorld } from "@/lib/worlds";
 import GuestKeepsake from "./guest-keepsake";
+import { weddingBotanical } from "@/lib/wedding-design";
+import {
+  CherryBlossomBranch,
+  CherryBlossomPetals,
+  CherryBlossomMark,
+} from "./guest-botanical";
 
 export default function GuestInvitationHero({
   data,
@@ -22,13 +28,14 @@ export default function GuestInvitationHero({
   const world = getWorld(data.wedding.world),
     voice = world.voice[locale];
   const names = data.wedding.names.split(" & ");
+  const blossom = weddingBotanical(data.wedding.settings) === "cherry-blossom";
   const firstEvent = [...data.events].sort(
     (a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at),
   )[0];
   const calendar = locale === "en" ? "Add to calendar" : "Añadir al calendario";
   return (
     <section
-      className="guest-hero atelier-invitation"
+      className={`guest-hero atelier-invitation ${blossom ? "blossom-invitation" : ""}`}
       aria-label={
         locale === "en" ? "Your personal invitation" : "Tu invitación personal"
       }
@@ -45,8 +52,11 @@ export default function GuestInvitationHero({
         </button>
       </div>
       <div className="hero-depth-scene atelier-suite">
+        {blossom && <CherryBlossomBranch className="invitation-bough" />}
         <div className="guest-hero-title atelier-letter">
+          {blossom && <CherryBlossomPetals className="letter-petals" />}
           <div className="atelier-vellum" aria-hidden="true" />
+          {blossom && <CherryBlossomMark className="letter-blossom-imprint" />}
           <span className="guest-hero-kicker">
             {data.wedding.status === "memories"
               ? locale === "en"
@@ -102,7 +112,7 @@ export default function GuestInvitationHero({
         {/* Each world prints its own ornament: silk for the photographic
             worlds, a drawn sprig for the botanical ones, nothing at all for
             Modernist. All three share the class the scroll motion moves. */}
-        {world.ornament === "silk" && (
+        {!blossom && world.ornament === "silk" && (
           <img
             className="atelier-silk"
             src="/images/invitation-silk.webp"
@@ -114,7 +124,7 @@ export default function GuestInvitationHero({
             draggable={false}
           />
         )}
-        {world.ornament === "sprig" && (
+        {!blossom && world.ornament === "sprig" && (
           <svg
             className="atelier-silk atelier-sprig"
             viewBox="0 0 220 340"
@@ -155,6 +165,7 @@ export default function GuestInvitationHero({
           href={"/api/guest/calendar?token=" + data.token}
           aria-label={calendar}
         >
+          {blossom && <CherryBlossomMark className="date-blossom" />}
           <span className="date-keepsake-script">
             {locale === "en" ? "Save the date" : "Reserva la fecha"}
           </span>

@@ -7,6 +7,8 @@ import { formatDate } from "@/lib/worlds";
 import GuestCrest from "./guest-crest";
 import { Arrow } from "./ui";
 import { weddingIdentity } from "@/lib/identity";
+import { weddingBotanical } from "@/lib/wedding-design";
+import { CherryBlossomMark } from "./guest-botanical";
 
 export default function GuestReplyCard({
   data,
@@ -34,6 +36,9 @@ export default function GuestReplyCard({
         <div className="reply-envelope" aria-hidden="true" />
         <div className="rsvp-stationery reply-suite">
           <div className="reply-cover">
+            {weddingBotanical(data.wedding.settings) === "cherry-blossom" && (
+              <CherryBlossomMark className="reply-blossom" budding={!replied} />
+            )}
             <GuestCrest
               monogram={weddingIdentity(data.wedding.settings).monogram}
               names={data.wedding.names}

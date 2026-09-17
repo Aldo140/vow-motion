@@ -1,7 +1,17 @@
 "use client";
 import { Arrow } from "@/components/ui";
 import { PageHeading, type PanelProps } from "./shared";
-export function Insights({ data }: PanelProps) {
+import { readinessSignature, weddingMomentum } from "@/lib/momentum";
+import { useState } from "react";
+import { MomentumFeedback } from "./momentum-feedback";
+export function Insights({ data, mutate, notify }: PanelProps) {
+  const [reviewed, setReviewed] = useState(false),
+    [saving, setSaving] = useState(false);
+  const momentum = weddingMomentum(data);
+  const planComplete = momentum.chapters.find((c) => c.id === "plan")?.complete;
+  const readyComplete = momentum.chapters.find(
+    (c) => c.id === "ready",
+  )?.complete;
   const attending = data.guests.filter((g) => g.status === "attending"),
     meals = [...new Set(attending.map((g) => g.meal).filter(Boolean))];
   return (
@@ -81,6 +91,57 @@ export function Insights({ data }: PanelProps) {
           ))}
         </div>
       </section>
+      {readyComplete ? (
+        <MomentumFeedback
+          title="Your current plans are reviewed."
+          detail="The final review will reopen if your guests, replies, seating, travel or programme change."
+          level="milestone"
+        />
+      ) : (
+        <section className="work-health">
+          <h2>One last, thoughtful review.</h2>
+          <p>
+            Check the programme, kitchen sheet, travel manifest, place cards and
+            the information on a household’s wedding pass with your team.
+          </p>
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={reviewed}
+              disabled={!planComplete || data.role === "viewer"}
+              onChange={(e) => setReviewed(e.target.checked)}
+            />
+            I have reviewed the current plans and final guest communication.
+          </label>
+          <button
+            className="button outline"
+            disabled={
+              !planComplete || !reviewed || saving || data.role === "viewer"
+            }
+            onClick={async () => {
+              setSaving(true);
+              try {
+                await mutate("momentum-review", {
+                  signature: readinessSignature(data),
+                });
+                setReviewed(false);
+              } catch (error) {
+                notify((error as Error).message, "error");
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
+            {saving ? "Saving review..." : "Mark current plans reviewed"}
+          </button>
+          {!planComplete && (
+            <p>
+              Resolve outstanding invitations, replies, required answers, seats
+              and guest questions before completing this review.
+            </p>
+          )}
+        </section>
+      )}
       <div className="insight-grid">
         <section>
           <h2>Attendance</h2>

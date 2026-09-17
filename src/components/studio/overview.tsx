@@ -1,247 +1,193 @@
-"use client";
-import { ActionList } from "@/components/studio-pilot";
-import { Arrow } from "@/components/ui";
-import { formatDate, getWorld } from "@/lib/worlds";
-import {
-  CalendarBlankIcon,
-  CheckIcon,
-  ClockIcon,
-  EnvelopeSimpleIcon,
-} from "@phosphor-icons/react";
-import Link from "next/link";
-import { useState } from "react";
+﻿"use client";
+import { formatDate } from "@/lib/worlds";
+import WeddingPhoto from "../wedding-photo";
+import { weddingMomentum, momentumHref } from "@/lib/momentum";
 import { PageHeading, type PanelProps } from "./shared";
-export function Overview(props: PanelProps) {
-  const [now] = useState(() => Date.now());
-  const { data } = props,
+import { MomentumLink } from "./momentum";
+import { CherryBlossomMark } from "../guest-botanical";
+import { Arrow } from "../ui";
+import Link from "next/link";
+
+export function Overview({ data }: PanelProps) {
+  const model = weddingMomentum(data),
     w = data.wedding,
-    attending = data.guests.filter((g) => g.status === "attending").length,
-    pending = data.guests.filter((g) => g.status === "pending").length,
-    declined = data.guests.filter((g) => g.status === "declined").length,
-    days = Math.max(
-      0,
-      Math.ceil((new Date(w.date + "T12:00:00Z").getTime() - now) / 86400000),
-    );
-  const link = (p: string) => "/studio/" + p + "?wid=" + w.id;
+    chapter = model.currentChapter,
+    action = model.primaryAction;
+  const link = (section: string, filter?: string) =>
+    momentumHref(w.id, { section, filter });
   return (
     <>
       <PageHeading
-        title={`A beautiful day in the making.`}
-        description={`Welcome back, ${data.user.name}. Let’s bring your people together.`}
+        title="A beautiful day in the making."
+        description={
+          model.isPlanner
+            ? "The wedding at a glance. Start with what needs your attention."
+            : `Welcome back, ${data.user.name}. Your next useful step is right here.`
+        }
       >
-        <span className="date-note">
-          <CalendarBlankIcon size={16} />
-          {formatDate(w.date)}
-        </span>
+        <span className="date-note">{formatDate(w.date)}</span>
       </PageHeading>
-      <div className="overview-hero">
-        <div className="overview-photo">
-          <img
-            src={getWorld(w.world).image}
-            alt={`${getWorld(w.world).name} wedding venue art direction`}
-          />
-          <div className="overview-photo-copy">
-            <span>{w.location.toUpperCase()}</span>
-            <h2>{w.names}</h2>
-            <p>
-              {formatDate(w.date)} <i /> {getWorld(w.world).name} collection
+      <section className="momentum-command" aria-labelledby="momentum-title">
+        <div className="momentum-command-copy">
+          <span className="eyebrow">
+            CHAPTER {String(chapter.number).padStart(2, "0")} ·{" "}
+            {chapter.title.toUpperCase()}
+          </span>
+          <p className="momentum-chapter-summary">{chapter.summary}</p>
+          <h2 id="momentum-title">
+            {action?.title || "A little space to enjoy what you’ve made."}
+          </h2>
+          <p>
+            {action?.explanation ||
+              "Your invitation and plans are here whenever you need them."}
+          </p>
+          {action && <MomentumLink data={data} action={action} primary />}
+          {action && (
+            <p className="momentum-consequence">
+              <span>WHAT THIS MAKES POSSIBLE</span>
+              {action.consequence}
             </p>
+          )}
+          {data.role === "viewer" && (
+            <p className="muted-copy">
+              You can review the plan. A wedding editor can resolve these items.
+            </p>
+          )}
+        </div>
+        <div className={`momentum-specimen identity-suite world-${w.world}`}>
+          <WeddingPhoto wedding={w} placement="invitation" alt="" />
+          <div className="momentum-specimen-paper">
+            <span>THE CELEBRATION OF</span>
+            <h3>{w.names}</h3>
+            <p>
+              {formatDate(w.date)}
+              <br />
+              {w.location}
+            </p>
+            {w.settings.botanical === "cherry-blossom" && (
+              <CherryBlossomMark budding={w.status === "draft"} />
+            )}
+            <Link href={link("experience")}>
+              Your invitation <Arrow size={15} />
+            </Link>
           </div>
-          <a className="image-edit" href={link("experience")}>
-            Your experience <Arrow diagonal size={16} />
-          </a>
         </div>
-        <div className="countdown">
-          <span>THE NEXT CHAPTER</span>
-          <strong>{days}</strong>
-          <p>days until “we do”</p>
-          <div className="countdown-rule" />
-          <small>
-            A place. A date.
-            <br />
-            All your favourite people.
-          </small>
-          <a href={link("events")}>
-            View your events <Arrow size={16} />
-          </a>
+      </section>
+      <section
+        className="momentum-attention"
+        aria-label="Other attention items"
+      >
+        <div>
+          <span className="eyebrow">
+            {model.isPlanner
+              ? "ALSO REQUIRES INTERVENTION"
+              : "ALSO WORTH A MOMENT"}
+          </span>
+          <p>
+            Start where it helps most. Time-sensitive details are brought to the
+            front as your day approaches.
+          </p>
         </div>
-      </div>
-      <ActionList {...props} />
-      <div className="guest-summary">
+        <div>
+          {model.secondaryActions.length ? (
+            model.secondaryActions.map((a) => (
+              <article key={a.id}>
+                <h3>{a.title}</h3>
+                <MomentumLink data={data} action={a} />
+              </article>
+            ))
+          ) : (
+            <p>
+              Your current details are accounted for. Revisit the journey below
+              whenever plans change.
+            </p>
+          )}
+        </div>
+      </section>
+      <section className="momentum-journey" aria-labelledby="journey-title">
+        <div className="panel-title">
+          <h2 id="journey-title">Your wedding, taking shape.</h2>
+          <span>
+            {model.completedChapters} of {model.totalChapters} chapters complete
+          </span>
+        </div>
+        <ol>
+          {model.chapters.map((c) => (
+            <li
+              key={c.id}
+              data-complete={c.complete}
+              aria-current={c.id === chapter.id ? "step" : undefined}
+            >
+              <span className="journey-number">
+                {c.complete ? "✓" : String(c.number).padStart(2, "0")}
+              </span>
+              <div>
+                <Link href={momentumHref(w.id, c.destination)}>
+                  {c.title}
+                  <Arrow diagonal size={14} />
+                </Link>
+                <p>{c.summary}</p>
+              </div>
+              <span className="journey-state">
+                {c.complete
+                  ? "Complete"
+                  : c.id === chapter.id
+                    ? "In focus"
+                    : "Open"}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section className="guest-summary">
         <div>
           <span>Your people</span>
-          <a href={link("guests")}>
+          <Link href={link("guests")}>
             Manage guest list <Arrow diagonal size={15} />
-          </a>
+          </Link>
         </div>
         <div className="summary-numbers">
           {[
-            [data.guests.length, "Invited", ""],
-            [attending, "Attending", "green"],
-            [pending, "Awaiting reply", "gold"],
-            [declined, "Unable to attend", "muted"],
-          ].map(([n, label, color]) => (
-            <a href={link("guests")} key={String(label)}>
-              <span className={"stat-dot " + color} />
+            [data.guests.length, "On the guest list", "all"],
+            [model.health.attending.length, "Attending", "attending"],
+            [
+              model.health.awaiting.length,
+              "Invited, awaiting reply",
+              "awaiting",
+            ],
+            [
+              data.guests.filter((g) => g.status === "declined").length,
+              "Unable to attend",
+              "declined",
+            ],
+          ].map(([n, label, filter]) => (
+            <Link href={link("guests", String(filter))} key={label}>
+              <span className="stat-dot" />
               <strong>{n}</strong>
               <span>{label}</span>
-            </a>
+            </Link>
           ))}
-        </div>
-        <div className="rsvp-track">
-          <span
-            style={{
-              width: `${(attending / Math.max(1, data.guests.length)) * 100}%`,
-            }}
-          />
-          <i
-            style={{
-              width: `${(declined / Math.max(1, data.guests.length)) * 100}%`,
-            }}
-          />
-        </div>
-        <p>
-          {data.guests.length
-            ? Math.round(((attending + declined) / data.guests.length) * 100)
-            : 0}
-          % of your guests have responded{" "}
-          <span>RSVP by {formatDate(w.rsvp_deadline)}</span>
-        </p>
-      </div>
-      <section className="planning-pulse" aria-label="Planning priorities">
-        <div>
-          <span className="eyebrow">WORTH A MOMENT</span>
-          <h2>
-            {pending
-              ? `${pending} replies still to come.`
-              : "The little details make the day."}
-          </h2>
-          <p>
-            {pending
-              ? "A gentle nudge keeps your guest count moving. Write only to the people you’re waiting on."
-              : "Give every guest a place, a plan, and something to look forward to."}
-          </p>
-          <Link
-            className="text-link"
-            href={link(pending ? "messages" : "invitations")}
-          >
-            {pending ? "Write an RSVP reminder" : "Review your invitations"}
-            <Arrow size={17} />
-          </Link>
-        </div>
-        <div className="planning-checks">
-          <Link href={link("seating")}>
-            <strong>
-              {
-                data.guests.filter(
-                  (g) => g.status === "attending" && !g.table_id,
-                ).length
-              }
-            </strong>
-            <span>attending guests need a seat</span>
-            <Arrow diagonal size={17} />
-          </Link>
-          <Link href={link("guests")}>
-            <strong>
-              {data.guests.filter((g) => !g.email && !g.phone).length}
-            </strong>
-            <span>guests without contact details</span>
-            <Arrow diagonal size={17} />
-          </Link>
-          <Link href={link("photos")}>
-            <strong>{data.photos.filter((p) => !p.approved).length}</strong>
-            <span>photos waiting for your review</span>
-            <Arrow diagonal size={17} />
-          </Link>
         </div>
       </section>
-      <div className="overview-bottom">
-        <section className="next-steps">
-          <div className="panel-title">
-            <h2>A little closer to the day</h2>
-            <span>YOUR NEXT STEPS</span>
-          </div>
-          {[
-            [
-              data.guests.length > 0,
-              "Bring your people together",
-              "Add your guest list and organize households.",
-              "guests",
-            ],
-            [
-              data.events.length > 0,
-              "Make room for every moment",
-              "Set the schedule, from welcome drinks to goodbyes.",
-              "events",
-            ],
-            [
-              w.status !== "draft",
-              "Make the experience yours",
-              "Choose your world and publish when you’re ready.",
-              "experience",
-            ],
-          ].map(([done, title, desc, path], i) => (
-            <a
-              className="step-row"
-              href={link(String(path))}
-              key={String(title)}
-            >
-              <span className={"step-circle " + (done ? "done" : "")}>
-                {done ? <CheckIcon size={16} /> : i + 1}
-              </span>
-              <div>
-                <h3>{title}</h3>
-                <p>{desc}</p>
-              </div>
-              <Arrow diagonal size={18} />
-            </a>
-          ))}
-        </section>
-        <section className="activity">
-          <div className="panel-title">
-            <h2>Little updates</h2>
-            <ClockIcon size={18} />
-          </div>
-          {data.activity.length ? (
-            data.activity.slice(0, 4).map((a) => (
-              <div className="activity-row" key={a.id}>
-                <span className="activity-dot" />
-                <div>
-                  <p>{a.action}</p>
-                  <small>
-                    {new Date(a.created_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                    })}
-                  </small>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="muted-copy">
-              Your wedding’s story starts here. Activity will appear as you
-              plan.
-            </p>
-          )}
-          <a className="text-link" href={link("analytics")}>
-            See the full picture
-            <Arrow size={16} />
-          </a>
-        </section>
-      </div>
-      <div className="studio-tip">
-        <EnvelopeSimpleIcon size={25} />
-        <div>
-          <b>An invitation worth opening.</b>
+      <section className="momentum-recent">
+        <span className="eyebrow">WHAT HAS CHANGED</span>
+        <h2>Little updates</h2>
+        {data.activity.length ? (
+          data.activity.slice(0, 4).map((a) => (
+            <div className="report-line" key={a.id}>
+              <span>{a.action}</span>
+              <time dateTime={a.created_at}>
+                {new Date(a.created_at).toLocaleDateString()}
+              </time>
+            </div>
+          ))
+        ) : (
           <p>
-            A personal link for every household. A first impression that feels
-            like you.
+            Your names, date and world are saved. This is where your next pieces
+            of work will appear.
           </p>
-        </div>
-        <a href={link("invitations")}>
-          Prepare your invitations <Arrow diagonal size={16} />
-        </a>
-      </div>
+        )}
+      </section>
     </>
   );
 }

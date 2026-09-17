@@ -1,6 +1,9 @@
 /* Wedding surfaces: cinematic photography, engraved rules, and layered stationery. */
 .marketing {
   --celebration-ink: #273b32;
+  /* Rotated print edges can round a fraction beyond a phone's viewport during
+     their entrance. Clip the artwork without creating a sticky scroll parent. */
+  overflow-x: clip;
 }
 .marketing .marketing-nav {
   max-width: none;

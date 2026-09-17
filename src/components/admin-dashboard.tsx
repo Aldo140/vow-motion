@@ -9,6 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { Brand, api } from "./ui";
 import type { AdminOverview, AdminAccountRow } from "@/lib/admin";
+import AdminMomentum from "./admin-momentum";
 
 const n = (value: unknown) => Number(value ?? 0);
 const pct = (part: number, whole: number) =>
@@ -83,7 +84,10 @@ export default function AdminDashboard({
       d.setUTCDate(d.getUTCDate() - i * 7);
       const key = d.toISOString().slice(0, 10);
       out.push({
-        label: d.toLocaleDateString("en-CA", { month: "short", day: "numeric" }),
+        label: d.toLocaleDateString("en-CA", {
+          month: "short",
+          day: "numeric",
+        }),
         count: counts.get(key) ?? 0,
       });
     }
@@ -96,7 +100,7 @@ export default function AdminDashboard({
     ["Created a wedding", n(f.created_wedding)],
     ["Added guests", n(f.added_guests)],
     ["Published", n(f.published)],
-    ["Sent invitations", n(f.sent_invites)],
+    ["Created invitation links", n(f.sent_invites)],
     ["Received an RSVP", n(f.got_rsvps)],
     ["Paid", n(f.paid)],
   ] as const;
@@ -211,13 +215,13 @@ export default function AdminDashboard({
           />
           <Stat
             value={n(e.invites_opened)}
-            label="Invitations opened"
+            label="Invitation links opened"
             sub={`of ${n(e.invites_issued)} issued · ${pct(n(e.invites_opened), n(e.invites_issued))}% open rate`}
           />
           <Stat
             value={n(e.rsvp_responses)}
             label="RSVP responses"
-            sub={`${n(e.messages)} messages sent · ${n(e.photos)} guest photos`}
+            sub={`${n(e.messages)} messages created · ${n(e.photos)} guest photos`}
           />
           <Stat
             value={n(c.paid)}
@@ -256,9 +260,13 @@ export default function AdminDashboard({
 
           <div className="ops-card">
             <div className="panel-title">
-              <h2>Activation funnel</h2>
+              <h2>Account milestones</h2>
               <span>REAL ACCOUNTS</span>
             </div>
+            <p className="ops-momentum-note">
+              All-time milestones, measured independently. Percentages use all
+              signed-up accounts; creating a link does not confirm delivery.
+            </p>
             <div className="ops-funnel">
               {funnelSteps.map(([label, count], i) => (
                 <div className="ops-funnel-row" key={label}>
@@ -267,15 +275,13 @@ export default function AdminDashboard({
                     <div
                       className="ops-funnel-fill"
                       style={{
-                        width: `${Math.max(2, Math.round((count / funnelTop) * 100))}%`,
+                        width: `${Math.round((count / funnelTop) * 100)}%`,
                       }}
                     />
                   </div>
                   <span className="ops-funnel-value">
                     {count}
-                    {i > 0 && (
-                      <i>{pct(count, n(funnelSteps[i - 1][1]))}%</i>
-                    )}
+                    {i > 0 && <i>{pct(count, n(f.signed_up))}%</i>}
                   </span>
                 </div>
               ))}
@@ -283,11 +289,16 @@ export default function AdminDashboard({
           </div>
         </section>
 
+        <AdminMomentum rows={data.momentum} />
+
         <nav className="ops-tabs" aria-label="Operations sections">
           {(
             [
               ["accounts", `Accounts (${rows.length})`],
-              ["enquiries", `Enquiries (${(data.enquiries as unknown[]).length})`],
+              [
+                "enquiries",
+                `Enquiries (${(data.enquiries as unknown[]).length})`,
+              ],
               ["activity", "Activity"],
             ] as [Tab, string][]
           ).map(([key, label]) => (

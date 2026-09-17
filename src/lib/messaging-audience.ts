@@ -9,6 +9,7 @@ type Recipient = {
   phone?: unknown;
   status?: unknown;
   tags?: unknown;
+  invited?: boolean;
 };
 
 /** The two things a guest can be missing before email or SMS can reach them. */
@@ -29,6 +30,9 @@ export function messagingAudience<T extends Recipient>(
   const selected = guests.filter(
     (g) =>
       audience === "everyone" ||
+      (audience === "invited-pending" &&
+        g.status === "pending" &&
+        g.invited === true) ||
       g.status === audience ||
       String(g.tags || "")
         .split(",")

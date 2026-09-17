@@ -4,8 +4,11 @@ import { Arrow, Field, Modal, Submit } from "@/components/ui";
 import { ArmchairIcon, PlusIcon, QrCodeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { finderConfig, finderActive } from "@/lib/finder";
+import { weddingHealth } from "@/lib/momentum";
+import { MomentumFeedback } from "./momentum-feedback";
 
 export function SeatingManager({ data, mutate, notify, refresh }: PanelProps) {
+  const health = weddingHealth(data);
   const [add, setAdd] = useState(false),
     [search, setSearch] = useState("");
   const attending = data.guests.filter((g) => g.status === "attending"),
@@ -39,6 +42,26 @@ export function SeatingManager({ data, mutate, notify, refresh }: PanelProps) {
           Add table
         </button>
       </PageHeading>
+      {attending.length > 0 &&
+        !health.unseated.length &&
+        !health.overCapacity.length && (
+          <MomentumFeedback
+            title="Everyone attending has a place."
+            detail={`${attending.length} table assignments now appear on the private wedding passes. ${health.awaiting.length ? `${health.awaiting.length} invited guests still need to reply; their seats can follow.` : "Review your place cards and kitchen sheet with the final count."}`}
+            href={`/studio/analytics?wid=${data.wedding.id}`}
+            cta="Review day-of documents"
+            level="chapter"
+          />
+        )}
+      {health.overCapacity.length > 0 && (
+        <section className="work-health">
+          <h2>{health.overCapacity.length} tables are over capacity.</h2>
+          <p>
+            Move a guest or adjust the plan before sharing the final seating
+            documents.
+          </p>
+        </section>
+      )}
       <DayOfFinder
         data={data}
         mutate={mutate}
@@ -240,7 +263,9 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
             onChange={(e) =>
               patch(
                 { enabled: e.target.checked },
-                e.target.checked ? "Table finder is on." : "Table finder is off.",
+                e.target.checked
+                  ? "Table finder is on."
+                  : "Table finder is off.",
               )
             }
           />
@@ -257,9 +282,8 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
             </p>
           ) : (
             <p className="finder-admin-status">
-              <span className="finder-admin-dot" /> Turned on, but not live
-              yet — it only opens from the day before to two days after the
-              wedding.{" "}
+              <span className="finder-admin-dot" /> Turned on, but not live yet
+              — it only opens from the day before to two days after the wedding.{" "}
               <button
                 className="text-link"
                 onClick={() => patch({ always_on: true }, "It's live now.")}
@@ -320,10 +344,7 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
                   type="checkbox"
                   checked={config.always_on}
                   onChange={(e) =>
-                    patch(
-                      { always_on: e.target.checked },
-                      "Saved.",
-                    )
+                    patch({ always_on: e.target.checked }, "Saved.")
                   }
                 />
                 Keep it live all the time (not just around the wedding date)
@@ -431,7 +452,12 @@ function DayOfFinder({ data, mutate, notify, refresh }: PanelProps) {
                   onClick={async () => {
                     setSaving(true);
                     await patch(
-                      { notes, notes_es: notesEs, welcome, welcome_es: welcomeEs },
+                      {
+                        notes,
+                        notes_es: notesEs,
+                        welcome,
+                        welcome_es: welcomeEs,
+                      },
                       "Notes saved.",
                     );
                     setSaving(false);

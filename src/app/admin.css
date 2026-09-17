@@ -1,6 +1,48 @@
 /* Operations dashboard — /admin. Same palette and type as the Studio, its own
    shell. Read-only apart from the admin-access toggle. */
 
+.ops-momentum {
+  margin: 28px 0;
+}
+.ops-momentum .panel-title {
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.ops-momentum-note {
+  max-width: 85ch;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.ops-momentum-totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin: 28px 0;
+}
+.ops-momentum-totals strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 400;
+}
+.ops-momentum-totals span {
+  display: block;
+  font-size: 11px;
+  margin-top: 8px;
+}
+.ops-momentum summary {
+  padding: 16px 0;
+  cursor: pointer;
+  font-size: 12px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 640px) {
+  .ops-momentum-totals {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .ops {
   min-height: 100dvh;
   background: oklch(98.4% 0.004 90);

@@ -4,8 +4,28 @@ import { Arrow, Field, Modal, Notice, Submit } from "@/components/ui";
 import { formatDate } from "@/lib/worlds";
 import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import {
+  weddingHealth,
+  matchesGuestFilter,
+  momentumHref,
+} from "@/lib/momentum";
+import { useWorkFilter } from "./use-work-filter";
+import Link from "next/link";
+import { GuestEditor } from "./guest-editor";
+import type { Guest } from "@/lib/types";
 
 export function RsvpManager({ data, mutate, notify }: PanelProps) {
+  const health = weddingHealth(data);
+  const [filter, setFilter] = useWorkFilter([
+    "all",
+    "awaiting",
+    "missing-meal",
+    "missing-answers",
+  ]);
+  const [edit, setEdit] = useState<Guest | null>(null);
+  const visible = data.guests.filter((g) =>
+    matchesGuestFilter(g, filter, health),
+  );
   const [add, setAdd] = useState(false),
     [error, setError] = useState("");
   return (
@@ -26,10 +46,65 @@ export function RsvpManager({ data, mutate, notify }: PanelProps) {
           <Arrow diagonal />
         </a>
       </PageHeading>
+      <section className="work-health" aria-label="Reply priorities">
+        <span className="eyebrow">
+          {health.invited.size
+            ? "HEARING FROM YOUR PEOPLE"
+            : "BEFORE THE FIRST REPLY"}
+        </span>
+        <h2>
+          {health.invited.size
+            ? `${data.guests.filter((g) => g.status !== "pending").length} of ${data.guests.length} guests have replied.`
+            : "Shape the questions, then open the invitation."}
+        </h2>
+        <p>
+          {health.attending.length} attending ·{" "}
+          {data.guests.filter((g) => g.status === "declined").length} declined ·{" "}
+          {health.awaiting.length} invited guests awaiting a reply
+        </p>
+        {health.awaiting.length > 0 && (
+          <Link
+            className="button outline"
+            href={momentumHref(data.wedding.id, {
+              section: "messages",
+              intent: "rsvp-reminder",
+            })}
+          >
+            Prepare a reminder for {health.awaiting.length} awaiting guests{" "}
+            <Arrow />
+          </Link>
+        )}
+        <div className="work-health-actions">
+          {[
+            ["all", "All responses"],
+            ["awaiting", `${health.awaiting.length} awaiting replies`],
+            ["missing-meal", `${health.missingMeals.length} missing meals`],
+            [
+              "missing-answers",
+              `${health.missingAnswers.length} missing required answers`,
+            ],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              aria-pressed={filter === value}
+              onClick={() => setFilter(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
       <div className="rsvp-management">
         <section>
           <h2>The replies</h2>
-          {data.guests.map((g) => (
+          {!visible.length && (
+            <p role="status">
+              {filter === "all"
+                ? "Replies will appear here after you add your guests."
+                : "No guests need attention in this view."}
+            </p>
+          )}
+          {visible.map((g) => (
             <div className="response-row" key={g.id}>
               <div>
                 <b>{g.name}</b>
@@ -37,6 +112,56 @@ export function RsvpManager({ data, mutate, notify }: PanelProps) {
                   {g.meal || "No meal selected"}
                   {g.dietary ? " · " + g.dietary : ""}
                 </small>
+                {filter === "missing-answers" && (
+                  <div className="response-details">
+                    {data.questions
+                      .filter(
+                        (q) =>
+                          q.required &&
+                          (q.condition !== "attending" ||
+                            g.status === "attending") &&
+                          !data.responses?.some(
+                            (r) =>
+                              (q.scope === "household"
+                                ? data.guests.some(
+                                    (member) =>
+                                      member.id === r.guest_id &&
+                                      member.household_id === g.household_id,
+                                  )
+                                : r.guest_id === g.id) &&
+                              String(r.answers[q.id] ?? "").trim(),
+                          ),
+                      )
+                      .map((q) => (
+                        <p key={q.id}>Needs: {q.label}</p>
+                      ))}
+                    <p>
+                      Ask the guest to update these answers through their
+                      private invitation.
+                    </p>
+                    <Link
+                      className="text-link"
+                      href={`/studio/invitations?wid=${data.wedding.id}&household=${g.household_id}`}
+                    >
+                      Open this household invitation
+                    </Link>
+                  </div>
+                )}
+                {filter === "missing-meal" && (
+                  <Link
+                    className="text-link"
+                    href={`/studio/invitations?wid=${data.wedding.id}&household=${g.household_id}`}
+                  >
+                    Share their invitation to complete meal choices
+                  </Link>
+                )}
+                <button
+                  className="text-link"
+                  disabled={data.role === "viewer"}
+                  onClick={() => setEdit(g)}
+                >
+                  Review guest details
+                </button>
               </div>
               <span className={"status " + g.status}>
                 {g.status === "pending" ? "Awaiting reply" : g.status}
@@ -85,6 +210,16 @@ export function RsvpManager({ data, mutate, notify }: PanelProps) {
           </Notice>
         </section>
       </div>
+      {edit && (
+        <GuestEditor
+          key={edit.id}
+          guest={edit}
+          data={data}
+          mutate={mutate}
+          notify={notify}
+          onClose={() => setEdit(null)}
+        />
+      )}
       {add && (
         <Modal title="Ask something thoughtful" onClose={() => setAdd(false)}>
           {error && <Notice error>{error}</Notice>}

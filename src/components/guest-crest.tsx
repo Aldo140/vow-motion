@@ -9,12 +9,14 @@ export default function GuestCrest({
   className = "",
   size = 132,
   monogram = "",
+  accessory,
 }: {
   names: string;
   world: World;
   className?: string;
   size?: number;
   monogram?: string;
+  accessory?: React.ReactNode;
 }) {
   const initials = names
     .split(" & ")
@@ -102,6 +104,7 @@ export default function GuestCrest({
           <b>{initials[0]}</b>
         )}
       </span>
+      {accessory}
     </span>
   );
 }

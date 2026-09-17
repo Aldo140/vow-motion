@@ -14,6 +14,40 @@ const base = designSchema.parse({
   media: {},
 });
 describe("design draft collaboration", () => {
+  it("keeps cherry blossom optional, validated and independent of all six worlds", () => {
+    expect(base.botanical).toBe("none");
+    expect(
+      designSchema.safeParse({ ...base, botanical: "unknown" }).success,
+    ).toBe(false);
+    for (const world of [
+      "riviera",
+      "maison",
+      "notte",
+      "heritage",
+      "modernist",
+      "garden",
+    ] as const) {
+      const draft = designSchema.parse({
+        ...base,
+        world,
+        botanical: "cherry-blossom",
+      });
+      const wedding = withDesign(
+        { id: "w", settings: { private_setting: true } } as unknown as Wedding,
+        draft,
+      );
+      expect(wedding.world).toBe(world);
+      expect(wedding.settings.botanical).toBe("cherry-blossom");
+      expect(wedding.settings.private_setting).toBe(true);
+      expect(
+        mergeDesign(
+          base,
+          { ...base, botanical: "cherry-blossom" },
+          { ...base, world },
+        ).merged,
+      ).toMatchObject({ world, botanical: "cherry-blossom" });
+    }
+  });
   it("merges independent identity, world and photo changes", () => {
     const local = structuredClone(base),
       remote = structuredClone(base);

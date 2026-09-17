@@ -18,6 +18,7 @@ niki@apanacheaffair.com           # hard bounce, address not found 2026-09-09 (b
 cori@eventsbycori.com             # hard bounce, address not found 2026-09-09 (batch 6–9)
 hello@flourisheventplanning.com   # hard bounce, address not found 2026-09-09 (batch 6–9)
 hello@eleventsweddings.com        # explicit not interested 2026-09-09 — do not contact
+info@almweddings.ca               # not a fit, ceremony-only officiant, declined 2026-09-10
 info@eventsisters.com             # hard bounce 2026-09-09 (batch 10)
 bookings@funweddings.ca           # hard bounce 2026-09-09 (batch 10)
 info@creativeweddings.ca          # hard bounce 2026-09-09 (batch 10)

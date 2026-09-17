@@ -4,8 +4,10 @@ import {
   PreviewButton,
   type PanelProps,
 } from "@/components/studio/shared";
-import { planningActions, setupSteps } from "@/lib/pilot";
+import { setupSteps } from "@/lib/pilot";
 import Link from "next/link";
+import { weddingMomentum } from "@/lib/momentum";
+import { MomentumLink } from "./studio/momentum";
 import type { Wedding } from "@/lib/types";
 import { useDraft } from "./studio/use-draft";
 import { LiveInvitation } from "./studio/live-invitation";
@@ -198,59 +200,20 @@ export function SetupManager(props: PanelProps) {
   );
 }
 
-export function ActionList(props: PanelProps) {
-  const { data } = props;
-  const actions = planningActions(data);
-  const link = (section: string) => `/studio/${section}?wid=${data.wedding.id}`;
+export function ActionList({ data }: PanelProps) {
+  const model = weddingMomentum(data);
   return (
     <section className="pilot-panel" aria-label="Your action list">
-      <div className="panel-title">
-        <h2>Your next actions</h2>
-        <Link href={link("setup")}>Continue wedding setup →</Link>
-      </div>
-      <details>
-        <summary>{actions.awaiting.length} households awaiting replies</summary>
-        <ul>
-          {actions.awaiting.map((h) => (
-            <li key={h.id}>{h.name}</li>
-          ))}
-        </ul>
-        <Link href={link("messages")}>Prepare a reminder</Link>
-      </details>
-      <details>
-        <summary>{actions.meals.length} event replies missing a meal</summary>
-        <ul>
-          {actions.meals.map((r) => (
-            <li key={r.guest_id + r.event_id}>
-              {data.guests.find((g) => g.id === r.guest_id)?.name} ·{" "}
-              {data.events.find((e) => e.id === r.event_id)?.title}
-            </li>
-          ))}
-        </ul>
-        <Link href={link("rsvps")}>Review RSVP details</Link>
-      </details>
-      <details>
-        <summary>
-          {actions.missingTravel.length} households missing required travel
-          answers
-        </summary>
-        <p>
-          Based on required travel, hotel, arrival or transport questions in
-          your RSVP.
-        </p>
-        <ul>
-          {actions.missingTravel.map((id) => (
-            <li key={id}>{data.households.find((h) => h.id === id)?.name}</li>
-          ))}
-        </ul>
-        <Link href={link("rsvps")}>Review travel questions</Link>
-      </details>
-      <details>
-        <summary>
-          {actions.unanswered.length} guest questions awaiting an answer
-        </summary>
-        <Link href={link("requests")}>Open guest questions</Link>
-      </details>
+      <h2>Your next actions</h2>
+      {[model.primaryAction, ...model.secondaryActions]
+        .filter((action) => !!action)
+        .map((action) => (
+          <article key={action.id}>
+            <h3>{action.title}</h3>
+            <p>{action.explanation}</p>
+            <MomentumLink data={data} action={action} />
+          </article>
+        ))}
     </section>
   );
 }

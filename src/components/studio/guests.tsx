@@ -14,9 +14,20 @@ import { useState } from "react";
 import { GuestEditor } from "./guest-editor";
 import { useDraft } from "./use-draft";
 import { ImportGuests } from "./import-guests";
+import { weddingHealth, matchesGuestFilter } from "@/lib/momentum";
+import { useWorkFilter } from "./use-work-filter";
 export function GuestManager({ data, mutate, notify }: PanelProps) {
+  const health = weddingHealth(data);
+  const [filter, setFilter] = useWorkFilter([
+    "all",
+    "attending",
+    "pending",
+    "declined",
+    "missing-email",
+    "unnamed-plus-ones",
+    "awaiting",
+  ]);
   const [search, setSearch] = useState(""),
-    [filter, setFilter] = useState("all"),
     [remove, setRemove] = useState<Guest | null>(null);
   const active = useDraft(
     data.user.email + ":" + data.wedding.id + ":guest-editor",
@@ -36,7 +47,7 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
     active.update((previous) => ({ ...previous, importing }));
   const guests = data.guests.filter(
     (g) =>
-      (filter === "all" || g.status === filter) &&
+      matchesGuestFilter(g, filter, health) &&
       (g.name + " " + g.email + " " + g.tags)
         .toLowerCase()
         .includes(search.toLowerCase()),
@@ -61,6 +72,51 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
           Add guest
         </button>
       </PageHeading>
+      {!!data.guests.length && (
+        <section className="work-health" aria-label="Guest list health">
+          <span className="eyebrow">YOUR PEOPLE, ACCOUNTED FOR</span>
+          <h2>
+            {data.guests.length} guests · {health.households.length} households
+          </h2>
+          <p>
+            {health.missingEmail.length
+              ? "One email per household makes their private invitation reachable."
+              : "Every household has an email for their invitation."}
+          </p>
+          <div className="work-health-actions">
+            <button
+              aria-pressed={filter === "missing-email"}
+              onClick={() => {
+                setSearch("");
+                setFilter("missing-email");
+              }}
+            >
+              {health.missingEmail.length} households need an email →
+            </button>
+            <button
+              aria-pressed={filter === "unnamed-plus-ones"}
+              onClick={() => {
+                setSearch("");
+                setFilter("unnamed-plus-ones");
+              }}
+            >
+              {health.unnamed.length} plus-ones need names →
+            </button>
+          </div>
+        </section>
+      )}
+      {!["all", "attending", "pending", "declined"].includes(filter) && (
+        <div className="exception-filter" role="status">
+          <span>
+            {filter === "missing-email"
+              ? "Showing every member of households without an email. Add an email to one member to resolve the household."
+              : filter === "awaiting"
+                ? "Showing invited guests who have not replied."
+                : "Showing plus-ones whose names need confirming."}
+          </span>
+          <button onClick={() => setFilter("all")}>Show all guests</button>
+        </div>
+      )}
       {!data.guests.length && (
         <section className="pilot-panel">
           <h2>Start with your first household.</h2>

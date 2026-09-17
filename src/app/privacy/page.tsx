@@ -39,6 +39,7 @@ export default function Page() {
         by the hosts. Photo files are served through authorized endpoints.
       </p>
       <h2>Storage and accounts</h2>
+      <p>Studio usage measurements help us understand which steps take effort. These contain only predefined action and screen names, counts, elapsed time and navigation counts. They do not contain wedding names, guest details, answers, messages, invitation links or a persistent tracking identifier. Demo measurements are separated. The browser’s Do Not Track preference disables collection.</p>
       <p>
         Passwords use salted scrypt hashes. Session cookies are HTTP-only and
         expire after seven days. Invitation tokens are stored as hashes. Demo

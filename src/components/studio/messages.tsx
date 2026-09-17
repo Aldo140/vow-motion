@@ -8,11 +8,13 @@ import {
   EnvelopeSimpleIcon,
   PlusIcon,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { messagingAudience } from "@/lib/messaging-audience";
 import { canRetry, despatchState } from "@/lib/message-state";
 import type { Message } from "@/lib/types";
+import { weddingMomentum } from "@/lib/momentum";
 
 const channelNoun = (channel: string) =>
   channel === "invitation"
@@ -58,6 +60,9 @@ function ReachReasons({
 }
 
 export function MessagesManager({ data, mutate, notify }: PanelProps) {
+  const momentum = weddingMomentum(data);
+  const intent = useSearchParams().get("intent");
+  const appliedIntent = useRef("");
   const [compose, setCompose] = useState(false),
     [error, setError] = useState(""),
     [working, setWorking] = useState(""),
@@ -70,26 +75,42 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
     [body, setBody] = useState("");
 
   const total = data.guests.length;
+  useEffect(() => {
+    if (intent !== "rsvp-reminder" || appliedIntent.current === intent) return;
+    appliedIntent.current = intent;
+    setAudience("invited-pending");
+    setChannel(
+      data.user.is_demo || data.capabilities.email ? "email" : "invitation",
+    );
+    setSubject("A little reminder for {{household}} · {{couple}}");
+    setBody(
+      `Hello {{household}},\n\nWe would love to know if you can join us. ${momentum.deadlineOverdue ? `Our reply date was ${formatDate(data.wedding.rsvp_deadline)}. Please let us know your plans as soon as you can.` : `Please reply by ${formatDate(data.wedding.rsvp_deadline)}.`} Open your private invitation:\n{{invitation_link}}\n\nIf your plans are still taking shape, please let us know.\n\nWith love,\n{{couple}}`,
+    );
+    setCompose(true);
+  }, [
+    intent,
+    data.user.is_demo,
+    data.capabilities.email,
+    data.wedding.rsvp_deadline,
+    momentum.deadlineOverdue,
+  ]);
   const emailReady = data.user.is_demo || data.capabilities.email;
   const guestsLink = `/studio/guests?wid=${data.wedding.id}`;
   const invitationsLink = `/studio/invitations?wid=${data.wedding.id}`;
-  const successfullyInvited = new Set(
-    data.invitationDispatches
-      .filter((delivery) => ["development", "sent", "delivered"].includes(delivery.status))
-      .map((delivery) => delivery.household_id),
-  );
-  const householdsWithEmail = new Set(
-    data.guests.filter((guest) => guest.email.trim()).map((guest) => guest.household_id),
-  );
-  const invitationsReady = data.households.filter(
-    (household) => householdsWithEmail.has(household.id) && !successfullyInvited.has(household.id),
-  ).length;
+  const invitationsReady = momentum.health.ready.length;
   const withoutLink = data.households.filter(
     (h) => !(data.invitedHouseholds || []).includes(h.id),
   ).length;
 
   const { recipients, selected, awaitingOptIn, awaitingContact, awaitingBoth } =
-    messagingAudience(data.guests, audience, channel);
+    messagingAudience(
+      data.guests.map((g) => ({
+        ...g,
+        invited: data.invitedHouseholds.includes(g.household_id),
+      })),
+      audience,
+      channel,
+    );
 
   const openCompose = (next?: { channel?: string; audience?: string }) => {
     setError("");
@@ -246,24 +267,49 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
         </Notice>
       )}
 
-      <section className="message-journey" aria-labelledby="message-journey-title">
+      <section
+        className="message-journey"
+        aria-labelledby="message-journey-title"
+      >
         <div className="message-journey-copy">
           <span className="eyebrow">STARTING THE CONVERSATION?</span>
-          <h2 id="message-journey-title">The first invitation has its own send.</h2>
+          <h2 id="message-journey-title">
+            The first invitation has its own send.
+          </h2>
           <p>
-            Vow Motion prepares one private email and link for every household at once.
-            After guests reply and choose updates, return here for reminders and wedding notes.
+            Vow Motion prepares one private email and link for every household
+            at once. After guests reply and choose updates, return here for
+            reminders and wedding notes.
           </p>
           <Link className="button primary" href={invitationsLink}>
             {invitationsReady
               ? `Prepare ${invitationsReady} ${invitationsReady === 1 ? "invitation" : "invitations"}`
-              : "Review invitation delivery"} <Arrow />
+              : "Review invitation delivery"}{" "}
+            <Arrow />
           </Link>
         </div>
         <ol className="message-journey-steps">
-          <li className="complete"><span>01</span><div><strong>Invite</strong><small>Private household emails</small></div></li>
-          <li><span>02</span><div><strong>Reply</strong><small>Attendance, meals and consent</small></div></li>
-          <li><span>03</span><div><strong>Keep in touch</strong><small>Updates from this post room</small></div></li>
+          <li className="complete">
+            <span>01</span>
+            <div>
+              <strong>Invite</strong>
+              <small>Private household emails</small>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <strong>Reply</strong>
+              <small>Attendance, meals and consent</small>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <strong>Keep in touch</strong>
+              <small>Updates from this post room</small>
+            </div>
+          </li>
         </ol>
       </section>
 
@@ -345,7 +391,14 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
             <span className="eyebrow">WHAT YOU HAVE WRITTEN</span>
           </div>
           {data.messages.map((m) => {
-            const reach = messagingAudience(data.guests, m.audience, m.channel);
+            const reach = messagingAudience(
+              data.guests.map((g) => ({
+                ...g,
+                invited: data.invitedHouseholds.includes(g.household_id),
+              })),
+              m.audience,
+              m.channel,
+            );
             const eligible = reach.recipients.length;
             const state = despatchState(m);
             const outcome = outcomeOf(m.id);
@@ -572,7 +625,8 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                       setSubject(t.subject);
                       setBody(t.body);
                       setAudience(t.audience);
-                      if ("channel" in t && t.channel && emailReady) setChannel(t.channel);
+                      if ("channel" in t && t.channel && emailReady)
+                        setChannel(t.channel);
                     }}
                   >
                     {t.label}
@@ -581,7 +635,10 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 ))}
               </div>
             </div>
-            <Field label="Subject" hint="Use {{household}}, {{guest}}, or {{couple}} and each email is filled in automatically.">
+            <Field
+              label="Subject"
+              hint="Use {{household}}, {{guest}}, or {{couple}} and each email is filled in automatically."
+            >
               <input
                 name="subject"
                 value={subject}
@@ -599,6 +656,9 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 >
                   <option value="everyone">Everyone</option>
                   <option value="pending">Awaiting reply</option>
+                  <option value="invited-pending">
+                    Invited guests awaiting reply
+                  </option>
                   <option value="attending">Attending</option>
                   <option value="declined">Unable to attend</option>
                   {[
@@ -626,7 +686,10 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 </select>
               </Field>
             </div>
-            <Field label="Your message" hint="Add {{invitation_link}} to give every household its own private RSVP link.">
+            <Field
+              label="Your message"
+              hint="Add {{invitation_link}} to give every household its own private RSVP link."
+            >
               <textarea
                 name="body"
                 rows={6}
@@ -635,16 +698,30 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                 required
               />
             </Field>
-            {(body.includes("{{") || subject.includes("{{")) && (() => {
-              const first = recipients[0];
-              const household = data.households.find((item) => item.id === first?.household_id)?.name || "The Rivera household";
-              const mergePreview = (value: string) => value
-                .replaceAll("{{household}}", household)
-                .replaceAll("{{guest}}", first?.name || "Sofia")
-                .replaceAll("{{couple}}", data.wedding.names)
-                .replaceAll("{{invitation_link}}", "Open your private invitation →");
-              return <div className="campaign-preview"><span>PERSONALIZED PREVIEW</span><strong>{mergePreview(subject)}</strong><p>{mergePreview(body)}</p></div>;
-            })()}
+            {(body.includes("{{") || subject.includes("{{")) &&
+              (() => {
+                const first = recipients[0];
+                const household =
+                  data.households.find(
+                    (item) => item.id === first?.household_id,
+                  )?.name || "The Rivera household";
+                const mergePreview = (value: string) =>
+                  value
+                    .replaceAll("{{household}}", household)
+                    .replaceAll("{{guest}}", first?.name || "Sofia")
+                    .replaceAll("{{couple}}", data.wedding.names)
+                    .replaceAll(
+                      "{{invitation_link}}",
+                      "Open your private invitation →",
+                    );
+                return (
+                  <div className="campaign-preview">
+                    <span>PERSONALIZED PREVIEW</span>
+                    <strong>{mergePreview(subject)}</strong>
+                    <p>{mergePreview(body)}</p>
+                  </div>
+                );
+              })()}
             <div className="audience-preview" role="status">
               <strong>
                 {recipients.length}{" "}

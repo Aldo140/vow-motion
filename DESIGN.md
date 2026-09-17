@@ -1,5 +1,24 @@
 # Vow Motion visual system
 
+## Wedding Momentum and seasonal stationery
+
+The Studio journey is an editorial ledger: seven numbered chapters, a single
+primary action, its consequence, and a short secondary attention list. Progress
+comes from real wedding records and deliberate reviews. The final review reopens
+when operational details change. Navigation to individual modules remains intact.
+Confirmation uses a fine rule, paper, a small seal and a short settling motion;
+there are no points, streaks or reward badges. Onboarding composes the couple's
+names, day and chosen world immediately, then reveals the saved private draft.
+
+Cherry blossom is an optional stationery direction inside each existing world.
+An authored branch sits behind the envelope, flowers across the photograph behind
+the name card, and leaves three resting petals on the paper. A pressed specimen
+accompanies the reply and opens after a saved response. The artwork replaces the
+existing silk/sprig instead of accumulating decoration. Phone placement is composed
+vertically; reduced motion keeps the full stationary arrangement. The Studio
+echoes the specimen only when the couple selected that direction. Architecture
+and pilot measurement semantics are documented in `docs/momentum.md`.
+
 A gallery in afternoon light: printed invitation specimens, generous margins, architectural photography, and sharp typography. The brief explicitly asks for ivory/bone, ink, and restrained accents; those instructions take precedence over randomized skill palette suggestions.
 
 Platform: near-white ivory, true ink, olive for active Studio controls. Manrope utility text; Bodoni Moda display recalls high-contrast fashion mastheads. Brand voice: printed, spacious, intimate. No rounded decorative card grids.

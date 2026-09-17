@@ -1,0 +1,448 @@
+/* Authored specimens, with paper/branch/photo depth. No ambient particle loop. */
+.cherry-branch,
+.cherry-mark,
+.cherry-petals {
+  --blossom-light: #faf0e9;
+  --blossom-shade: #ebc7bd;
+  --blossom-ink: #967061;
+  --blossom-wood: #665747;
+  pointer-events: none;
+}
+.blossom-petal {
+  fill: var(--blossom-light);
+  stroke: #b48e8070;
+  stroke-width: 0.75;
+}
+.blossom-petal-1 {
+  fill: #f5e3dc;
+}
+.blossom-vein {
+  stroke: var(--blossom-ink);
+  stroke-width: 0.55;
+  opacity: 0.27;
+  fill: none;
+}
+.blossom-bud {
+  fill: var(--blossom-shade);
+  stroke: var(--blossom-ink);
+  stroke-width: 0.65;
+}
+.blossom-stamens {
+  stroke: #a78964;
+  stroke-width: 0.8;
+}
+.blossom-stamens circle {
+  fill: #b89866;
+  stroke: none;
+}
+.blossom-heart {
+  fill: #c79a88;
+}
+.cherry-wood {
+  stroke: var(--blossom-wood);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cherry-trunk {
+  fill: var(--blossom-wood);
+  stroke-width: 0;
+}
+.cherry-twig {
+  stroke-width: 0.85;
+}
+.cherry-bark {
+  stroke: #ad9680;
+  stroke-width: 1;
+  opacity: 0.65;
+}
+.cherry-specimen-stem {
+  stroke: var(--blossom-wood);
+  stroke-width: 1.5;
+}
+.cherry-leaf {
+  fill: #858b6a;
+  opacity: 0.65;
+}
+.cherry-mark {
+  width: 80px;
+}
+.cherry-branch {
+  filter: drop-shadow(3px 6px 3px #30211422);
+  transform-origin: 100% 100%;
+}
+.blossom-invitation .atelier-suite {
+  isolation: isolate;
+}
+.blossom-invitation .invitation-bough {
+  position: absolute;
+  width: 46%;
+  height: auto;
+  right: -9%;
+  top: -9%;
+  z-index: 2;
+  transform: rotate(-12deg);
+}
+.letter-blossom-imprint {
+  display: block;
+  width: 42px;
+  height: 50px;
+  margin: -16px auto 14px;
+  opacity: 0.85;
+  --blossom-light: var(--guest-bg);
+  --blossom-shade: var(--guest-line);
+  --blossom-wood: var(--guest-accent);
+}
+.date-blossom {
+  display: none;
+}
+.cherry-mark.programme-blossom {
+  position: absolute;
+  inset: auto;
+  top: -16px;
+  left: 50%;
+  translate: -50% 0;
+  width: 38px;
+  height: 45px;
+  z-index: 1;
+  --blossom-light: var(--guest-bg);
+  --blossom-shade: var(--guest-line);
+  --blossom-wood: var(--guest-accent);
+}
+.blossom-invitation .atelier-letter {
+  z-index: 3;
+}
+.blossom-invitation .hero-image-frame {
+  z-index: 1;
+}
+.cherry-petals {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: visible;
+}
+.cherry-resting-petal {
+  position: absolute;
+  width: 18px;
+  height: 26px;
+  filter: drop-shadow(1px 2px 1px #37231929);
+}
+.cherry-resting-petal.petal-0 {
+  top: 8%;
+  left: 9%;
+  transform: rotate(-23deg);
+}
+.cherry-resting-petal.petal-1 {
+  bottom: 10%;
+  right: 7%;
+  transform: rotate(68deg);
+  width: 14px;
+}
+.cherry-resting-petal.petal-2 {
+  top: 16%;
+  right: 11%;
+  transform: rotate(135deg);
+  width: 12px;
+}
+.cherry-resting-petal.petal-3 {
+  top: 45%;
+  left: 2%;
+  transform: rotate(40deg);
+  width: 15px;
+}
+.cherry-resting-petal.petal-4 {
+  bottom: 28%;
+  left: 22%;
+  transform: rotate(-58deg);
+  width: 11px;
+}
+.letter-petals .petal-0 {
+  top: 5%;
+  left: 7%;
+}
+.letter-petals .petal-1 {
+  bottom: 6%;
+  right: 9%;
+}
+.letter-petals .petal-2 {
+  top: 8%;
+  right: 6%;
+}
+.letter-petals .petal-3 {
+  top: 42%;
+  left: 3%;
+}
+.letter-petals .petal-4 {
+  bottom: 14%;
+  left: 17%;
+}
+.opening-bough {
+  position: absolute;
+  z-index: 1;
+  width: 90%;
+  right: -48%;
+  bottom: -14%;
+  transform: rotate(-15deg);
+}
+.envelope-composition:has(.opening-bough) {
+  isolation: isolate;
+}
+.envelope-composition:has(.opening-bough) .invitation-envelope {
+  z-index: 2;
+}
+.opening-petals {
+  z-index: 5;
+  inset: 18% 10% 18% 38%;
+}
+.sealed-bough {
+  position: absolute;
+  width: 140%;
+  max-width: none;
+  right: -29%;
+  top: -26%;
+  z-index: -1;
+  transform: rotate(-20deg);
+}
+.seal-envelope:has(.sealed-bough) {
+  isolation: isolate;
+}
+.sealed-petals {
+  z-index: 2;
+  inset: 0;
+}
+.sealed-petals .petal-0 {
+  top: 12%;
+  left: 14%;
+}
+.sealed-petals .petal-1 {
+  bottom: 10%;
+  right: 5%;
+}
+.sealed-petals .petal-2 {
+  top: 21%;
+  right: 16%;
+}
+.sealed-petals .petal-3 {
+  top: 46%;
+  left: 6%;
+}
+.sealed-petals .petal-4 {
+  bottom: 26%;
+  right: 24%;
+}
+.reply-cover:has(.reply-blossom) {
+  position: relative;
+}
+.reply-blossom {
+  position: absolute;
+  width: 92px;
+  bottom: 14px;
+  left: 12px;
+  transform: rotate(-17deg);
+  filter: drop-shadow(1px 2px 1px #0002);
+}
+.reply-blossom .blossom-bloom {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bloom-pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes bloom-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.botanical-choice {
+  margin: 36px 0 16px;
+  padding-top: 30px;
+  border-top: 1px solid #ddd;
+}
+.botanical-choice h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 29px;
+}
+.botanical-choice p {
+  font-size: 13px;
+  line-height: 1.8;
+  max-width: 62ch;
+}
+.botanical-choice-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.botanical-choice-options button {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: 24px 18px;
+  gap: 12px;
+  border: 1px solid #ddded3;
+  background: #f8f7f0;
+  min-width: 0;
+}
+.botanical-choice-options button[aria-pressed="true"] {
+  border-color: #64704f;
+  box-shadow: inset 0 0 0 1px #64704f;
+}
+.botanical-choice-options button > span:last-child {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.botanical-choice-options .cherry-mark {
+  height: 96px;
+  width: 76px;
+}
+.botanical-plain {
+  height: 96px;
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: 48px;
+}
+@media (max-width: 768px) {
+  .blossom-invitation .invitation-bough {
+    width: 62%;
+    right: -26%;
+    top: -20%;
+    transform: rotate(-2deg);
+    z-index: 4;
+  }
+  .letter-blossom-imprint {
+    width: 32px;
+    height: 39px;
+    margin: -6px auto 10px;
+  }
+  .blossom-invitation .atelier-letter {
+    z-index: 3;
+  }
+  .blossom-invitation .letter-petals .petal-0 {
+    width: 13px;
+  }
+  .blossom-invitation .letter-petals .petal-1 {
+    width: 11px;
+  }
+  .blossom-invitation .letter-petals .petal-2 {
+    width: 10px;
+  }
+  .blossom-invitation .letter-petals .petal-3 {
+    width: 12px;
+  }
+  .blossom-invitation .letter-petals .petal-4 {
+    width: 9px;
+  }
+  .opening-bough {
+    width: 128%;
+    right: -80%;
+    bottom: 38%;
+    transform: rotate(11deg);
+    z-index: 3;
+  }
+  .sealed-bough {
+    width: 115%;
+    right: -15%;
+    top: -20%;
+    transform: rotate(-13deg);
+  }
+  .reply-blossom {
+    width: 58px;
+    bottom: 4px;
+    left: 4px;
+  }
+  .cherry-mark.programme-blossom {
+    width: 30px;
+    height: 36px;
+    top: -12px;
+  }
+  .date-blossom {
+    display: block;
+    position: absolute;
+    width: 30px;
+    top: -6px;
+    right: 4px;
+    opacity: 0.8;
+    --blossom-light: var(--guest-bg);
+    --blossom-shade: var(--guest-line);
+    --blossom-wood: var(--guest-accent);
+    transform: rotate(12deg);
+  }
+  .botanical-choice-options {
+    gap: 10px;
+  }
+  .botanical-choice-options button {
+    padding: 18px 10px;
+  }
+  .opening-bough,
+  .blossom-invitation .invitation-bough {
+    animation: cherry-sway 9s ease-in-out infinite;
+    transform-origin: 46% 38%;
+  }
+  .sealed-bough {
+    animation: cherry-sway 9s ease-in-out infinite;
+  }
+  .cherry-resting-petal {
+    animation: cherry-drift 5s ease-in-out infinite;
+  }
+  .cherry-resting-petal.petal-1 {
+    animation-delay: -1.6s;
+    animation-duration: 6s;
+  }
+  .cherry-resting-petal.petal-2 {
+    animation-delay: -3.1s;
+    animation-duration: 4.4s;
+  }
+  .cherry-resting-petal.petal-3 {
+    animation-delay: -0.6s;
+    animation-duration: 5.6s;
+  }
+  .cherry-resting-petal.petal-4 {
+    animation-delay: -2.3s;
+    animation-duration: 4.9s;
+  }
+  .reply-blossom {
+    animation: cherry-sway 9s ease-in-out infinite;
+    transform-origin: 55% 45%;
+  }
+}
+@keyframes cherry-sway {
+  0%,
+  100% {
+    rotate: -0.8deg;
+  }
+  50% {
+    rotate: 0.8deg;
+  }
+}
+@keyframes cherry-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cherry-branch,
+  .cherry-resting-petal,
+  .reply-blossom,
+  .reply-blossom .blossom-bloom {
+    animation: none !important;
+    transition: none !important;
+  }
+  .blossom-invitation .invitation-bough {
+    transform: rotate(-12deg) !important;
+  }
+  .reply-blossom {
+    transform: rotate(-17deg);
+  }
+}
