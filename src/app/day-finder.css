@@ -711,13 +711,33 @@
   margin-top: 22px;
 }
 .finder-next {
-  padding: 24px 22px;
+  position: relative;
+  padding: 26px 22px 24px;
   background: #fffdf8;
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--f-ink) 10%, transparent);
   outline: 1px solid color-mix(in srgb, var(--f-accent) 22%, transparent);
   outline-offset: -8px;
+  overflow: hidden;
+}
+/* A slim printed-programme rule across the top of the card, so it reads as
+   a designed piece of stationery rather than a plain white box. */
+.finder-next::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--f-accent) 20%,
+    var(--f-accent) 80%,
+    transparent
+  );
+  opacity: 0.75;
 }
 .finder-moment-badge {
   display: flex;
@@ -818,9 +838,11 @@
   font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.55;
+  opacity: 0.6;
   text-align: center;
-  margin: 0 0 10px;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--f-ink) 14%, transparent);
 }
 .finder-later {
   list-style: none;
@@ -830,7 +852,7 @@
 .finder-later li {
   position: relative;
   display: grid;
-  grid-template-columns: 26px 58px 1fr;
+  grid-template-columns: 26px 64px 1fr;
   gap: 4px 10px;
   padding: 12px 4px;
   margin: 0 -8px;
@@ -896,23 +918,30 @@
 .finder-later-time {
   grid-column: 2;
   grid-row: 1;
+  align-self: start;
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--f-accent);
+  color: var(--f-bg, #fffdf8);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 600;
   white-space: nowrap;
-  opacity: 0.7;
-  padding-top: 3px;
 }
 .finder-later-title {
   grid-column: 3;
   grid-row: 1;
   font-family: var(--serif, Georgia, serif);
-  font-size: 15px;
+  font-size: 16px;
 }
 .finder-later-venue {
   grid-column: 3;
   grid-row: 2;
-  font-size: 11px;
-  opacity: 0.65;
+  font-family: var(--serif, Georgia, serif);
+  font-style: italic;
+  font-size: 12px;
+  opacity: 0.75;
   color: inherit;
   text-underline-offset: 3px;
 }
