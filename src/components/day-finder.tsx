@@ -401,6 +401,7 @@ export default function DayFinder({
           className="finder-cover-img"
           ref={coverImgRef}
         />
+        <div className="finder-cover-tint" aria-hidden="true" />
         <div className="finder-cover-scrim" aria-hidden="true" />
         <button
           className="finder-lang finder-lang-float"
@@ -590,18 +591,28 @@ export default function DayFinder({
             </div>
             {laterList.length > 0 && (
               <div className="finder-later-wrap">
+                <span className="finder-monogram-divider" aria-hidden="true">
+                  <i />
+                  <GuestCrest
+                    names={names}
+                    world={world}
+                    monogram={monogram}
+                    size={26}
+                  />
+                  <i />
+                </span>
                 <p className="finder-later-heading">{t.comingUp}</p>
                 <ol className="finder-later">
                   {laterList.map((e) => {
                     const MomentIcon = momentIcon(e.title);
                     return (
                       <li key={e.id}>
-                        <span className="finder-later-rail" aria-hidden="true">
-                          <i className="finder-later-icon">
+                        <span className="finder-later-rail">
+                          <i className="finder-later-icon" aria-hidden="true">
                             <MomentIcon size={13} weight="duotone" />
                           </i>
+                          <span className="finder-later-time">{e.time}</span>
                         </span>
-                        <span className="finder-later-time">{e.time}</span>
                         <span className="finder-later-title">{e.title}</span>
                         <a
                           className="finder-later-venue"

@@ -105,6 +105,16 @@
   object-fit: cover;
   will-change: transform;
 }
+/* A duotone wash off the wedding's own accent colour — so the cover photo
+   reads as branded to this couple rather than a generic travel shot, using
+   only the palette already chosen for them, not a new asset. */
+.finder-cover-tint {
+  position: absolute;
+  inset: 0;
+  background: var(--f-accent);
+  mix-blend-mode: color;
+  opacity: 0.4;
+}
 .finder-cover-scrim {
   position: absolute;
   inset: 0;
@@ -834,6 +844,33 @@
 .finder-later-wrap {
   margin-top: 16px;
 }
+/* A small monogram breaks the hero card from the rest of the evening — the
+   same crest used on the cover, in miniature, rather than a plain gap. */
+.finder-monogram-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 4px 0 14px;
+  color: var(--f-accent);
+}
+.finder-monogram-divider i {
+  flex: 1;
+  max-width: 64px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--f-ink) 22%, transparent)
+  );
+}
+.finder-monogram-divider i:last-child {
+  background: linear-gradient(
+    270deg,
+    transparent,
+    color-mix(in srgb, var(--f-ink) 22%, transparent)
+  );
+}
 .finder-later-heading {
   font-size: 9px;
   letter-spacing: 2px;
@@ -848,22 +885,31 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+/* Each remaining moment is its own small ticket, not a row in a plain
+   list — matches the "printed stationery" feel .finder-next and
+   .finder-result already use, rather than a flat divided list. */
 .finder-later li {
   position: relative;
   display: grid;
-  grid-template-columns: 26px 64px 1fr;
-  gap: 4px 10px;
-  padding: 12px 4px;
-  margin: 0 -8px;
-  padding-inline: 12px;
-  border-radius: 8px;
-  border-top: 1px solid color-mix(in srgb, var(--f-ink) 12%, transparent);
+  grid-template-columns: 52px 1fr;
+  gap: 2px 14px;
+  padding: 14px 14px 14px 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 12%, transparent);
+  background: color-mix(in srgb, var(--f-accent) 4%, #fffdf8);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--f-ink) 6%, transparent);
   font-size: 12px;
-  transition: background-color 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease;
 }
 .finder-later li:hover {
-  background: color-mix(in srgb, var(--f-accent) 7%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--f-ink) 10%, transparent);
 }
 /* Each remaining moment settles in on its own beat once the schedule is
    revealed — the same idea as .finder-result's line-by-line entrance,
@@ -885,15 +931,16 @@
     animation-delay: 0.32s;
   }
 }
-/* A little itinerary rail — the same idea as "the order of the day" in the
-   full invitation, so the finder's schedule reads as a continuous evening
-   rather than a plain stacked list. */
+/* A small date box — icon above, time below — rather than a bare icon on a
+   connecting rail, now that each moment is its own ticket rather than a
+   stop on a continuous line. */
 .finder-later-rail {
   grid-column: 1;
   grid-row: 1 / 3;
-  position: relative;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   padding-top: 2px;
 }
 .finder-later-icon {
@@ -901,42 +948,37 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--f-accent) 14%, transparent);
   color: var(--f-accent);
 }
-.finder-later li:not(:last-child) .finder-later-rail::after {
-  content: "";
-  position: absolute;
-  top: 28px;
-  bottom: -12px;
-  width: 1px;
-  background: color-mix(in srgb, var(--f-ink) 14%, transparent);
-}
+/* Text-bearing, so it stays ink-on-tinted-background rather than a solid
+   accent fill — a solid accent fill can't guarantee AA contrast against a
+   fixed text colour across every wedding's own palette (some worlds carry
+   a pale, desaturated accent), but this pairing inherits the same
+   ink-on-background contrast the rest of the page already relies on. */
 .finder-later-time {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
   width: fit-content;
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 3px;
-  background: var(--f-accent);
-  color: var(--f-bg, #fffdf8);
+  border: 1px solid color-mix(in srgb, var(--f-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--f-accent) 12%, var(--f-bg));
+  color: var(--f-ink);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   white-space: nowrap;
 }
 .finder-later-title {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
   font-family: var(--serif, Georgia, serif);
   font-size: 16px;
 }
 .finder-later-venue {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 2;
   font-family: var(--serif, Georgia, serif);
   font-style: italic;
