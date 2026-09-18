@@ -152,7 +152,7 @@ export async function guestData(rawToken: string): Promise<GuestData> {
       [weddingId],
     ),
     rows(
-      "SELECT g.id,g.household_id,g.name,g.email,g.phone,g.address,g.language,g.status,g.meal,g.dietary,g.is_plus_one,g.consent,t.name table_name FROM guests g LEFT JOIN seat_assignments s ON s.guest_id=g.id LEFT JOIN seating_tables t ON t.id=s.table_id WHERE g.household_id=$1",
+      "SELECT g.id,g.household_id,g.name,g.email,g.phone,g.address,g.language,g.status,g.meal,g.dietary,g.is_plus_one,g.is_child,g.consent,t.name table_name FROM guests g LEFT JOIN seat_assignments s ON s.guest_id=g.id LEFT JOIN seating_tables t ON t.id=s.table_id WHERE g.household_id=$1",
       [householdId],
     ),
     rows(

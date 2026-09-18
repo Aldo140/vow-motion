@@ -40,6 +40,7 @@ export type Guest = {
   dietary: string;
   notes: string;
   is_plus_one: boolean;
+  is_child: boolean;
   consent: boolean;
   table_name?: string;
   table_id?: string;

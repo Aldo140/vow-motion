@@ -17,7 +17,6 @@ for (const input of files) {
   const rows = JSON.parse(fs.readFileSync(file, "utf8"));
   for (const [index, row] of rows.entries()) {
     const body = String(row.body || "");
-    const detail = String(row.detail || "");
     const email = String(row.email || "").trim().toLowerCase();
     const greeting = String(row.greeting || "").trim().toLowerCase();
     const reasons = [];

@@ -205,6 +205,7 @@ export function GuestManager({ data, mutate, notify }: PanelProps) {
                       <small>
                         {g.email || "No email yet"}
                         {g.is_plus_one ? " · Plus-one" : ""}
+                        {g.is_child ? " · Child" : ""}
                       </small>
                     </div>
                   </div>

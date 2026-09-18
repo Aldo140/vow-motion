@@ -3,11 +3,13 @@ import { Arrow, Field, Modal, Notice } from "@/components/ui";
 import { formatDate } from "@/lib/worlds";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { PageHeading, type PanelProps } from "./shared";
+import { PageHeading, PreviewButton, type PanelProps } from "./shared";
 import { MomentumFeedback } from "./momentum-feedback";
 import { trackMomentum } from "@/lib/momentum-telemetry-client";
 import { useSearchParams } from "next/navigation";
 import { householdContact, weddingHealth } from "@/lib/momentum";
+import { preSendChecklist } from "@/lib/pre-send-checklist";
+import { explainDeliveryStatus } from "@/lib/delivery-recovery";
 
 const sentStates = new Set(["development", "sent", "delivered"]);
 const blockedStates = new Set(["bounced", "complained", "suppressed"]);
@@ -29,7 +31,8 @@ const deliveryLabel = (status?: string, opened?: string | null) => {
   );
 };
 
-export function Invitations({ data, mutate, notify }: PanelProps) {
+export function Invitations(props: PanelProps) {
+  const { data, mutate, notify } = props;
   const health = weddingHealth(data);
   const query = useSearchParams();
   const [outcome, setOutcome] = useState<{
@@ -87,10 +90,16 @@ export function Invitations({ data, mutate, notify }: PanelProps) {
   const chosen = selected.filter((householdId) =>
     ready.some((household) => household.id === householdId),
   );
+  const checklist = preSendChecklist(data, chosen);
 
   const openCampaign = () => {
     setSelected(ready.map((household) => household.id));
     setStep(1);
+    setCampaign(true);
+  };
+  const retryHousehold = (householdId: string) => {
+    setSelected([householdId]);
+    setStep(2);
     setCampaign(true);
   };
   const dispatch = async (mode: "test" | "send") => {
@@ -146,6 +155,7 @@ export function Invitations({ data, mutate, notify }: PanelProps) {
         title="It starts with an invitation."
         description="Review every household once. Vow Motion creates each private link and places it into the right email automatically."
       >
+        <PreviewButton {...props} />
         <button
           className="button primary"
           disabled={!ready.length || data.role === "viewer"}
@@ -211,15 +221,56 @@ export function Invitations({ data, mutate, notify }: PanelProps) {
         </Notice>
       )}
       {attention.length > 0 && (
-        <Notice error>
-          {attention.length}{" "}
-          {attention.length === 1 ? "delivery needs" : "deliveries need"}{" "}
-          attention.{" "}
-          <Link href={`/studio/guests?wid=${data.wedding.id}`}>
-            Review the email address
-          </Link>{" "}
-          before sending again.
-        </Notice>
+        <section className="delivery-recovery" aria-label="Delivery recovery">
+          <h2>Delivery recovery</h2>
+          <p className="muted-copy">
+            Provider acceptance is separate from confirmed delivery. Here is
+            what each status means and whether it is safe to try again.
+          </p>
+          {attention.map((household) => {
+            const status = household.dispatch?.status || "";
+            const explanation = explainDeliveryStatus(status);
+            const retryable = !household.blocked && !explanation.blocking;
+            return (
+              <div className="delivery-recovery-item" key={household.id}>
+                <div>
+                  <b>{household.name}</b>
+                  <small>{household.email || "No email on file"}</small>
+                  <span
+                    className={
+                      "delivery-status-pill" +
+                      (explanation.blocking ? " blocking" : "")
+                    }
+                  >
+                    {explanation.label}
+                  </span>
+                  <p>{explanation.detail}</p>
+                  {household.dispatch?.error && (
+                    <small className="invite-delivery-error">
+                      {household.dispatch.error}
+                    </small>
+                  )}
+                </div>
+                {retryable ? (
+                  <button
+                    className="button outline small"
+                    disabled={data.role === "viewer"}
+                    onClick={() => retryHousehold(household.id)}
+                  >
+                    Retry this invitation <Arrow size={14} />
+                  </button>
+                ) : (
+                  <Link
+                    className="text-link"
+                    href={`/studio/guests?wid=${data.wedding.id}&filter=missing-email`}
+                  >
+                    Correct the email
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </section>
       )}
       <div className="invitation-workspace">
         <div className={"invitation-live-preview world-" + data.wedding.world}>
@@ -363,6 +414,17 @@ export function Invitations({ data, mutate, notify }: PanelProps) {
           </div>
           {step === 1 && (
             <>
+              {checklist.length > 0 && (
+                <section className="pre-send-checklist" aria-label="Before you send">
+                  <h3>Before you send</h3>
+                  {checklist.map((warning) => (
+                    <Notice key={warning.id}>
+                      {warning.text}{" "}
+                      <Link href={warning.href}>{warning.cta}</Link>
+                    </Notice>
+                  ))}
+                </section>
+              )}
               <section className="campaign-recipients">
                 <div>
                   <h3>{chosen.length} household invitations ready</h3>

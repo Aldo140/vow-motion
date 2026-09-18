@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import type { Wedding } from "@/lib/types";
 import { useDraft } from "./use-draft";
 import { DraftStatus } from "./draft-status";
+import { PrivacyCentre } from "./privacy-centre";
 
 export function SettingsManager({
   data,
@@ -209,6 +210,20 @@ export function SettingsManager({
                   />
                 </Field>
               )}
+              <div className="muted-copy" role="status" aria-live="polite">
+                <p>
+                  {privacy === "public"
+                    ? "Once published, anyone with your story address can read your story, names, date, and location. Guest replies and contact details still require a personal invitation."
+                    : privacy === "password"
+                      ? "Once published, visitors need your wedding password to read the story. The password does not unlock guest replies or contact details."
+                      : "Guests need their personal invitation link to see their household and event details."}
+                </p>
+                <p>
+                  Each personal invitation link lets its holder view and update
+                  that household. Share it privately. If a link is forwarded by
+                  mistake, replace it from Invitations to revoke the old link.
+                </p>
+              </div>
               <Field label="Experience mode">
                 <select name="status" defaultValue={data.wedding.status}>
                   <option value="draft">Draft</option>
@@ -321,6 +336,7 @@ export function SettingsManager({
                 ))}
             </div>
           </section>
+          {data.role === "owner" && <PrivacyCentre data={data} notify={notify} />}
         </>
       )}
     </>

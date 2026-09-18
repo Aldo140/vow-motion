@@ -7,6 +7,11 @@ import {
   randomUUID,
 } from "node:crypto";
 import { db, rows } from "./db";
+import { HttpError } from "./security/http-error";
+import { isAdmin } from "./security/admin-policy";
+export { HttpError } from "./security/http-error";
+export { adminEmails, isAdmin } from "./security/admin-policy";
+export { sameOrigin } from "./security/request-origin";
 export const id = () => randomUUID();
 export const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
@@ -47,19 +52,6 @@ export async function currentUser(): Promise<User | null> {
     )[0] || null
   );
 }
-/** Addresses granted operator access by environment, lowercased. */
-export function adminEmails() {
-  return (process.env.ADMIN_EMAILS || "")
-    .split(/[,\s]+/)
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean);
-}
-export function isAdmin(user: User | null): user is User {
-  return (
-    !!user &&
-    (user.is_admin || adminEmails().includes(user.email.toLowerCase()))
-  );
-}
 export async function requireAdmin() {
   const user = await currentUser();
   if (!isAdmin(user)) throw new HttpError(404, "Not found.");
@@ -80,14 +72,6 @@ export async function session(userId: string) {
     path: "/",
     maxAge: 604800,
   });
-}
-export class HttpError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
 }
 export async function requireUser() {
   const user = await currentUser();
@@ -133,14 +117,4 @@ export async function rateLimit(key: string, limit = 20) {
       429,
       "Too many attempts. Please try again in 15 minutes.",
     );
-}
-export function sameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  if (
-    origin &&
-    new URL(origin).host !==
-      (request.headers.get("host") || new URL(request.url).host) &&
-    origin !== process.env.APP_URL
-  )
-    throw new HttpError(403, "This request could not be verified.");
 }

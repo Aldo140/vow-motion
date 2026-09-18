@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
+import { readJson } from "@/lib/request-body";
 import { rows, db } from "@/lib/db";
 import {
   passwordMatches,
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
     await rateLimit("story:" + request.headers.get("x-forwarded-for"), 20);
     const input = z
       .object({ slug: z.string().max(200), password: z.string().max(200) })
-      .parse(await request.json());
+      .parse(await readJson(request, 16_000));
     const wedding = (
       await rows(
         "SELECT id,password_hash FROM weddings WHERE slug=$1 AND privacy='password' AND status<>'draft'",

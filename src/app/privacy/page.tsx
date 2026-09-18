@@ -49,9 +49,11 @@ export default function Page() {
       <p>
         Guests can correct their contact details and responses using their
         invitation. Ask your hosts to export or remove guest information. Hosts
-        can remove guests and photos in the Studio. Account-wide deletion is
-        handled by the installation operator using the documented database
-        procedure.
+        can remove guests and photos in the Studio. Account owners can export
+        everything stored for their weddings, or schedule their own account for
+        deletion, from Studio → Settings → Privacy centre. Deletion has a
+        14-day grace period you can cancel, then removes owned weddings, their
+        guest information, and their photo files.
       </p>
       <h2>Before a public launch</h2>
       <p>

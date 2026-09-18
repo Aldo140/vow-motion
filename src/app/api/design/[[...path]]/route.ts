@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { createHash } from "node:crypto";
 import { access, hash, HttpError, id, rateLimit, sameOrigin } from "@/lib/auth";
 import { db, rows, transaction } from "@/lib/db";
-import { readJson } from "@/lib/request-body";
+import { readFormData, readJson } from "@/lib/request-body";
 import { deletePhoto, readPhoto, savePhoto } from "@/lib/photo-storage";
 import {
   designFromWedding,
@@ -117,23 +117,7 @@ async function handle(request: NextRequest, context: Context) {
           413,
           "Choose a photo under 4 MB or let the photo picker prepare it.",
         );
-      const reader = request.body?.getReader();
-      if (!reader) throw new HttpError(400, "Choose a photo.");
-      const chunks: Uint8Array[] = [];
-      let total = 0;
-      while (true) {
-        const chunk = await reader.read();
-        if (chunk.done) break;
-        total += chunk.value.byteLength;
-        if (total > 4_400_000) {
-          await reader.cancel();
-          throw new HttpError(413, "Choose a photo under 4 MB.");
-        }
-        chunks.push(chunk.value);
-      }
-      const form = await new Response(Buffer.concat(chunks), {
-        headers: { "Content-Type": request.headers.get("content-type") || "" },
-      }).formData();
+      const form = await readFormData(request, 4_400_000);
       const file = form.get("file");
       if (!(file instanceof File) || !file.size || file.size > 4_000_000)
         throw new HttpError(400, "Choose a JPG, PNG or WebP photo under 4 MB.");

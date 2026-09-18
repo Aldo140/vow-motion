@@ -12,6 +12,7 @@ export default function GuestNavigation({
   onRsvp,
   onPass,
   onContact,
+  onSimple,
 }: {
   names: string;
   location: string;
@@ -21,6 +22,7 @@ export default function GuestNavigation({
   onRsvp: () => void;
   onPass: () => void;
   onContact: () => void;
+  onSimple: () => void;
 }) {
   const id = useId();
   const card = useRef<HTMLDivElement>(null);
@@ -110,6 +112,10 @@ export default function GuestNavigation({
             {locale === "en"
               ? "Contact & wedding updates"
               : "Contacto y novedades"}
+            <ArrowUpRightIcon size={17} aria-hidden="true" />
+          </button>
+          <button onClick={() => action(onSimple)}>
+            {locale === "en" ? "Switch to simple view" : "Cambiar a vista sencilla"}
             <ArrowUpRightIcon size={17} aria-hidden="true" />
           </button>
         </nav>

@@ -28,6 +28,7 @@ export function GuestEditor({
       language: guest?.language || data.wedding.locale,
       notes: guest?.notes || "",
       is_plus_one: guest?.is_plus_one || false,
+      is_child: guest?.is_child || false,
       consent: guest?.consent || false,
     },
   );
@@ -163,6 +164,22 @@ export function GuestEditor({
             This is an assigned plus-one (they can update their name)
           </label>
         )}
+        {value.is_plus_one && !guest && (
+          <p className="form-note">
+            Give this row a name like “Alex&rsquo;s guest” until they tell you
+            who is coming — the invitation shows it as a plus-one either way,
+            and they can rename themselves when they RSVP.
+          </p>
+        )}
+        <label className="check-label">
+          <input
+            name="is_child"
+            type="checkbox"
+            checked={value.is_child}
+            onChange={(e) => change("is_child", e.target.checked)}
+          />
+          This guest is a child
+        </label>
         <label className="check-label">
           <input
             name="consent"

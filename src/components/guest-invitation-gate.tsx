@@ -20,11 +20,13 @@ export default function GuestInvitationGate({
   locale,
   onLocaleChange,
   onOpen,
+  onSimple,
 }: {
   data: GuestData;
   locale: "en" | "es";
   onLocaleChange: () => void;
   onOpen: () => void;
+  onSimple: () => void;
 }) {
   const root = useRef<HTMLElement>(null);
   const hydrated = useHydrated();
@@ -96,6 +98,13 @@ export default function GuestInvitationGate({
       />
       <div className="gate-top">
         <Link href="/">VOW MOTION</Link>
+        <button
+          className="gate-simple-link"
+          disabled={!hydrated}
+          onClick={onSimple}
+        >
+          {locale === "en" ? "Prefer a simpler view?" : "¿Prefieres algo más simple?"}
+        </button>
         <button
           disabled={!hydrated}
           onClick={onLocaleChange}

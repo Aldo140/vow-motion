@@ -15,7 +15,14 @@ import {
   sameOrigin,
   session,
 } from "@/lib/auth";
+import { readJson } from "@/lib/request-body";
 import { deliver, emailAvailable } from "@/lib/providers";
+import {
+  cancelAccountDeletion,
+  pendingDeletion,
+  scheduleAccountDeletion,
+} from "@/lib/account-deletion";
+import { exportAccountData } from "@/lib/account-export";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,33 +30,28 @@ type Context = { params: Promise<{ action: string }> };
 const json = (data: unknown, status = 200) =>
   NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } });
 
-async function readBody(request: Request) {
-  const reader = request.body?.getReader();
-  if (!reader) throw new HttpError(400, "Enter your account details.");
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > 16_000) {
-      await reader.cancel();
-      throw new HttpError(413, "This request is too large.");
-    }
-    chunks.push(value);
-  }
-  try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch {
-    throw new HttpError(400, "Please send valid account details.");
-  }
-}
-
 async function handler(request: NextRequest, context: Context) {
   try {
     const { action } = await context.params;
-    if (action === "me" && request.method === "GET")
-      return json({ user: await currentUser() });
+    if (action === "me" && request.method === "GET") {
+      const user = await currentUser();
+      return json({
+        user,
+        deletion: user ? await pendingDeletion(user.id) : null,
+      });
+    }
+    if (action === "export" && request.method === "GET") {
+      const user = await requireUser();
+      await rateLimit("account-export:" + user.id, 5);
+      const payload = await exportAccountData(user.id);
+      return new NextResponse(JSON.stringify(payload, null, 2), {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="vow-motion-data.json"',
+          "Cache-Control": "no-store",
+        },
+      });
+    }
     if (request.method !== "POST") throw new HttpError(405, "Use POST.");
     sameOrigin(request);
 
@@ -128,7 +130,7 @@ async function handler(request: NextRequest, context: Context) {
       await rateLimit("account-verification-confirm:" + user.id, 30);
       const input = z
         .object({ challenge: z.uuid(), code: z.string().regex(/^\d{6}$/) })
-        .parse(await readBody(request));
+        .parse(await readJson(request, 16_000));
       const verified = await transaction(async (connection) => {
         await connection.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
           user.id,
@@ -168,7 +170,7 @@ async function handler(request: NextRequest, context: Context) {
       );
       const input = z
         .object({ email: z.email().toLowerCase() })
-        .parse(await readBody(request));
+        .parse(await readJson(request, 16_000));
       await rateLimit("reset-email:" + hash(input.email), 5);
       if (!emailAvailable() && process.env.NODE_ENV === "production")
         throw new HttpError(
@@ -234,7 +236,7 @@ async function handler(request: NextRequest, context: Context) {
           code: z.string().regex(/^\d{6}$/),
           password: z.string().min(10).max(200),
         })
-        .parse(await readBody(request));
+        .parse(await readJson(request, 16_000));
       const result = await transaction(async (connection) => {
         const record = (
           await connection.query<{ user_id: string; code_hash: string }>(
@@ -264,6 +266,33 @@ async function handler(request: NextRequest, context: Context) {
         );
       return json({ ok: true });
     }
+    if (action === "deletion-request") {
+      const user = await requireUser();
+      await rateLimit("deletion-request:" + user.id, 5);
+      if (user.is_demo)
+        throw new HttpError(
+          400,
+          "Demo workspaces clear themselves automatically; there is nothing to delete.",
+        );
+      const input = z
+        .object({ password: z.string().min(1).max(200) })
+        .parse(await readJson(request, 4_000));
+      const stored = (
+        await rows<{ password_hash: string }>(
+          "SELECT password_hash FROM users WHERE id=$1",
+          [user.id],
+        )
+      )[0];
+      if (!stored || !passwordMatches(input.password, stored.password_hash))
+        throw new HttpError(401, "That password is incorrect.");
+      const deletion = await scheduleAccountDeletion(user.id);
+      return json({ ok: true, deletion });
+    }
+    if (action === "deletion-cancel") {
+      const user = await requireUser();
+      await cancelAccountDeletion(user.id);
+      return json({ ok: true });
+    }
     if (action !== "register" && action !== "login")
       throw new HttpError(404, "This action is unavailable.");
     await rateLimit("auth:" + request.headers.get("x-forwarded-for"), 30);
@@ -274,7 +303,7 @@ async function handler(request: NextRequest, context: Context) {
         name: z.string().max(100).optional(),
         referral: z.string().max(100).optional(),
       })
-      .parse(await readBody(request));
+      .parse(await readJson(request, 16_000));
     if (action === "register") {
       const userId = id();
       await transaction(async (connection) => {

@@ -156,6 +156,7 @@ export default function Experience() {
   const scrubTrackRef = useRef<HTMLDivElement>(null);
   const scrubFillRef = useRef<HTMLDivElement>(null);
   const scrubHeadRef = useRef<HTMLDivElement>(null);
+  const filmTimeRef = useRef(0);
   const [activeMoment, setActiveMoment] = useState(0);
   const [scrubbed, setScrubbed] = useState(false);
   // Set for the moment a click jumps the film and the page smooth-scrolls
@@ -166,6 +167,10 @@ export default function Experience() {
   // Every route into "jump the film somewhere" — a moment button below, or a
   // drag on the scrubber under the frame itself — goes through here.
   const seekFilm = useCallback((t: number, opts?: { scroll?: boolean }) => {
+    // The composition loops at its duration; hold the final frame for End.
+    t = Math.max(0, Math.min(EXPLAINER_TOTAL - 0.001, t));
+    filmTimeRef.current = t;
+    scrubTrackRef.current?.setAttribute("aria-valuenow", String(Math.round(t)));
     explainerRef.current?.seek(t);
     let nearest = 0;
     for (let i = 1; i < MOMENT_CUES.length; i++)
@@ -197,6 +202,8 @@ export default function Experience() {
   // (see composition/runtime.tsx), so they must not need to change on every
   // render — they read the current DOM node from the ref each time instead.
   const onExplainerTick = useCallback((T: number) => {
+    filmTimeRef.current = T;
+    scrubTrackRef.current?.setAttribute("aria-valuenow", String(Math.round(T)));
     applyAmbient(heroRef.current, explainerAmbient(T));
     // A live playhead, mutated directly rather than through React state —
     // this fires every animation frame, same reasoning as applyAmbient.
@@ -418,10 +425,18 @@ export default function Experience() {
               aria-label="Scrub the film"
               aria-valuemin={0}
               aria-valuemax={EXPLAINER_TOTAL}
+              aria-valuenow={0}
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === "ArrowRight") jumpTo(Math.min(7, activeMoment + 1));
-                if (e.key === "ArrowLeft") jumpTo(Math.max(0, activeMoment - 1));
+                if (e.target !== e.currentTarget) return;
+                const next = e.key === "Home" ? 0
+                  : e.key === "End" ? EXPLAINER_TOTAL
+                    : ["ArrowRight", "ArrowUp"].includes(e.key) ? Math.min(EXPLAINER_TOTAL, filmTimeRef.current + 1)
+                      : ["ArrowLeft", "ArrowDown"].includes(e.key) ? Math.max(0, filmTimeRef.current - 1)
+                        : null;
+                if (next === null) return;
+                e.preventDefault();
+                seekFilm(next);
               }}
             >
               <span className="xp-scrub-fill" ref={scrubFillRef} />

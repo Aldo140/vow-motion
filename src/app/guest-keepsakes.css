@@ -436,6 +436,11 @@
   padding-block: 4px;
   font-size: 12px;
 }
+.day-pass-child-tag {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--guest-accent);
+}
 .day-pass-guests > div > span {
   font-size: 10px;
   text-align: right;

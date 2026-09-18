@@ -27,6 +27,7 @@ import GuestNavigation from "./guest-navigation";
 import GuestReplyCard from "./guest-reply-card";
 import GuestRequests from "./guest-requests";
 import GuestSealGate from "./guest-seal-gate";
+import GuestSimpleView from "./guest-simple-view";
 import GuestWeddingPass from "./guest-wedding-pass";
 import { ContactModal } from "./guest/contact-modal";
 import { copy } from "./guest/copy";
@@ -58,11 +59,27 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
     ),
     [modal, setModal] = useState<"rsvp" | "pass" | "photos" | "contact" | null>(
       null,
-    );
+    ),
+    [simple, setSimple] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (initial.token === "design-preview") setData(initial);
   }, [initial]);
+  const simpleKey = `vow-simple-${initial.wedding.id}-${initial.guests[0]?.household_id}`;
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(simpleKey);
+      if (saved) setSimple(saved === "yes");
+      else if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+        setSimple(true);
+    } catch {}
+  }, [simpleKey]);
+  const chooseSimple = (value: boolean) => {
+    setSimple(value);
+    try {
+      localStorage.setItem(simpleKey, value ? "yes" : "no");
+    } catch {}
+  };
   const replayRequested = useRef(false);
   const c = copy[locale],
     world = getWorld(data.wedding.world),
@@ -401,7 +418,18 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
             </a>
           </div>
         )}
-        {!opened ? (
+        {simple ? (
+          <GuestSimpleView
+            data={data}
+            locale={locale}
+            onLocale={() => setLocale(locale === "en" ? "es" : "en")}
+            onImmersive={() => chooseSimple(false)}
+            onRsvp={() => setModal("rsvp")}
+            onPass={() => setModal("pass")}
+            onContact={() => setModal("contact")}
+            refresh={refresh}
+          />
+        ) : !opened ? (
           // Both openings hand the guest to the same invitation; the couple
           // chooses which one arrives.
           (() => {
@@ -415,6 +443,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 locale={locale}
                 onLocaleChange={() => setLocale(locale === "en" ? "es" : "en")}
                 onOpen={openInvitation}
+                onSimple={() => chooseSimple(true)}
               />
             );
           })()
@@ -429,6 +458,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
               onRsvp={() => setModal("rsvp")}
               onPass={() => setModal("pass")}
               onContact={() => setModal("contact")}
+              onSimple={() => chooseSimple(true)}
             />
             <main id="main">
               <GuestInvitationHero

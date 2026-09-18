@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { rows, transaction } from "@/lib/db";
 import { sendMessage, MAX_ATTEMPTS } from "@/lib/messages";
 import { publishDuePosts, maybeRefreshInstagramToken } from "@/lib/social";
+import { id } from "@/lib/auth";
+import {
+  processDueAccountDeletions,
+  processPendingFileDeletions,
+} from "@/lib/account-deletion";
 export async function POST(req: NextRequest) {
   if (
     !process.env.CRON_SECRET ||
@@ -76,6 +81,18 @@ export async function POST(req: NextRequest) {
     // cascade, then the user — sessions and challenges cascade on that.
     const stale =
       "SELECT id FROM users WHERE is_demo AND created_at < now() - interval '7 days'";
+    // Queue the demo photos for deletion before the weddings that reference
+    // them disappear, so the files are not orphaned on disk/blob storage.
+    const stalePhotos = await connection.query<{ filename: string }>(
+      `SELECT p.filename FROM photos p
+       JOIN weddings w ON w.id = p.wedding_id
+       WHERE w.owner_id IN (${stale})`,
+    );
+    for (const photo of stalePhotos.rows)
+      await connection.query(
+        "INSERT INTO pending_file_deletions(id,filename,reason) VALUES($1,$2,'demo_cleanup')",
+        [id(), photo.filename],
+      );
     await connection.query(
       `DELETE FROM pilot_feedback WHERE author_id IN (${stale})`,
     );
@@ -95,8 +112,15 @@ export async function POST(req: NextRequest) {
       storySessions: storySessions.rows.length,
       rateLimits: limits.rows.length,
       demoAccounts: demoAccounts.rows.length,
+      queuedPhotoDeletions: stalePhotos.rows.length,
     };
   });
+  const accountDeletions = await processDueAccountDeletions().catch(
+    (e) => ({ completed: 0, failures: [{ id: "n/a", error: (e as Error).message }] }),
+  );
+  const fileDeletions = await processPendingFileDeletions().catch(
+    (e) => ({ deleted: 0, failures: [{ id: "n/a", error: (e as Error).message }] }),
+  );
   // Brand social: refresh the Instagram token well before it lapses, then
   // publish any queued post whose scheduled time has arrived.
   const tokenState = await maybeRefreshInstagramToken().catch(
@@ -112,6 +136,8 @@ export async function POST(req: NextRequest) {
     processed: results.length,
     results,
     cleanup,
+    accountDeletions,
+    fileDeletions,
     social: { token: tokenState, ...social },
   });
 }

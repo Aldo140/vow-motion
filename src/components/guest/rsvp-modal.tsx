@@ -1,7 +1,8 @@
 "use client";
 import { Arrow, Field, Modal, Notice, Submit, api } from "@/components/ui";
-import type { GuestData } from "@/lib/types";
+import type { Guest, GuestData } from "@/lib/types";
 import { eventTime, formatDate } from "@/lib/worlds";
+import { isPlaceholderGuestName } from "@/lib/momentum";
 import { CheckIcon } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { copy } from "./copy";
@@ -9,6 +10,20 @@ import {
   WeddingUpdatesFields,
   type WeddingUpdatesContact,
 } from "./wedding-updates-fields";
+
+/** A short, plain-language tag so a guest never has to guess who a row is for. */
+function guestRoleTag(guest: Guest, locale: "en" | "es") {
+  if (guest.is_child) return locale === "en" ? "Child" : "Niño/a";
+  if (guest.is_plus_one)
+    return isPlaceholderGuestName(guest.name)
+      ? locale === "en"
+        ? "Your plus-one — name it below"
+        : "Tu acompañante — indica su nombre abajo"
+      : locale === "en"
+        ? "Plus-one"
+        : "Acompañante";
+  return "";
+}
 export function RsvpModal({
   data,
   locale,
@@ -51,7 +66,7 @@ export function RsvpModal({
               guest_id: g.id,
               event_id: e.id,
               attending: saved?.attending ?? true,
-              meal: saved?.meal || "",
+              meal: saved?.meal || (g.is_child ? "Children’s meal" : ""),
               dietary: saved?.dietary || "",
               answers: saved?.answers || {},
             };
@@ -218,7 +233,6 @@ export function RsvpModal({
               {locale === "en" ? "The little details" : "Los detalles"}
             </span>
           </div>
-          {error && <Notice error>{error}</Notice>}
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -271,7 +285,14 @@ export function RsvpModal({
                         );
                         return (
                           <fieldset className="attendance-person" key={g.id}>
-                            <legend>{g.name}</legend>
+                            <legend>
+                              {g.name}
+                              {guestRoleTag(g, locale) && (
+                                <span className="guest-role-tag">
+                                  {guestRoleTag(g, locale)}
+                                </span>
+                              )}
+                            </legend>
                             <label
                               className={
                                 responses[index]?.attending ? "selected" : ""
@@ -348,6 +369,17 @@ export function RsvpModal({
                       <section key={r.guest_id + r.event_id}>
                         <h3>
                           {data.guests.find((g) => g.id === r.guest_id)?.name}
+                          {(() => {
+                            const guest = data.guests.find(
+                              (g) => g.id === r.guest_id,
+                            );
+                            const tag = guest ? guestRoleTag(guest, locale) : "";
+                            return (
+                              tag && (
+                                <span className="guest-role-tag">{tag}</span>
+                              )
+                            );
+                          })()}
                         </h3>
                         <small>
                           {data.events.find((e) => e.id === r.event_id)?.title}
@@ -528,6 +560,21 @@ export function RsvpModal({
                   </p>
                 )}
               </div>
+            )}
+            {data.preview && step === 1 && (
+              <Notice>
+                {locale === "en"
+                  ? "This is a read-only preview, so responses can't be saved from here. Send the household its real invitation link to collect an actual RSVP."
+                  : "Esta es una vista previa de solo lectura, así que las respuestas no se pueden guardar desde aquí. Envía al hogar su enlace real de invitación para recoger una respuesta real."}
+              </Notice>
+            )}
+            {error && (
+              <Notice error>
+                {error}{" "}
+                {locale === "en"
+                  ? "Nothing was lost — your answers are still filled in above."
+                  : "No se ha perdido nada: tus respuestas siguen completas arriba."}
+              </Notice>
             )}
             <div className="form-actions">
               {step === 1 && (

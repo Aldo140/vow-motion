@@ -6,6 +6,8 @@ A wedding planning application that connects a private guest list to invitations
 
 This repository is a working launch preview. See [Launch status](docs/LAUNCH-STATUS.md) for implemented behavior, validation evidence, and the work required before public operation. The full product brief is in [docs/MASTER-BRIEF.md](docs/MASTER-BRIEF.md); visual direction and asset provenance are in [DESIGN.md](DESIGN.md) and [docs/ASSETS.md](docs/ASSETS.md).
 
+See the [project review](docs/PROJECT-REVIEW.md) for the September 2026 security fixes, standards review, structural priorities and client-value roadmap.
+
 ## Run locally
 
 Use Node.js 22.12 or newer in the 22.x line, or another version supported by the installed dependencies. The workspace runtime is Node 22.23.2. Vitest 5 has a higher Node minimum than Next.js itself.
@@ -16,7 +18,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). On the sign-in page, **Try a private demo** creates an isolated demo account with three fictional weddings. Demo guest and RSVP changes are saved to the local database. Demo messages never contact email or SMS providers, even when provider credentials are present. A browser with no existing session cookie creates a separate demo; there is no automatic demo expiry or cleanup job.
+Open [localhost:3000](http://localhost:3000). On the sign-in page, **Try a private demo** creates an isolated demo account with three fictional weddings. Demo guest and RSVP changes are saved to the local database. Demo messages never contact email or SMS providers, even when provider credentials are present. A browser with no existing session cookie creates a separate demo; the authenticated worker removes demo accounts older than seven days. Associated upload cleanup still needs a durable deletion workflow.
 
 If this workspace's Node installation is absent from your shell path, first run:
 
@@ -34,18 +36,21 @@ Copy [.env.example](.env.example) and configure only the services you intend to 
 | --- | --- |
 | `APP_URL` | Canonical origin for invitation links, checkout redirects, and metadata. Use the final HTTPS origin in production. |
 | `DATABASE_URL` | PostgreSQL connection string. When empty, the app uses embedded PGlite at `DATA_DIR/postgres`. |
-| `DATA_DIR` | Persistent local storage directory; defaults to `./data`. Uploaded photos are stored under `uploads`, even with remote PostgreSQL. |
+| `DATA_DIR` | Persistent local storage directory; defaults to `./data`. Local uploads use `uploads`; configured Vercel Blob storage takes precedence. |
+| `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID` | Configure Blob storage; guest and design photos use private objects served through authorized endpoints. |
+| `ADMIN_EMAILS` | Operator email allowlist. Admin access requires a verified, non-demo account, including database-granted admins. |
+| `RESEND_WEBHOOK_SECRET` | Verifies delivery callbacks at `/api/webhooks/resend`. |
 | `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX_ID` | Enable email using a managed AgentMail inbox; no custom sender domain is required. Resend takes precedence if both providers are configured. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Enable email delivery. The sender must be configured with the email provider. Missing credentials route messages to a development outbox. |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | Enable SMS delivery. All three values must be configured for actual sending. |
 | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ESSENTIAL`, `STRIPE_PRICE_SIGNATURE`, `STRIPE_PRICE_BESPOKE` | Enable one-time Stripe Checkout for configured prices. No card data is stored by this application. |
 | `STRIPE_WEBHOOK_SECRET` | Verifies Stripe events received at `/api/webhooks/stripe`. |
 | `CRON_SECRET` | Required bearer secret for the scheduled message worker. |
-| `RESEND_WEBHOOK_SECRET`, `ADMIN_EMAILS`, `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID` | Reserved configuration boundaries; no email callback handler, admin console, or custom-domain automation currently consumes these values. |
+| `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID` | Reserved custom-domain automation configuration. |
 
-SQL migrations in [migrations/](migrations/) run in filename order on the first database access and are tracked in `schema_migrations`. They require schema-write permissions and the migration files at runtime. There is no separate migration CLI. Bring up a single instance first when applying a new migration; migration startup is not coordinated across replicas.
+SQL migrations in [migrations/](migrations/) run in filename order on the first database access and are tracked in `schema_migrations`. They require schema-write permissions and the migration files at runtime. There is no separate migration CLI. PostgreSQL migration startup uses a transaction-scoped advisory lock across replicas. Embedded PGlite still requires a single process.
 
-Embedded PGlite must have one application process accessing its data directory. Stop the development server before starting a production server against the same embedded database. For multiple application instances, use PostgreSQL and implement shared durable upload storage. Database queries and transactions are serialized within each application process; this is a correctness-oriented preview implementation, not a demonstrated high-throughput deployment.
+Embedded PGlite must have one application process accessing its data directory. Stop the development server before starting a production server against the same embedded database. For multiple application instances, use PostgreSQL and configured shared Blob storage. Database queries and transactions are serialized within each application process; this is a correctness-oriented preview implementation, not a demonstrated high-throughput deployment.
 
 ## Architecture
 
@@ -94,7 +99,7 @@ Unit tests cover input validation, event timestamps/timezones, CSV and calendar 
 
 ## Deploy and operate
 
-Deploy as a Node.js server with persistent storage. This application requires server-side sessions, database access, and filesystem uploads; static export is not supported. A serverless deployment needs changes to uploaded-image storage before it can retain photos reliably.
+Deploy as a Node.js server with persistent storage. This application requires server-side sessions, database access, and filesystem uploads; static export is not supported. A serverless deployment requires PostgreSQL and configured Blob storage for durable photos.
 
 1. Install locked dependencies, supply production environment variables, and provision PostgreSQL or a persistent single-process PGlite directory.
 2. Include `migrations/` and `public/` in the deployed application. Set a writable persistent `DATA_DIR` and back up the database and uploads together.
@@ -110,7 +115,7 @@ curl --fail --request POST \
   "$APP_URL/api/worker"
 ```
 
-Message statuses represent provider acceptance or local development handling, not confirmed delivery or opens. Failed or interrupted sends need operator review; there is no automated retry/recovery queue. Stripe's signed webhook records a paid plan after payment; plan entitlements and refund/subscription lifecycle handling are not implemented.
+Message statuses represent provider acceptance or local development handling, not confirmed delivery or opens. The authenticated worker retries eligible failed deliveries with bounded attempts and recovers stalled sends. Exhausted failures still need operator review. Stripe's signed webhook records a paid plan after payment; plan entitlements and refund/subscription lifecycle handling are not implemented.
 
 Custom domain entries are saved as pending records. Adding one does not provision DNS, SSL, or host-to-wedding routing. A deployment operator must implement and verify that integration before offering domains to customers.
 
@@ -118,7 +123,9 @@ The preview privacy page needs the operating entity, contact details, retention 
 
 ## Account removal procedure
 
-There is no self-service account deletion screen. An installation operator can remove an account after confirming its identity and the scope of owned weddings. Removing an owner deletes their owned weddings and the associated guest information for all collaborators; it does not transfer ownership.
+Owners can request deletion themselves from Studio → Settings → Privacy centre, with password confirmation. This schedules deletion 14 days out (cancellable from the same panel) rather than deleting immediately, and the authenticated worker (`/api/worker`) completes it once the grace period elapses — including queuing every owned wedding's photo files for deletion, not just the database rows. See `src/lib/account-deletion.ts`.
+
+An installation operator can still remove an account directly after confirming its identity and the scope of owned weddings, for requests that arrive outside the product (support email, a data-subject request without account access). Removing an owner deletes their owned weddings and the associated guest information for all collaborators; it does not transfer ownership.
 
 Use the application's database connection or an authenticated PostgreSQL maintenance session. Resolve the account ID and normalized email first, and record the uploaded filenames associated with its owned weddings before deleting database records. Execute the following parameterized statements in one transaction, with `$1` as the confirmed user ID and `$2` as the confirmed email:
 

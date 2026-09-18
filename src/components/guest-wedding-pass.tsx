@@ -55,7 +55,14 @@ export default function GuestWeddingPass({
           <span>{locale === "en" ? "Reserved for" : "Reservado para"}</span>
           {data.guests.map((guest) => (
             <div key={guest.id}>
-              <strong>{guest.name}</strong>
+              <strong>
+                {guest.name}
+                {guest.is_child && (
+                  <em className="day-pass-child-tag">
+                    {locale === "en" ? " · Child" : " · Niño/a"}
+                  </em>
+                )}
+              </strong>
               <span>
                 {guest.table_name ||
                   (locale === "en"

@@ -33,6 +33,7 @@ export const guestSchema = z.object({
   tags: z.string().max(300).default(""),
   notes: z.string().max(1000).default(""),
   is_plus_one: z.boolean().default(false),
+  is_child: z.boolean().default(false),
   consent: z.boolean().default(false),
 });
 export const eventSchema = z

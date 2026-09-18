@@ -1,5 +1,9 @@
 # Component architecture
 
+## Shared security and request boundaries
+
+`src/lib/security/` contains database-independent HTTP errors, administrator identity policy and browser origin checks. `auth.ts` retains compatibility exports and owns database-backed sessions and wedding permissions. Administrator access requires a verified, non-demo account. `request-body.ts` bounds streamed bytes before JSON or multipart parsing; upload handlers must use it before allocating files. See [the project review](PROJECT-REVIEW.md) for remaining extraction priorities.
+
 The internal refactor preserves the rendered markup, styling, URLs, copy and form interactions. The planner pilot features are a separate, previously requested change documented in `PLANNER-PILOT.md`.
 
 ## Studio

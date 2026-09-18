@@ -40,7 +40,7 @@ import {
 } from "@/lib/photo-storage";
 import { listSocialPosts } from "@/lib/social";
 import { finderData, lookupSeat, addGuestbookNote } from "@/lib/finder-data";
-import { readJson } from "@/lib/request-body";
+import { readFormData, readJson } from "@/lib/request-body";
 import sharp from "sharp";
 import QRCode from "qrcode";
 import { pilotAction } from "@/lib/pilot-api";
@@ -85,7 +85,7 @@ async function handler(request: NextRequest, context: Context) {
       if (action === "media" && method === "POST") {
         if (Number(request.headers.get("content-length") || 0) > 105_000_000)
           throw new HttpError(413, "Keep media under 100 MB.");
-        const form = await request.formData();
+        const form = await readFormData(request, 105_000_000);
         const file = form.get("file");
         const allowed = [
           "image/jpeg",
@@ -260,7 +260,7 @@ async function handler(request: NextRequest, context: Context) {
           });
         }
         if (method === "POST") {
-          const form = await request.formData();
+          const form = await readFormData(request, 11_000_000);
           const file = form.get("file");
           if (
             !(file instanceof File) ||
@@ -458,6 +458,7 @@ async function handler(request: NextRequest, context: Context) {
           "Address",
           "Household",
           "Tags",
+          "Child",
           "RSVP",
           "Meal",
           "Dietary needs",
@@ -470,6 +471,7 @@ async function handler(request: NextRequest, context: Context) {
           g.address,
           data.households.find((h) => h.id === g.household_id)?.name,
           g.tags,
+          g.is_child ? "Yes" : "",
           g.status,
           g.meal,
           g.dietary,
@@ -564,7 +566,7 @@ async function handler(request: NextRequest, context: Context) {
             }
             const guestId = id();
             await c.query(
-              "INSERT INTO guests(id,wedding_id,household_id,name,email,phone,address,language,tags,notes,is_plus_one,consent) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+              "INSERT INTO guests(id,wedding_id,household_id,name,email,phone,address,language,tags,notes,is_plus_one,is_child,consent) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
               [
                 guestId,
                 weddingId,
@@ -577,6 +579,7 @@ async function handler(request: NextRequest, context: Context) {
                 guest.tags,
                 guest.notes,
                 guest.is_plus_one,
+                guest.is_child,
                 guest.consent,
               ],
             );
@@ -601,7 +604,7 @@ async function handler(request: NextRequest, context: Context) {
           // this guard re-saving a guest — or re-importing the spreadsheet they
           // came from — silently resurrects a withdrawal the guest made
           // deliberately. `unsubscribed_at` is the durable record of that.
-          "UPDATE guests SET name=$1,email=$2,phone=$3,address=$4,language=$5,tags=$6,notes=$7,consent=($8 AND unsubscribed_at IS NULL) WHERE id=$9 AND wedding_id=$10 RETURNING id",
+          "UPDATE guests SET name=$1,email=$2,phone=$3,address=$4,language=$5,tags=$6,notes=$7,is_child=$8,consent=($9 AND unsubscribed_at IS NULL) WHERE id=$10 AND wedding_id=$11 RETURNING id",
           [
             input.name,
             input.email,
@@ -610,6 +613,7 @@ async function handler(request: NextRequest, context: Context) {
             input.language,
             input.tags,
             input.notes,
+            input.is_child,
             input.consent,
             item,
             weddingId,
@@ -1242,7 +1246,7 @@ async function handler(request: NextRequest, context: Context) {
             413,
             "Please choose an image smaller than 10 MB.",
           );
-        const form = await request.formData();
+        const form = await readFormData(request, 11_000_000);
         const file = form.get("file");
         if (
           !(file instanceof File) ||

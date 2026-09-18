@@ -1,0 +1,67 @@
+# Project review — 18 September 2026
+
+This is a source review and targeted hardening pass, not a penetration test, accessibility certification, or legal opinion. Canada/Alberta is a provisional operating assumption; the business location and client markets have not been confirmed. No production accounts, data, provider settings, or deployments were changed.
+
+## Changes implemented
+
+| Priority | Finding | Change |
+| --- | --- | --- |
+| High | `auth.ts` granted operator privileges to any signed-in account whose email matched `ADMIN_EMAILS`, even before verification. Registration immediately creates a session. An attacker could register an as-yet-unused allowlisted address. | Admin policy now requires a verified, non-demo account for both environment and database grants. Existing unverified operators must complete `/verify`. |
+| Medium | The browser mutation guard compared hosts, allowing a different protocol, and malformed origins could throw unexpected errors. | Compare complete HTTP(S) origins, reject malformed/opaque origins with 403, disregard the separate Host header, and reject explicitly cross-site browser requests without Origin. Originless API clients remain supported. |
+| Medium | Guest and admin multipart uploads could allocate the whole body before enforcing size; a missing or false Content-Length bypassed the early check. | Count streamed bytes before parsing multipart data. Apply this to guest photos, finder maps, social media and design photos. Hosting limits may be lower than application limits. |
+| Maintainability | Account and design endpoints duplicated bounded request parsing; parsing imported the database/session module solely for its error type. | Share byte, JSON and form readers. Extract HTTP errors, origin policy and admin policy into `src/lib/security/`; preserve existing auth exports. Story password JSON is now bounded too. |
+| Client clarity | Privacy choices did not explain the difference between the public story and a household bearer link. | Show contextual explanations beside publishing settings, including how to revoke a forwarded invitation. |
+| Accessibility | The film slider omitted its current accessible value and did not support Home/End. Seeking to the exact duration loops to the beginning. | Keep the accessible value synchronized, add arrow/Home/End controls, prevent keyboard page scrolling and hold the final frame when seeking to the end. |
+
+Security regression tests exercise unverified admin claims, demo exclusion, protocol/port mismatch, malformed and cross-site origins, false upload lengths and valid multipart preservation.
+
+## Strong foundations to retain
+
+The project already has salted password hashes, hashed invitation/session tokens, secure production cookies, parameterized database queries, wedding-level authorization, consent-filtered messaging, photo re-encoding, private guest photo storage, webhook signature checks and browser workflow tests. The studio panels already have useful workflow boundaries. These are reasons to refactor incrementally rather than replace the application.
+
+## Remaining engineering priorities
+
+1. **Operator account protection:** add MFA/passkeys and recent reauthentication for role grants, sensitive exports and account removal. Audit admin role changes. Assess whether existing allowlisted accounts were legitimately verified; this review does not establish prior exploitation.
+2. **Request and abuse boundaries:** enforce trusted-proxy IP handling in deployment; several rate limits use raw `x-forwarded-for`. Directly exposed installations must strip client-supplied forwarding headers. Signed webhooks still read unbounded raw text; apply byte limits without changing signature input. Synchronous scrypt can block the event loop under authentication load; migrate to bounded asynchronous derivation with load tests.
+3. **Retention and deletion — partially done 18 Sept:** an idempotent, retrying file-deletion queue (`pending_file_deletions`) now runs for both demo cleanup and self-service account deletion (`src/lib/account-deletion.ts`, migration 021). Still open: design originals, public finder media, and enquiry records are not yet routed through this queue, and backup expiry is unaddressed. The README now documents self-service deletion but the operator-run manual procedure remains for out-of-band requests.
+4. **Browser hardening:** the CSP still permits inline scripts. Evaluate a nonce-based Next.js policy against rendering/cache behavior before rollout. Test full keyboard flows, focus visibility, zoom/reflow, contrast and reduced motion; existing accessibility-oriented code/tests do not establish WCAG conformance.
+5. **Database evolution:** the migration runner splits SQL on semicolons and strips line comments. This is unsuitable for more complex SQL, functions or literals containing those characters. Adopt a migration runner that executes complete migration files with the existing transaction/advisory lock guarantees. Measure the serialized per-process database queue before scaling.
+6. **Operational evidence:** exercise restore into a disposable PostgreSQL database and private object store, webhook replay handling, provider failure/retry behavior and deployment request limits. Avoid using production-connected `.env.local` for tests that create or delete records.
+
+## Structure and documentation
+
+Keep `src/app` as route composition. Continue using `src/components/studio` and `src/components/guest` for workflow UI. New pure policies belong in `src/lib/security`; database-backed session and wedding authorization remain separate from those policies.
+
+Next extraction: move admin, household RSVP, guest photos and finder operations out of the approximately 1,500-line catch-all API into focused service modules, one workflow per change. Keep authorization at every callable boundary and retain the current route contracts. Do not scatter authorization into UI components.
+
+The root layout imports around thirty global CSS files. Establish route ownership and an import/dependency map before moving them: import order currently affects the cascade. Migrate self-contained components to CSS Modules with visual comparisons; move workflow styles into route layouts only after testing navigation and guest previews. A wholesale file move would offer little protection against regressions.
+
+Treat this report as the current review, `DEPLOYMENT.md` as the environment contract, `OPERATIONS.md` as the runbook, and `LAUNCH-STATUS.md` as release evidence. Historical plans should be labelled with their dates. The README had stale statements about storage, migrations, retries and demo cleanup; those were corrected in this pass. Older documents still need reconciliation before serving as operational instructions.
+
+## Standards and legal work
+
+| Area | Relevant baseline | Concrete follow-up |
+| --- | --- | --- |
+| Application security | [OWASP ASVS](https://owasp.org/projects/asvs), using Level 2 as a proposed verification target | Map applicable controls to implementation and evidence. This review is not an ASVS assessment. |
+| Accessibility | [WCAG 2.2](https://www.w3.org/TR/WCAG22/), AA as an engineering target | Audit all guest and studio flows, especially motion-heavy invitations, dialogs and mobile forms. Determine legal accessibility obligations from the operating jurisdictions. |
+| Alberta private-sector privacy | [Alberta PIPA responsibilities](https://www.alberta.ca/organization-responsibilities-for-protecting-personal-information.aspx) | Name the accountable operator, document purposes and retention, support access/correction requests, and establish a breach procedure. Minimize dietary/free-text information that can reveal sensitive details. |
+| Canadian cross-border activity | [OPC guidance on PIPEDA and provincial laws](https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/r_o_p/02_05_d_26/) and [fair information principles](https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/p_principle/) | Determine which transactions trigger federal obligations. Verify actual provider regions, contracts and subprocessors; do not claim Canadian-only storage without evidence. |
+| Commercial email/SMS | [CRTC CASL FAQ](https://crtc.gc.ca/eng/com500/faq500.htm) | Classify service invitations separately from marketing. For applicable commercial messages, review consent evidence, sender identification and unsubscribe behavior. A single consent boolean is not by itself a complete record of purpose, wording and collection circumstances. |
+
+The privacy page explicitly leaves legal identity, retention and provider disclosures unfinished. Publish accurate deployment-specific disclosures and appropriate service terms, photo/content permissions, cancellation/refund terms and a privacy contact before treating the product as a public paid service. Confirm trademark status before retaining the registered-mark symbol in `ui.tsx` and the ad composition. This review found no registration evidence in the material inspected; it does not establish whether a registration exists. Verify rights to reference imagery in `images inspo` before using it publicly. Have qualified counsel resolve applicability and final wording rather than publishing guessed policies.
+
+## Client-value roadmap
+
+| Order | Improvement | Client benefit | Completion evidence |
+| --- | --- | --- | --- |
+| 1 | Privacy centre with export and account deletion — **done 18 Sept** | Gives account owners self-service control after the wedding, without waiting on an operator | `src/lib/account-deletion.ts` (14-day cancellable grace period, `account_deletion_requests` + `pending_file_deletions` tables in migration 021), `src/lib/account-export.ts` (JSON export of every owned wedding), Studio → Settings → Privacy centre UI. Also fixed remaining priority #3 below: demo cleanup now queues photo files instead of only deleting rows. Correction/removal of an individual guest record was already self-service in Studio. Retention choices beyond deletion (e.g. partial redaction) remain open. |
+| 2 | Extend existing setup assistance into a pre-send checklist — **done 18 Sept** | Catches missing events, timezone/deadline conflicts and households invited to nothing before the couple commits to a send | `preSendChecklist` in `src/lib/pre-send-checklist.ts`, surfaced in the send campaign's first step; guest preview added to the Invitations header; 7 unit tests |
+| 3 | Accessible invitation presentation option — **done 18 Sept** | Helps guests who prefer less motion, larger text or simpler navigation | New `guest-simple-view.tsx`: text-first, no parallax/opening animation, same RSVP/schedule/travel/contact actions. Reachable from both opening gates ("Prefer a simpler view?") and the guest nav menu; auto-selected when the browser reports `prefers-reduced-motion: reduce`; remembered per household via `localStorage`. Full WCAG/keyboard/screen-reader audit still outstanding. |
+| 4 | Delivery recovery view — **done 18 Sept** | Helps planners resolve bounced invitations without duplicate sends | New "Delivery recovery" section in Invitations groups every delivery issue by status, explains provider-acceptance-vs-delivery in plain language (`src/lib/delivery-recovery.ts`), and distinguishes retryable failures from blocking ones (bounce/complaint/suppression) with a one-click retry that reuses the existing safe-resend path. 5 unit tests. |
+| 5 | Extend day-book exports with supplier-specific views — **already implemented** | Gives caterers and venues useful counts while limiting guest detail disclosure | Found already built in `insights.tsx` / `/api/studio/export`: kitchen sheet, shuttle manifest and place-card exports, each omitting contact details. No change needed. |
+
+Avoid adding more decorative motion until accessibility and load performance are measured. The highest-value design work is clearer status, recoverable errors, readable forms and guest confidence about who can see their information.
+
+## Validation
+
+Baseline: 14 unit-test files, 49 tests passed. Final: 15 files, 61 tests passed; TypeScript passed; ESLint passed with zero warnings; production build passed. A Chromium check against the production build verified the film slider's Home, ArrowRight, End and ArrowLeft values with reduced motion enabled and no page errors. The full end-to-end suite was not run; it creates persistent records and this workspace has an existing deployment configuration. `npm audit --json` reported zero known vulnerabilities in the installed dependency tree on the review date; this is not proof that the application is secure. Production providers and a full browser/accessibility audit are outside this pass.

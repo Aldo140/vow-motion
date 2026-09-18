@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isPlaceholderGuestName,
   matchesGuestFilter,
   readinessSignature,
   weddingHealth,
@@ -207,5 +208,11 @@ describe("wedding momentum", () => {
     const result = messagingAudience(guests, "invited-pending", "email");
     expect(result.selected).toHaveLength(2);
     expect(result.recipients.map((g) => g.id)).toEqual(["a"]);
+  });
+  it("treats couple-entered placeholder names as unconfirmed", () => {
+    for (const name of ["Plus-one", "plus one", "Guest", "TBD", "", "  "])
+      expect(isPlaceholderGuestName(name)).toBe(true);
+    for (const name of ["Sarah Smith", "Alex's guest", "Plus-oneness"])
+      expect(isPlaceholderGuestName(name)).toBe(false);
   });
 });

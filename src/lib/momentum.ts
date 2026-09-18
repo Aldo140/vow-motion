@@ -50,6 +50,10 @@ export const momentumHref = (weddingId: string, destination: Destination) => {
   if (destination.intent) query.set("intent", destination.intent);
   return `/studio/${destination.section}?${query}`;
 };
+/** A plus-one's name is still a couple-entered placeholder, not the actual guest's name yet. */
+export function isPlaceholderGuestName(name: string) {
+  return !name.trim() || /^(plus[ -]?one|guest|tbd|unknown)(\s*\d*)?$/i.test(name.trim());
+}
 export function householdContact(guests: Guest[]) {
   return (
     guests.find((g) => !g.is_plus_one && g.email.trim())?.email.trim() ||
@@ -154,10 +158,7 @@ export function weddingHealth(data: StudioData) {
     (t) => attending.filter((g) => g.table_id === t.id).length > t.capacity,
   );
   const unnamed = data.guests.filter(
-    (g) =>
-      g.is_plus_one &&
-      (!g.name.trim() ||
-        /^(plus[ -]?one|guest|tbd|unknown)(\s*\d*)?$/i.test(g.name.trim())),
+    (g) => g.is_plus_one && isPlaceholderGuestName(g.name),
   );
   const unanswered = (data.guestRequests ?? []).filter((q) => !q.answer.trim());
   return {
