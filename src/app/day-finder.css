@@ -730,6 +730,12 @@
   background: color-mix(in srgb, var(--f-accent) 12%, transparent);
   color: var(--f-accent);
 }
+@media (prefers-reduced-motion: no-preference) {
+  .finder-reveal.is-visible .finder-moment-badge {
+    animation: finder-crest-settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s
+      backwards;
+  }
+}
 .finder-next > span {
   display: inline-flex;
   align-items: center;
@@ -836,6 +842,26 @@
 }
 .finder-later li:hover {
   background: color-mix(in srgb, var(--f-accent) 7%, transparent);
+}
+/* Each remaining moment settles in on its own beat once the schedule is
+   revealed — the same idea as .finder-result's line-by-line entrance,
+   so the evening's rest feels like it's unfolding rather than dumped in. */
+@media (prefers-reduced-motion: no-preference) {
+  .finder-reveal.is-visible .finder-later li {
+    animation: finder-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .finder-reveal.is-visible .finder-later li:nth-child(1) {
+    animation-delay: 0.08s;
+  }
+  .finder-reveal.is-visible .finder-later li:nth-child(2) {
+    animation-delay: 0.16s;
+  }
+  .finder-reveal.is-visible .finder-later li:nth-child(3) {
+    animation-delay: 0.24s;
+  }
+  .finder-reveal.is-visible .finder-later li:nth-child(n + 4) {
+    animation-delay: 0.32s;
+  }
 }
 /* A little itinerary rail — the same idea as "the order of the day" in the
    full invitation, so the finder's schedule reads as a continuous evening
