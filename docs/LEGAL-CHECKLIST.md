@@ -10,13 +10,44 @@ wording before accepting real guest data as a public service.
 
 ## 1. Identity (blocks everything else)
 
-- [ ] Confirm the legal entity operating this deployment (sole proprietor,
-      corporation, etc.) and its registered address.
-- [ ] Confirm the jurisdiction(s) whose law applies — where the business is
-      registered, and where its guests/couples are located.
-- [ ] Set `OPERATOR_LEGAL_NAME`, `OPERATOR_JURISDICTION`, `OPERATOR_ADDRESS`,
-      `OPERATOR_PRIVACY_CONTACT` in the production environment. `/privacy`
-      will start showing them automatically once set.
+- [x] Jurisdiction confirmed: Alberta, Canada. Set in `.env.local` as
+      `OPERATOR_JURISDICTION=Alberta, Canada` (local dev only — see below).
+- [x] Privacy contact confirmed: jorti104@mtroyal.ca. Set as
+      `OPERATOR_PRIVACY_CONTACT`.
+- [ ] **Still needed: the registered business name** for
+      `OPERATOR_LEGAL_NAME`, and the registered address for
+      `OPERATOR_ADDRESS`. `/privacy` will keep saying identity is
+      unconfigured until all three of legal name, jurisdiction, and privacy
+      contact are set — that's deliberate, so it never shows a
+      two-thirds-complete identity as if it were whole.
+- [ ] **Set these in the production environment, not just `.env.local`.**
+      What's in `.env.local` only affects your local dev server; the live
+      site at whatever Vercel project hosts this needs the same
+      `OPERATOR_*` variables added in its environment settings before
+      `/privacy` reflects them for real visitors.
+
+## 1a. Serving US clients alongside Canadian ones
+
+You said you want to work with both US and Canadian clients. That changes
+the compliance surface beyond what the original review (Alberta-only)
+assumed:
+
+- [ ] Decide whether any US clients are California residents (or other
+      states with their own privacy statutes — Virginia, Colorado,
+      Connecticut, Utah as of this writing) — CCPA/CPRA-style rights
+      (access, deletion, opt-out of "sale/sharing") may apply on top of
+      PIPA/PIPEDA, not instead of it.
+- [ ] Decide whether US clients' payment/billing needs a US-side entity or
+      can run through the Alberta one — a tax/accounting question, not one
+      this repo can answer.
+- [ ] Confirm whether hosting (database, blob storage, email/SMS provider)
+      keeps US client data in a specific region if any contract or
+      state law requires it — infrastructure regions are set in the
+      deployment platform, not in this repo's code.
+- [ ] CASL (Canada's anti-spam law, section 3 below) still applies to any
+      message sent from this Canadian-operated business, regardless of
+      where the recipient lives — it's about the sender's jurisdiction, not
+      only the recipient's.
 
 ## 2. Privacy law (Alberta PIPA / PIPEDA, per `docs/PROJECT-REVIEW.md`)
 

@@ -5,6 +5,7 @@ import { getWorld, formatDate, eventTime } from "@/lib/worlds";
 import GuestCrest from "@/components/guest-crest";
 import PrintButton from "@/components/print-button";
 import type { Guest } from "@/lib/types";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -44,6 +45,7 @@ export default async function Page({
 }: {
   params: Promise<{ wedding: string }>;
 }) {
+  await enableStrictCsp();
   const { wedding: weddingId } = await params;
   const data = await studioData(weddingId).catch(() => null);
   if (!data) redirect("/studio");

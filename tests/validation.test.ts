@@ -40,12 +40,12 @@ describe("guest and security boundaries", () => {
   });
   it("escapes iCalendar content", () =>
     expect(escapeIcs("Venue; city,\nItaly")).toBe("Venue\\; city\\,\\nItaly"));
-  it("uses salted password hashing and opaque tokens", () => {
-    const a = passwordHash("long-password-123"),
-      b = passwordHash("long-password-123");
+  it("uses salted password hashing and opaque tokens", async () => {
+    const a = await passwordHash("long-password-123"),
+      b = await passwordHash("long-password-123");
     expect(a).not.toBe(b);
-    expect(passwordMatches("long-password-123", a)).toBe(true);
-    expect(passwordMatches("wrong", a)).toBe(false);
+    expect(await passwordMatches("long-password-123", a)).toBe(true);
+    expect(await passwordMatches("wrong", a)).toBe(false);
     expect(token()).toHaveLength(43);
     expect(hash("token")).toHaveLength(64);
   });

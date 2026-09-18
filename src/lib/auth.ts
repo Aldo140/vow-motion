@@ -1,29 +1,47 @@
 import { cookies } from "next/headers";
 import {
   randomBytes,
-  scryptSync,
+  scrypt as scryptCallback,
   timingSafeEqual,
   createHash,
   randomUUID,
 } from "node:crypto";
+import { promisify } from "node:util";
+const scrypt = promisify(scryptCallback) as (
+  password: string,
+  salt: string,
+  keylen: number,
+) => Promise<Buffer>;
 import { db, rows } from "./db";
 import { HttpError } from "./security/http-error";
 import { isAdmin } from "./security/admin-policy";
 export { HttpError } from "./security/http-error";
 export { adminEmails, isAdmin } from "./security/admin-policy";
 export { sameOrigin } from "./security/request-origin";
+export { clientIp } from "./security/client-ip";
 export const id = () => randomUUID();
 export const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 export const token = () => randomBytes(32).toString("base64url");
-export function passwordHash(password: string) {
+/**
+ * Async so the derivation runs on libuv's threadpool instead of blocking the
+ * main event loop — a login storm (or credential stuffing) previously stalled
+ * every other request this process was serving for the duration of each
+ * scryptSync call. Bounded to node:crypto's default cost parameters, same as
+ * before; only the sync/async choice changed.
+ */
+export async function passwordHash(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
-  return salt + ":" + scryptSync(password, salt, 64).toString("hex");
+  const derived = await scrypt(password, salt, 64);
+  return salt + ":" + derived.toString("hex");
 }
-export function passwordMatches(password: string, stored: string) {
+export async function passwordMatches(
+  password: string,
+  stored: string,
+): Promise<boolean> {
   try {
     const [salt, key] = stored.split(":");
-    const derived = scryptSync(password, salt, 64);
+    const derived = await scrypt(password, salt, 64);
     const expected = Buffer.from(key, "hex");
     return (
       expected.length === derived.length && timingSafeEqual(derived, expected)

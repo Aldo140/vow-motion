@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { sameOrigin, rateLimit, hash, HttpError } from "@/lib/auth";
+import { sameOrigin, rateLimit, hash, HttpError, clientIp } from "@/lib/auth";
 import { readJson } from "@/lib/request-body";
 import { db, transaction } from "@/lib/db";
 import { contactEmail, contactSchema, contactMessage } from "@/lib/contact";
@@ -12,14 +12,7 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const input = contactSchema.parse(await readJson(request, 16_000));
-    await rateLimit(
-      "contact:" +
-        hash(
-          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-            "unknown",
-        ),
-      5,
-    );
+    await rateLimit("contact:" + hash(clientIp(request)), 5);
     if (!emailAvailable())
       throw new HttpError(
         503,

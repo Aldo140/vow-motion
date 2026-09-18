@@ -74,6 +74,21 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
     [subject, setSubject] = useState(""),
     [body, setBody] = useState("");
 
+  // A message this close a match — same audience, channel and subject — to
+  // one already out in the last day is very likely the couple not
+  // remembering they already sent it, not a deliberate second note.
+  const [dedupeCutoff] = useState(() => Date.now() - 24 * 60 * 60 * 1000);
+  const recentDuplicate = data.messages.find(
+    (m) =>
+      m.audience === audience &&
+      m.channel === channel &&
+      m.subject === subject &&
+      ["published", "sent", "development", "partially-failed"].includes(
+        m.status,
+      ) &&
+      new Date(m.updated_at || m.created_at).getTime() > dedupeCutoff,
+  );
+
   const total = data.guests.length;
   useEffect(() => {
     if (intent !== "rsvp-reminder" || appliedIntent.current === intent) return;
@@ -585,6 +600,14 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
       {compose && (
         <Modal title="A note for your people" onClose={() => setCompose(false)}>
           {error && <Notice error>{error}</Notice>}
+          {recentDuplicate && (
+            <Notice error>
+              A message with this exact subject already went to this same
+              audience less than a day ago. Saving and sending this one will
+              be refused unless you change the subject — change even a word
+              if you really do mean to send it again.
+            </Notice>
+          )}
           <form
             onSubmit={async (e) => {
               e.preventDefault();

@@ -339,7 +339,7 @@ export async function createDemo() {
     await db()
   ).query(
     "INSERT INTO users(id,email,name,password_hash,is_demo) VALUES($1,$2,$3,$4,true)",
-    [userId, `demo-${userId}@example.invalid`, "Elena", passwordHash(token())],
+    [userId, `demo-${userId}@example.invalid`, "Elena", await passwordHash(token())],
   );
   await createShowcaseWedding(userId);
   for (const world of ["maison", "notte"] as World[]) {

@@ -10,11 +10,12 @@ import {
   sameOrigin,
   rateLimit,
   HttpError,
+  clientIp,
 } from "@/lib/auth";
 export async function POST(request: NextRequest) {
   try {
     sameOrigin(request);
-    await rateLimit("story:" + request.headers.get("x-forwarded-for"), 20);
+    await rateLimit("story:" + clientIp(request), 20);
     const input = z
       .object({ slug: z.string().max(200), password: z.string().max(200) })
       .parse(await readJson(request, 16_000));
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     )[0];
     if (
       !wedding ||
-      !passwordMatches(input.password, String(wedding.password_hash))
+      !(await passwordMatches(input.password, String(wedding.password_hash)))
     )
       throw new HttpError(
         401,

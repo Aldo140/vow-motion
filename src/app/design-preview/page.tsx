@@ -4,6 +4,7 @@ import { safeWedding } from "@/lib/wedding-access";
 import { designFromWedding } from "@/lib/wedding-design";
 import DesignPreview from "@/components/studio/design-preview";
 import type { GuestData, Wedding, Guest, Event, Travel } from "@/lib/types";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
 export default async function Page({
@@ -11,6 +12,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ wedding?: string }>;
 }) {
+  await enableStrictCsp();
   const { wedding } = await access((await searchParams).wedding || "");
   const safe = safeWedding(wedding) as Wedding;
   const state = (

@@ -3,6 +3,7 @@ import { currentUser, isAdmin } from "@/lib/auth";
 import { rows } from "@/lib/db";
 import { listWeddings } from "@/lib/wedding-access";
 import Studio from "@/components/studio";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Your Studio",
@@ -15,6 +16,7 @@ export default async function Page({
   params: Promise<{ section?: string[] }>;
   searchParams: Promise<{ wid?: string }>;
 }) {
+  await enableStrictCsp();
   const user = await currentUser();
   if (!user) redirect("/login");
   const weddings = await listWeddings(user.id);

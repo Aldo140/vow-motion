@@ -2,12 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { transaction } from "@/lib/db";
 import { id } from "@/lib/auth";
+import { readBytes } from "@/lib/request-body";
+import { HttpError } from "@/lib/security/http-error";
+
+/** Generous for any realistic event payload, bounded against abuse. Read
+ * before parsing or verifying, so nothing downstream ever sees more. */
+const MAX_WEBHOOK_BYTES = 2_000_000;
+
 export async function POST(req: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret)
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
-  const raw = await req.text(),
-    header = req.headers.get("stripe-signature") || "",
+  // Bounded so an oversized body cannot be buffered before rejection — the
+  // byte cap is not part of what gets signed. A clean 4xx (rather than an
+  // unhandled 500) tells Stripe's retry logic not to bother redelivering.
+  let raw: string;
+  try {
+    raw = (await readBytes(req, MAX_WEBHOOK_BYTES)).toString("utf8");
+  } catch (error) {
+    if (error instanceof HttpError)
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    throw error;
+  }
+  const header = req.headers.get("stripe-signature") || "",
     parts = header.split(","),
     timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
   if (!timestamp || Math.abs(Date.now() / 1000 - Number(timestamp)) > 300)

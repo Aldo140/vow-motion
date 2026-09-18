@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { finderData } from "@/lib/finder-data";
 import { worlds } from "@/lib/worlds";
 import DayFinder from "@/components/day-finder";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -14,6 +15,7 @@ export default async function Page({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await enableStrictCsp();
   const { slug } = await params;
   const data = await finderData(slug);
   if (!data || !data.active) notFound();

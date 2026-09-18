@@ -8,6 +8,7 @@ import Lookup from "@/components/lookup";
 import StoryUnlock from "@/components/story-unlock";
 import { storyUnlocked } from "@/lib/wedding-access";
 import { currentUser, isAdmin } from "@/lib/auth";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "A wedding story",
@@ -23,6 +24,7 @@ export default async function Page({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await enableStrictCsp();
   const w = (
     await rows("SELECT * FROM weddings WHERE slug=$1", [(await params).slug])
   )[0];

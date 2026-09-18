@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { currentUser, isAdmin } from "@/lib/auth";
 import { adminOverview } from "@/lib/admin";
 import AdminDashboard from "@/components/admin-dashboard";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -10,6 +11,7 @@ export const metadata = {
 };
 
 export default async function Page() {
+  await enableStrictCsp();
   const user = await currentUser();
   if (!user) redirect("/login");
   if (!isAdmin(user)) redirect("/studio");

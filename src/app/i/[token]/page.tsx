@@ -2,6 +2,7 @@ import Link from "next/link";
 import { guestData } from "@/lib/data";
 import GuestExperience from "@/components/guest-experience";
 import { Brand } from "@/components/ui";
+import { enableStrictCsp } from "@/lib/csp-nonce";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "An invitation for you",
@@ -17,6 +18,7 @@ export default async function Page({
 }: {
   params: Promise<{ token: string }>;
 }) {
+  await enableStrictCsp();
   let data;
   try {
     data = await guestData((await params).token);

@@ -59,14 +59,16 @@ async function raw(): Promise<Database> {
             ).rows.length
           )
             continue;
-          // Strip `--` line comments before splitting on `;`. A comment that
-          // happens to contain a semicolon otherwise cuts a statement in half
-          // and the migration fails with a syntax error on the comment text.
-          const sql = (
-            await readFile(path.join(directory, name), "utf8")
-          ).replace(/--.*$/gm, "");
-          for (const statement of sql.split(";").filter((s) => s.trim()))
-            await migrationClient.query(statement);
+          // Run the whole file as one multi-statement command instead of
+          // splitting on `;` — a naive split breaks on a `;` inside a string
+          // literal, a comment, or a function body, and previously required
+          // stripping `--` comments first for the same reason. Postgres's
+          // simple query protocol (`pg`'s plain `.query(text)`, PGlite's
+          // `.exec(text)`) runs a whole script exactly as psql would.
+          const sql = await readFile(path.join(directory, name), "utf8");
+          if ("exec" in migrationClient && typeof migrationClient.exec === "function")
+            await migrationClient.exec(sql);
+          else await migrationClient.query(sql);
           await migrationClient.query(
             "INSERT INTO schema_migrations(name) VALUES($1)",
             [name],

@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { transaction } from "@/lib/db";
 import type { Database } from "@/lib/db";
+import { readBytes } from "@/lib/request-body";
+import { HttpError } from "@/lib/security/http-error";
+
+/** Generous for any realistic event payload, bounded against abuse. Read
+ * before parsing or verifying, so nothing downstream ever sees more. */
+const MAX_WEBHOOK_BYTES = 2_000_000;
 
 /**
  * What Resend tells us after it has said 200. Until this endpoint existed,
@@ -80,7 +86,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
 
   // Read the body before parsing: the signature is over these exact bytes.
-  const raw = await req.text();
+  // Bounded so an oversized body cannot be buffered before rejection —
+  // the byte cap is not part of what gets signed. A clean 4xx here (rather
+  // than an unhandled 500) tells the provider's retry logic not to bother —
+  // an oversized payload will never become valid on redelivery.
+  let raw: string;
+  try {
+    raw = (await readBytes(req, MAX_WEBHOOK_BYTES)).toString("utf8");
+  } catch (error) {
+    if (error instanceof HttpError)
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    throw error;
+  }
   const svixId = verify(secret, raw, req.headers);
   if (!svixId)
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });

@@ -5,6 +5,8 @@ const config: NextConfig = {
   outputFileTracingIncludes: { "/*": ["./migrations/**/*.sql"] },
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
   experimental: { serverActions: { bodySizeLimit: "10mb" } },
+  // Content-Security-Policy is set in src/middleware.ts instead: it needs a
+  // fresh nonce per request, which this static config cannot generate.
   async headers() {
     return [
       {
@@ -17,21 +19,11 @@ const config: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-          {
-            key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
-          },
         ],
       },
       {
         source: "/design-preview",
-        headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          {
-            key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'`,
-          },
-        ],
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
       },
     ];
   },

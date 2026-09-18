@@ -85,6 +85,27 @@ export async function sendMessage(
             ". You can post this note inside their invitations instead, where nothing is required of them.",
     );
 
+  // A couple composing several near-identical reminders in one sitting — or
+  // clicking "Prepare a reminder" more than once — otherwise has no signal
+  // that guests would see the same note piling up on their invitation. This
+  // only guards the exact same audience/channel/subject; changing even one
+  // word is treated as a deliberate, different message.
+  const recentDuplicate = (
+    await rows<{ id: string }>(
+      `SELECT id FROM messages
+       WHERE wedding_id=$1 AND id<>$2 AND audience=$3 AND channel=$4 AND subject=$5
+         AND status IN ('published','sent','development','partially-failed')
+         AND updated_at > now() - interval '24 hours'
+       LIMIT 1`,
+      [weddingId, messageId, message.audience, message.channel, message.subject],
+    )
+  )[0];
+  if (recentDuplicate)
+    throw new HttpError(
+      409,
+      "A message with this exact subject and audience already went out in the last 24 hours. Change the subject if you meant to send this one too, so guests do not see the same note twice.",
+    );
+
   if (message.channel === "invitation") {
     return transaction(async (connection) => {
       const claimed = await connection.query(

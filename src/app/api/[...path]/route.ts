@@ -15,6 +15,7 @@ import {
   rateLimit,
   sameOrigin,
   HttpError,
+  clientIp,
 } from "@/lib/auth";
 import { createDemo, createWedding, issueToken } from "@/lib/seed";
 import { guestData, studioData } from "@/lib/data";
@@ -59,7 +60,7 @@ async function handler(request: NextRequest, context: Context) {
     if (area === "auth")
       throw new HttpError(404, "This account action is unavailable.");
     if (area === "demo" && method === "POST") {
-      await rateLimit("demo:" + request.headers.get("x-forwarded-for"), 30);
+      await rateLimit("demo:" + clientIp(request), 30);
       const existing = await currentUser();
       if (!existing) await session(await createDemo());
       return json({ ok: true });
@@ -769,7 +770,7 @@ async function handler(request: NextRequest, context: Context) {
             record.settings = settings;
           }
         }
-        if (password) record.password_hash = passwordHash(password);
+        if (password) record.password_hash = await passwordHash(password);
         if (record.settings) record.settings = JSON.stringify(record.settings);
         const keys = Object.keys(record);
         await (
@@ -1321,7 +1322,7 @@ async function handler(request: NextRequest, context: Context) {
         throw new HttpError(404, "This table finder is not open.");
       if (action === "lookup" && method === "GET") {
         await rateLimit(
-          "finder:" + request.headers.get("x-forwarded-for") + ":" + slug,
+          "finder:" + clientIp(request) + ":" + slug,
           60,
         );
         const q = request.nextUrl.searchParams.get("q") || "";
@@ -1331,7 +1332,7 @@ async function handler(request: NextRequest, context: Context) {
         if (!data.config.guestbook)
           throw new HttpError(404, "Notes are closed.");
         await rateLimit(
-          "note:" + request.headers.get("x-forwarded-for") + ":" + slug,
+          "note:" + clientIp(request) + ":" + slug,
           10,
         );
         const input = z
@@ -1345,7 +1346,7 @@ async function handler(request: NextRequest, context: Context) {
       }
       if (action === "calendar" && method === "GET") {
         await rateLimit(
-          "finder-cal:" + request.headers.get("x-forwarded-for") + ":" + slug,
+          "finder-cal:" + clientIp(request) + ":" + slug,
           20,
         );
         const events = data.events as {
@@ -1389,7 +1390,7 @@ async function handler(request: NextRequest, context: Context) {
       throw new HttpError(404, "This action is unavailable.");
     }
     if (area === "lookup" && method === "POST") {
-      await rateLimit("lookup:" + request.headers.get("x-forwarded-for"), 20);
+      await rateLimit("lookup:" + clientIp(request), 20);
       const input = z
         .object({
           slug: z.string().optional(),
@@ -1408,7 +1409,7 @@ async function handler(request: NextRequest, context: Context) {
         )[0];
         if (
           !challenge ||
-          !passwordMatches(input.code, String(challenge.code_hash))
+          !(await passwordMatches(input.code, String(challenge.code_hash)))
         )
           throw new HttpError(
             400,
@@ -1460,7 +1461,7 @@ async function handler(request: NextRequest, context: Context) {
         await db()
       ).query(
         "INSERT INTO verification_challenges(id,wedding_id,household_id,code_hash,expires_at) VALUES($1,$2,$3,$4,now()+interval '10 minutes')",
-        [challengeId, g.wid, g.household_id, passwordHash(code)],
+        [challengeId, g.wid, g.household_id, await passwordHash(code)],
       );
       await deliver({
         channel: "email",

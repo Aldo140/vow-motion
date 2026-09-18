@@ -5,6 +5,7 @@ import { z } from "zod";
 import QRCode from "qrcode";
 import { db, rows, transaction } from "@/lib/db";
 import {
+  clientIp,
   currentUser,
   hash,
   HttpError,
@@ -101,6 +102,7 @@ async function handler(request: NextRequest, context: Context) {
       }
       const challenge = id();
       const code = String(randomInt(100000, 1000000));
+      const codeHash = await passwordHash(code);
       await transaction(async (connection) => {
         await connection.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
           user.id,
@@ -111,7 +113,7 @@ async function handler(request: NextRequest, context: Context) {
         );
         await connection.query(
           "INSERT INTO account_verification_challenges(id,user_id,code_hash,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')",
-          [challenge, user.id, passwordHash(code)],
+          [challenge, user.id, codeHash],
         );
       });
       try {
@@ -161,7 +163,10 @@ async function handler(request: NextRequest, context: Context) {
             [input.challenge, user.id],
           )
         ).rows[0];
-        if (!challenge || !passwordMatches(input.code, challenge.code_hash))
+        if (
+          !challenge ||
+          !(await passwordMatches(input.code, challenge.code_hash))
+        )
           return false;
         await connection.query(
           "UPDATE account_verification_challenges SET consumed=true WHERE id=$1",
@@ -182,10 +187,7 @@ async function handler(request: NextRequest, context: Context) {
     }
 
     if (action === "reset-request") {
-      await rateLimit(
-        "reset-request:" + request.headers.get("x-forwarded-for"),
-        10,
-      );
+      await rateLimit("reset-request:" + clientIp(request), 10);
       const input = z
         .object({ email: z.email().toLowerCase() })
         .parse(await readJson(request, 16_000));
@@ -204,6 +206,7 @@ async function handler(request: NextRequest, context: Context) {
       const challenge = id(),
         code = String(randomInt(100000, 1000000));
       if (user && !user.is_demo) {
+        const codeHash = await passwordHash(code);
         await transaction(async (connection) => {
           await connection.query(
             "SELECT id FROM users WHERE id=$1 FOR UPDATE",
@@ -215,7 +218,7 @@ async function handler(request: NextRequest, context: Context) {
           );
           await connection.query(
             "INSERT INTO password_reset_challenges(id,user_id,code_hash,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')",
-            [challenge, user.id, passwordHash(code)],
+            [challenge, user.id, codeHash],
           );
         });
         try {
@@ -244,10 +247,7 @@ async function handler(request: NextRequest, context: Context) {
       });
     }
     if (action === "reset-confirm") {
-      await rateLimit(
-        "reset-confirm:" + request.headers.get("x-forwarded-for"),
-        30,
-      );
+      await rateLimit("reset-confirm:" + clientIp(request), 30);
       const input = z
         .object({
           challenge: z.uuid(),
@@ -262,7 +262,10 @@ async function handler(request: NextRequest, context: Context) {
             [input.challenge],
           )
         ).rows[0];
-        if (!record || !passwordMatches(input.code, record.code_hash))
+        if (
+          !record ||
+          !(await passwordMatches(input.code, record.code_hash))
+        )
           return false;
         await connection.query(
           "UPDATE password_reset_challenges SET consumed=true WHERE id=$1",
@@ -270,7 +273,7 @@ async function handler(request: NextRequest, context: Context) {
         );
         await connection.query(
           "UPDATE users SET password_hash=$1,email_verified=true WHERE id=$2",
-          [passwordHash(input.password), record.user_id],
+          [await passwordHash(input.password), record.user_id],
         );
         await connection.query("DELETE FROM sessions WHERE user_id=$1", [
           record.user_id,
@@ -304,7 +307,7 @@ async function handler(request: NextRequest, context: Context) {
           [user.id],
         )
       )[0];
-      if (!stored || !passwordMatches(input.password, stored.password_hash))
+      if (!stored || !(await passwordMatches(input.password, stored.password_hash)))
         throw new HttpError(401, "That password is incorrect.");
       if ((await mfaStatus(user.id)).enabled) {
         if (!input.code || !(await verifyMfaCode(user.id, input.code)))
@@ -336,7 +339,7 @@ async function handler(request: NextRequest, context: Context) {
           [user.id],
         )
       )[0];
-      if (!stored || !passwordMatches(input.password, stored.password_hash))
+      if (!stored || !(await passwordMatches(input.password, stored.password_hash)))
         throw new HttpError(401, "That password is incorrect.");
       if ((await mfaStatus(user.id)).enabled) {
         if (!input.code || !(await verifyMfaCode(user.id, input.code)))
@@ -376,7 +379,7 @@ async function handler(request: NextRequest, context: Context) {
           [user.id],
         )
       )[0];
-      if (!stored || !passwordMatches(input.password, stored.password_hash))
+      if (!stored || !(await passwordMatches(input.password, stored.password_hash)))
         throw new HttpError(401, "That password is incorrect.");
       if (!(await verifyMfaCode(user.id, input.code)))
         throw new HttpError(401, "That code is incorrect.");
@@ -384,10 +387,7 @@ async function handler(request: NextRequest, context: Context) {
       return json({ ok: true });
     }
     if (action === "mfa-login-verify") {
-      await rateLimit(
-        "mfa-login:" + request.headers.get("x-forwarded-for"),
-        20,
-      );
+      await rateLimit("mfa-login:" + clientIp(request), 20);
       const input = z
         .object({ challenge: z.uuid(), code: z.string().max(20) })
         .parse(await readJson(request, 4_000));
@@ -397,7 +397,7 @@ async function handler(request: NextRequest, context: Context) {
     }
     if (action !== "register" && action !== "login")
       throw new HttpError(404, "This action is unavailable.");
-    await rateLimit("auth:" + request.headers.get("x-forwarded-for"), 30);
+    await rateLimit("auth:" + clientIp(request), 30);
     const input = z
       .object({
         email: z.email().toLowerCase(),
@@ -408,6 +408,7 @@ async function handler(request: NextRequest, context: Context) {
       .parse(await readJson(request, 16_000));
     if (action === "register") {
       const userId = id();
+      const registerHash = await passwordHash(input.password);
       await transaction(async (connection) => {
         await connection.query(
           "INSERT INTO users(id,email,name,password_hash) VALUES($1,$2,$3,$4)",
@@ -415,7 +416,7 @@ async function handler(request: NextRequest, context: Context) {
             userId,
             input.email,
             input.name || input.email.split("@")[0],
-            passwordHash(input.password),
+            registerHash,
           ],
         );
         if (input.referral)
@@ -433,7 +434,7 @@ async function handler(request: NextRequest, context: Context) {
         [input.email],
       )
     )[0];
-    if (!user || !passwordMatches(input.password, user.password_hash))
+    if (!user || !(await passwordMatches(input.password, user.password_hash)))
       throw new HttpError(401, "Email or password is incorrect.");
     if ((await mfaStatus(user.id)).enabled) {
       const challenge = await createLoginChallenge(user.id);
