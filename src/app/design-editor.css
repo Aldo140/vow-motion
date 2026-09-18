@@ -302,6 +302,15 @@
   line-height: 1.6;
   display: block;
 }
+.photo-workspace .design-dropzone-disabled-note {
+  border: 1px dashed #849187;
+  border-radius: 8px;
+  background: #f8f7f2;
+  padding: 16px;
+  margin: 20px 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
 .photo-workspace .design-dropzone input {
   font-size: 11px;
   width: 100%;

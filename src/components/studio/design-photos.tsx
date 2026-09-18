@@ -46,6 +46,7 @@ export function DesignPhotos({
   assets,
   setAssets,
   disabled,
+  disabledNote,
   onUploading,
   selectedPlacement,
   onReview,
@@ -56,6 +57,7 @@ export function DesignPhotos({
   assets: DesignAsset[];
   setAssets: (assets: DesignAsset[]) => void;
   disabled: boolean;
+  disabledNote?: React.ReactNode;
   onUploading: (busy: boolean) => void;
   selectedPlacement?: Placement;
   onReview: () => void;
@@ -311,6 +313,9 @@ export function DesignPhotos({
               each goes afterward.
             </p>
           </div>
+          {disabled && disabledNote && (
+            <p className="design-dropzone-disabled-note">{disabledNote}</p>
+          )}
           {!disabled && (
             <label
               className="design-dropzone"

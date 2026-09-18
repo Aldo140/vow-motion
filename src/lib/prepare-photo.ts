@@ -2,7 +2,11 @@
 export async function preparePhoto(file: File): Promise<File> {
   const maxBytes = 3_500_000;
   if (file.size <= maxBytes) return file;
-  const image = await createImageBitmap(file);
+  // Phone photos carry orientation as EXIF metadata rather than rotated pixels.
+  // A canvas has no EXIF of its own, so if we draw the raw bitmap the rotation
+  // is lost for good. Ask explicitly for the corrected orientation rather than
+  // trusting a browser default that has changed across versions.
+  const image = await createImageBitmap(file, { imageOrientation: "from-image" });
   try {
     const ratio = Math.min(1, 2200 / Math.max(image.width, image.height));
     const canvas = document.createElement("canvas");

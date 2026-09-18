@@ -295,3 +295,49 @@
     }
   }
 }
+/* A large, tap-or-drop target sized for a thumb on a phone. */
+.guest-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 28px 20px;
+  margin-bottom: 18px;
+  border: 1px dashed var(--guest-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--guest-accent) 4%, var(--guest-bg));
+  color: var(--guest-ink);
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+}
+.guest-dropzone.drag-over {
+  border-color: var(--guest-accent);
+  background: color-mix(in srgb, var(--guest-accent) 10%, var(--guest-bg));
+}
+.guest-dropzone svg {
+  color: var(--guest-accent);
+}
+.guest-dropzone b {
+  font-size: 13px;
+}
+.guest-dropzone p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+.guest-dropzone-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--guest-accent);
+}
+.guest-dropzone small {
+  font-size: 10px;
+  line-height: 1.6;
+  opacity: 0.7;
+}
+.guest-dropzone input {
+  min-height: 44px;
+  max-width: 100%;
+}

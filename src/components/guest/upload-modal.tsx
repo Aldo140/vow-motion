@@ -22,6 +22,19 @@ export function UploadModal({
     c = copy[locale];
   const uploaded = useRef(new Set<string>());
   const [progress, setProgress] = useState("");
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [chosen, setChosen] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const setFiles = (files: FileList | File[]) => {
+    const list = Array.from(files);
+    setChosen(list);
+    // Keep the native input in sync so the existing form-submit path,
+    // which reads FormData, works the same whether files came from a
+    // tap-to-choose or a drag-and-drop.
+    const transfer = new DataTransfer();
+    for (const file of list) transfer.items.add(file);
+    if (fileInput.current) fileInput.current.files = transfer.files;
+  };
   return (
     <Modal title={c.share} onClose={onClose}>
       {message && <Notice error={error}>{message}</Notice>}
@@ -36,6 +49,12 @@ export function UploadModal({
           try {
             const files = form.getAll("file") as File[];
             for (const file of files) {
+              if (/\.(heic|heif)$/i.test(file.name))
+                throw new Error(
+                  locale === "en"
+                    ? `${file.name}: export this iPhone photo as a JPEG, then choose it again.`
+                    : `${file.name}: exporta esta foto de iPhone como JPEG y elígela de nuevo.`,
+                );
               if (
                 !file.size ||
                 file.size > 10 * 1024 * 1024 ||
@@ -68,6 +87,7 @@ export function UploadModal({
             }
             await onSaved();
             formElement.reset();
+            setChosen([]);
             setError(false);
             setMessage(
               locale === "en"
@@ -83,18 +103,46 @@ export function UploadModal({
           }
         }}
       >
-        <Field
-          label={locale === "en" ? "Choose your photos" : "Elige tus fotos"}
-          hint={c.uploadNote}
+        <label
+          className={"guest-dropzone" + (dragOver ? " drag-over" : "")}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files);
+          }}
         >
+          <UploadSimpleIcon size={22} aria-hidden="true" />
+          <b>{locale === "en" ? "Choose your photos" : "Elige tus fotos"}</b>
+          <p>
+            {locale === "en"
+              ? "Tap to choose from your phone, or drop them here."
+              : "Toca para elegir desde tu teléfono, o suéltalas aquí."}
+          </p>
+          {chosen.length > 0 && (
+            <span className="guest-dropzone-count">
+              {locale === "en"
+                ? `${chosen.length} ${chosen.length === 1 ? "photo" : "photos"} chosen`
+                : `${chosen.length} ${chosen.length === 1 ? "foto elegida" : "fotos elegidas"}`}
+            </span>
+          )}
+          <small>{c.uploadNote}</small>
           <input
+            ref={fileInput}
             type="file"
             name="file"
             accept="image/jpeg,image/png,image/webp"
             multiple
             required
+            onChange={(e) => {
+              if (e.target.files?.length) setChosen(Array.from(e.target.files));
+            }}
           />
-        </Field>
+        </label>
         <Field
           label={
             locale === "en"

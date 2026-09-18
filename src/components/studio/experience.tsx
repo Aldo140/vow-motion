@@ -365,18 +365,17 @@ function DesignEditor(props: Props) {
                 )
               }
               disabled={readOnly || data.user.is_demo}
+              disabledNote={
+                data.user.is_demo
+                  ? "Create your wedding to upload personal photos. This sample keeps its original artwork."
+                  : undefined
+              }
               onUploading={setUploading}
               onReview={() => {
                 goToTab("Preview");
                 setReviewed(true);
               }}
             />
-            {data.user.is_demo && (
-              <p>
-                Create your wedding to upload personal photos. This sample keeps
-                its original artwork.
-              </p>
-            )}
           </div>
           <div hidden={tab !== "Personal details"}>
             <fieldset
