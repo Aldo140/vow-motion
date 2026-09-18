@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import type { FinderConfig } from "@/lib/finder";
 import type { World } from "@/lib/types";
+import { momentIcon } from "@/lib/moment-icon";
 import GuestCrest from "./guest-crest";
 
 type Event = {
@@ -555,6 +556,14 @@ export default function DayFinder({
             ref={scheduleRef}
           >
             <div className="finder-next">
+              {(() => {
+                const MomentIcon = momentIcon(nextLabel.title);
+                return (
+                  <span className="finder-moment-badge" aria-hidden="true">
+                    <MomentIcon size={17} weight="duotone" />
+                  </span>
+                );
+              })()}
               <span>
                 {nextLabel.live && (
                   <i className="finder-live-dot" aria-hidden="true" />
@@ -583,22 +592,30 @@ export default function DayFinder({
               <div className="finder-later-wrap">
                 <p className="finder-later-heading">{t.comingUp}</p>
                 <ol className="finder-later">
-                  {laterList.map((e) => (
-                    <li key={e.id}>
-                      <span className="finder-later-time">{e.time}</span>
-                      <span className="finder-later-title">{e.title}</span>
-                      <a
-                        className="finder-later-venue"
-                        href={e.directions}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`${t.directions}: ${e.venue}`}
-                      >
-                        {e.venue}
-                        {e.dressCode ? ` · ${e.dressCode}` : ""}
-                      </a>
-                    </li>
-                  ))}
+                  {laterList.map((e) => {
+                    const MomentIcon = momentIcon(e.title);
+                    return (
+                      <li key={e.id}>
+                        <span className="finder-later-rail" aria-hidden="true">
+                          <i className="finder-later-icon">
+                            <MomentIcon size={13} weight="duotone" />
+                          </i>
+                        </span>
+                        <span className="finder-later-time">{e.time}</span>
+                        <span className="finder-later-title">{e.title}</span>
+                        <a
+                          className="finder-later-venue"
+                          href={e.directions}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${t.directions}: ${e.venue}`}
+                        >
+                          {e.venue}
+                          {e.dressCode ? ` · ${e.dressCode}` : ""}
+                        </a>
+                      </li>
+                    );
+                  })}
                 </ol>
               </div>
             )}

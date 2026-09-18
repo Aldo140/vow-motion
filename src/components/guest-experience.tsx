@@ -4,15 +4,9 @@ import type { GuestData } from "@/lib/types";
 import { weddingBotanical } from "@/lib/wedding-design";
 import { eventTime, formatDate, getWorld } from "@/lib/worlds";
 import { guestFirstNamesLine } from "@/lib/guest-display";
+import { momentIcon } from "@/lib/moment-icon";
 import { useGSAP } from "@gsap/react";
-import {
-  CalendarBlankIcon,
-  ChampagneIcon,
-  CoffeeIcon,
-  ForkKnifeIcon,
-  HeartIcon,
-  MusicNotesIcon,
-} from "@phosphor-icons/react";
+import { CalendarBlankIcon } from "@phosphor-icons/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
@@ -37,17 +31,6 @@ import { UploadModal } from "./guest/upload-modal";
 import { Arrow, api } from "./ui";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const MOMENT_ICONS: [RegExp, typeof HeartIcon][] = [
-  [/welcome|aperitivo|bienvenid|drinks|c[oó]ctel|cocktail/i, ChampagneIcon],
-  [/ceremon|vows|boda|wedding/i, HeartIcon],
-  [/reception|dinner|banquet|cena|celebraci/i, MusicNotesIcon],
-  [/brunch|breakfast|desayuno|coffee|farewell|despedida/i, CoffeeIcon],
-];
-function momentIcon(title: string) {
-  return (
-    MOMENT_ICONS.find(([pattern]) => pattern.test(title))?.[1] ?? ForkKnifeIcon
-  );
-}
 
 export default function GuestExperience({ initial }: { initial: GuestData }) {
   const [data, setData] = useState(initial),
