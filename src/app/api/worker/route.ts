@@ -73,6 +73,12 @@ export async function POST(req: NextRequest) {
     const limits = await connection.query(
       "DELETE FROM rate_limits WHERE expires_at < now() RETURNING key",
     );
+    // Marked expired rather than deleted — same as a completed account
+    // deletion request, this is a meaningful record that an offer was made
+    // and never answered, not just throttling noise.
+    const staleTransfers = await connection.query(
+      "UPDATE ownership_transfers SET status='expired',resolved_at=now() WHERE status='pending' AND expires_at<now() RETURNING id",
+    );
 
     // Demo explore sessions accumulate one throwaway account per visitor and
     // never come back. After a week they are pure noise in the operator
@@ -152,6 +158,7 @@ export async function POST(req: NextRequest) {
         staleDesigns.rows.length * 2 +
         staleFinderMaps.rows.length,
       contactEnquiries: contactEnquiries.rows.length,
+      expiredOwnershipTransfers: staleTransfers.rows.length,
     };
   });
   const accountDeletions = await processDueAccountDeletions().catch(

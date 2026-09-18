@@ -427,7 +427,7 @@ export default function DayFinder({
             {names.includes(separator) ? (
               names.split(separator).flatMap((part, i, arr) =>
                 i < arr.length - 1
-                  ? [part.trim(), <i key={i}>{separator}</i>, " "]
+                  ? [part.trim(), " ", <i key={i}>{separator}</i>, " "]
                   : [part.trim()],
               )
             ) : (

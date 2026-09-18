@@ -45,6 +45,12 @@ import { readFormData, readJson } from "@/lib/request-body";
 import sharp from "sharp";
 import QRCode from "qrcode";
 import { pilotAction } from "@/lib/pilot-api";
+import { mfaStatus, verifyMfaCode } from "@/lib/mfa";
+import {
+  cancelTransfer,
+  initiateTransfer,
+  pendingTransferForWedding,
+} from "@/lib/ownership-transfer";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ path: string[] }> };
@@ -238,7 +244,10 @@ async function handler(request: NextRequest, context: Context) {
     if (area === "studio") {
       const weddingId = request.nextUrl.searchParams.get("wedding");
       if (!weddingId) throw new HttpError(400, "Choose a wedding.");
-      const { user, role } = await access(weddingId, method !== "GET");
+      const { user, role, wedding: accessedWedding } = await access(
+        weddingId,
+        method !== "GET",
+      );
       if (!action && method === "GET") return json(await studioData(weddingId));
       if (action === "finder") {
         const wedding = (
@@ -886,6 +895,50 @@ async function handler(request: NextRequest, context: Context) {
           .object({ plan: z.enum(["essential", "signature", "bespoke"]) })
           .parse(await body());
         return json({ url: await checkout(plan, weddingId, user.email) });
+      }
+      if (action === "transfer-ownership" && method === "GET")
+        return json({ transfer: await pendingTransferForWedding(weddingId) });
+      if (action === "transfer-ownership" && method === "POST") {
+        if (role !== "owner")
+          throw new HttpError(403, "Only the current owner can transfer this wedding.");
+        if (user.is_demo)
+          throw new HttpError(400, "Demo weddings cannot be transferred.");
+        await rateLimit("transfer-ownership:" + user.id, 5);
+        const input = z
+          .object({
+            email: z.email(),
+            password: z.string().min(1).max(200),
+            code: z.string().max(20).optional(),
+          })
+          .parse(await body());
+        const stored = (
+          await rows<{ password_hash: string }>(
+            "SELECT password_hash FROM users WHERE id=$1",
+            [user.id],
+          )
+        )[0];
+        if (!stored || !(await passwordMatches(input.password, stored.password_hash)))
+          throw new HttpError(401, "That password is incorrect.");
+        if ((await mfaStatus(user.id)).enabled) {
+          if (!input.code || !(await verifyMfaCode(user.id, input.code)))
+            throw new HttpError(401, "Enter your current two-factor code to confirm this.");
+        }
+        const transfer = await initiateTransfer(
+          weddingId,
+          user.id,
+          user.email,
+          input.email,
+          String(accessedWedding.names),
+        );
+        await audit(weddingId, user.id, `Ownership offered to ${input.email}`);
+        return json({ transfer });
+      }
+      if (action === "transfer-ownership" && method === "DELETE") {
+        if (role !== "owner")
+          throw new HttpError(403, "Only the current owner can cancel this transfer.");
+        await cancelTransfer(weddingId);
+        await audit(weddingId, user.id, "Ownership transfer cancelled");
+        return json({ ok: true });
       }
       const tableMap: Record<string, string> = {
         travel: "travel_items",

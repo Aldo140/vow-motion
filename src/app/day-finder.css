@@ -711,10 +711,13 @@
   margin-top: 22px;
 }
 .finder-next {
-  padding: 20px 22px;
-  border: 1px solid color-mix(in srgb, var(--f-ink) 16%, transparent);
+  padding: 24px 22px;
+  background: #fffdf8;
   border-radius: 10px;
   text-align: center;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--f-ink) 10%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--f-accent) 22%, transparent);
+  outline-offset: -8px;
 }
 .finder-next > span {
   display: inline-flex;
@@ -723,7 +726,8 @@
   font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.6;
+  color: var(--f-accent);
+  font-weight: 600;
 }
 /* A living pulse for "happening now" — the one status on the page that's
    true only this instant. */

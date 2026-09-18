@@ -9,6 +9,7 @@ import type { Wedding } from "@/lib/types";
 import { useDraft } from "./use-draft";
 import { DraftStatus } from "./draft-status";
 import { MfaSettings } from "./mfa-settings";
+import { OwnershipTransfer } from "./ownership-transfer";
 import { PrivacyCentre } from "./privacy-centre";
 
 export function SettingsManager({
@@ -339,6 +340,7 @@ export function SettingsManager({
           </section>
           {data.role === "owner" && <MfaSettings notify={notify} />}
           {data.role === "owner" && <PrivacyCentre data={data} notify={notify} />}
+          <OwnershipTransfer data={data} notify={notify} />
         </>
       )}
     </>

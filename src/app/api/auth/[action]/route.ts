@@ -36,6 +36,11 @@ import {
   resolveLoginChallenge,
   verifyMfaCode,
 } from "@/lib/mfa";
+import {
+  acceptTransfer,
+  declineTransfer,
+  pendingTransfersFor,
+} from "@/lib/ownership-transfer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,6 +57,10 @@ async function handler(request: NextRequest, context: Context) {
         user,
         deletion: user ? await pendingDeletion(user.id) : null,
         mfa: user ? await mfaStatus(user.id) : null,
+        transfers:
+          user && user.email_verified && !user.is_demo
+            ? await pendingTransfersFor(user.email)
+            : [],
       });
     }
     if (action === "export" && request.method === "GET") {
@@ -394,6 +403,21 @@ async function handler(request: NextRequest, context: Context) {
       const userId = await resolveLoginChallenge(input.challenge, input.code);
       await session(userId);
       return json({ ok: true });
+    }
+    if (action === "transfer-accept" || action === "transfer-decline") {
+      const user = await requireUser();
+      await rateLimit("transfer-resolve:" + user.id, 10);
+      const input = z
+        .object({ id: z.string().min(1) })
+        .parse(await readJson(request, 4_000));
+      const resolve = action === "transfer-accept" ? acceptTransfer : declineTransfer;
+      const weddingId = await resolve(
+        input.id,
+        user.id,
+        user.email,
+        user.email_verified,
+      );
+      return json({ ok: true, weddingId });
     }
     if (action !== "register" && action !== "login")
       throw new HttpError(404, "This action is unavailable.");

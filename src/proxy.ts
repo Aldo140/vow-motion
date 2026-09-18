@@ -35,7 +35,7 @@ function isStrictRoute(pathname: string) {
   );
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const strict = isStrictRoute(pathname);
   const frameAncestors = pathname === "/design-preview" ? "'self'" : "'none'";
