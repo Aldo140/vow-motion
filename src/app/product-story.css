@@ -21,7 +21,7 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: #637268;
+  color: #5d6b62;
   margin-bottom: 24px;
 }
 .product-feature-copy h2 {
@@ -54,7 +54,7 @@
   display: block;
   margin-top: 14px;
   font-size: 11px;
-  color: #637268;
+  color: #5d6b62;
 }
 .product-film {
   min-width: 0;
@@ -75,7 +75,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 2px 0;
-  color: #637268;
+  color: #5d6b62;
   font-size: 10px;
 }
 .product-film-footer button {
@@ -397,7 +397,7 @@
   font-size: 10px;
 }
 .studio-response-note span {
-  color: #637268;
+  color: #5d6b62;
   margin-top: 5px;
 }
 @media (max-width: 800px) {

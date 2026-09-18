@@ -1,6 +1,49 @@
-import { db, rows, transaction } from "./db";
+import { db, rows, transaction, type Database } from "./db";
 import { HttpError, id } from "./auth";
-import { deletePhoto } from "./photo-storage";
+import { deletePhoto, deletePublicMedia } from "./photo-storage";
+
+/** Queues every file an owned wedding references — guest/design photos and its
+ * public finder map — for deletion, before the wedding row itself is removed. */
+async function queueOwnedWeddingFiles(connection: Database, ownerId: string) {
+  const photos = await connection.query<{ filename: string }>(
+    `SELECT p.filename FROM photos p JOIN weddings w ON w.id = p.wedding_id
+     WHERE w.owner_id = $1`,
+    [ownerId],
+  );
+  const designs = await connection.query<{
+    filename: string;
+    original_filename: string;
+  }>(
+    `SELECT d.filename, d.original_filename FROM design_assets d
+     JOIN weddings w ON w.id = d.wedding_id WHERE w.owner_id = $1`,
+    [ownerId],
+  );
+  const finderMaps = await connection.query<{ map: string }>(
+    `SELECT settings->'finder'->>'map' AS map FROM weddings
+     WHERE owner_id = $1 AND settings->'finder'->>'map' IS NOT NULL`,
+    [ownerId],
+  );
+  for (const photo of photos.rows)
+    await connection.query(
+      "INSERT INTO pending_file_deletions(id,filename) VALUES($1,$2)",
+      [id(), photo.filename],
+    );
+  for (const design of designs.rows) {
+    await connection.query(
+      "INSERT INTO pending_file_deletions(id,filename) VALUES($1,$2)",
+      [id(), design.filename],
+    );
+    await connection.query(
+      "INSERT INTO pending_file_deletions(id,filename) VALUES($1,$2)",
+      [id(), design.original_filename],
+    );
+  }
+  for (const finder of finderMaps.rows)
+    await connection.query(
+      "INSERT INTO pending_file_deletions(id,filename,reason) VALUES($1,$2,'finder_map')",
+      [id(), finder.map],
+    );
+}
 
 /** Guests get this long to change their mind, or find the request by mistake. */
 export const DELETION_GRACE_DAYS = 14;
@@ -59,16 +102,7 @@ export async function completeAccountDeletion(requestId: string, userId: string)
       [requestId, userId],
     );
     if (!claimed.rows.length) return;
-    const photos = await connection.query<{ filename: string }>(
-      `SELECT p.filename FROM photos p JOIN weddings w ON w.id = p.wedding_id
-       WHERE w.owner_id = $1`,
-      [userId],
-    );
-    for (const photo of photos.rows)
-      await connection.query(
-        "INSERT INTO pending_file_deletions(id,filename) VALUES($1,$2)",
-        [id(), photo.filename],
-      );
+    await queueOwnedWeddingFiles(connection, userId);
     const user = await connection.query<{ email: string }>(
       "SELECT email FROM users WHERE id=$1",
       [userId],
@@ -108,15 +142,21 @@ const MAX_FILE_DELETION_ATTEMPTS = 5;
 
 /** Retries failed deletes with an operator-visible failure state, instead of silently giving up. */
 export async function processPendingFileDeletions(limit = 50) {
-  const due = await rows<{ id: string; filename: string; attempts: number }>(
-    "SELECT id,filename,attempts FROM pending_file_deletions WHERE completed_at IS NULL AND attempts<$1 ORDER BY created_at LIMIT $2",
+  const due = await rows<{
+    id: string;
+    filename: string;
+    reason: string;
+    attempts: number;
+  }>(
+    "SELECT id,filename,reason,attempts FROM pending_file_deletions WHERE completed_at IS NULL AND attempts<$1 ORDER BY created_at LIMIT $2",
     [MAX_FILE_DELETION_ATTEMPTS, limit],
   );
   let deleted = 0;
   const failures: { id: string; error: string }[] = [];
   for (const item of due) {
     try {
-      await deletePhoto(item.filename);
+      if (item.reason === "finder_map") await deletePublicMedia(item.filename);
+      else await deletePhoto(item.filename);
       await (
         await db()
       ).query(

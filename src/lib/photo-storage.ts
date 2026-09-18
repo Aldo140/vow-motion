@@ -85,3 +85,21 @@ export async function deletePhoto(filename: string): Promise<void> {
     },
   );
 }
+
+/** Deletes a URL produced by savePublicMedia — a full Blob URL when hosted, or a local public/social/ path in development. */
+export async function deletePublicMedia(url: string): Promise<void> {
+  if (!url) return;
+  if (hosted()) {
+    await del(url).catch(() => {});
+    return;
+  }
+  try {
+    const { pathname } = new URL(url);
+    if (pathname.startsWith("/social/"))
+      await unlink(path.join(process.cwd(), "public", pathname)).catch(
+        (error: NodeJS.ErrnoException) => {
+          if (error.code !== "ENOENT") throw error;
+        },
+      );
+  } catch {}
+}

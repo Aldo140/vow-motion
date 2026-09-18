@@ -11,6 +11,7 @@ import { Arrow } from "./ui";
 import { weddingIdentity } from "@/lib/identity";
 import { useHydrated } from "./use-hydrated";
 import { weddingBotanical } from "@/lib/wedding-design";
+import { guestFirstNamesLine } from "@/lib/guest-display";
 import { CherryBlossomBranch, CherryBlossomPetals } from "./guest-botanical";
 
 gsap.registerPlugin(useGSAP);
@@ -156,7 +157,7 @@ export default function GuestInvitationGate({
               {locale === "en" ? "Handpicked for" : "Con cariño, para"}
             </span>
             <p>
-              {data.guests.map((guest) => guest.name.split(" ")[0]).join(" & ")}
+              {guestFirstNamesLine(data.guests, locale)}
             </p>
           </div>
         </div>

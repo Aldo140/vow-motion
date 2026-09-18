@@ -15,8 +15,54 @@ export default function AuthForm({
 }) {
   const [begin, setBegin] = useState(setup),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [mfaChallenge, setMfaChallenge] = useState(""),
+    [mfaCode, setMfaCode] = useState("");
   if (begin) return <WeddingBeginning />;
+  if (mfaChallenge)
+    return (
+      <main id="main" className="auth-layout">
+        <div className="auth-content">
+          <div className="auth-inner">
+            <p className="eyebrow">ONE MORE STEP</p>
+            <h1>Enter your code.</h1>
+            <p>Open your authenticator app, or use a backup code.</p>
+            {error && <Notice error>{error}</Notice>}
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setBusy(true);
+                setError("");
+                try {
+                  await api("/api/auth/mfa-login-verify", "POST", {
+                    challenge: mfaChallenge,
+                    code: mfaCode,
+                  });
+                  window.location.href = "/admin";
+                } catch (cause) {
+                  setError((cause as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              <Field label="Verification code">
+                <input
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value)}
+                  autoFocus
+                  autoComplete="one-time-code"
+                />
+              </Field>
+              <Submit pending={busy}>
+                Verify and sign in
+                <Arrow />
+              </Submit>
+            </form>
+          </div>
+        </div>
+      </main>
+    );
   return (
     <main id="main" className="auth-layout">
       <div className="auth-art">
@@ -64,17 +110,19 @@ export default function AuthForm({
               setError("");
               const form = new FormData(e.currentTarget);
               try {
-                await api(
+                const result = (await api(
                   "/api/auth/" + (register ? "register" : "login"),
                   "POST",
                   Object.fromEntries(form),
-                );
+                )) as { mfaRequired?: boolean; challenge?: string };
                 if (register) {
                   trackMomentum("onboarding_step_completed", {
                     screen: "onboarding",
                     step: "account",
                   });
                   setBegin(true);
+                } else if (result.mfaRequired && result.challenge) {
+                  setMfaChallenge(result.challenge);
                 } else window.location.href = "/admin";
               } catch (cause) {
                 setError((cause as Error).message);

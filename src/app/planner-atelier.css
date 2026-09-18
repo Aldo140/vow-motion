@@ -64,7 +64,7 @@
   display: block;
   margin-top: 12px;
   font-size: 10px;
-  color: #627166;
+  color: #5a685e;
 }
 .planner-dossier {
   position: relative;
@@ -228,7 +228,7 @@
   bottom: 0;
   left: 0;
   font-size: 8px;
-  color: #627166;
+  color: #5a685e;
 }
 .atelier-bottom-line {
   display: flex;

@@ -81,17 +81,45 @@ export async function POST(req: NextRequest) {
     // cascade, then the user — sessions and challenges cascade on that.
     const stale =
       "SELECT id FROM users WHERE is_demo AND created_at < now() - interval '7 days'";
-    // Queue the demo photos for deletion before the weddings that reference
-    // them disappear, so the files are not orphaned on disk/blob storage.
+    // Queue every file a demo wedding references — guest/design photos and its
+    // public finder map — before the weddings that point to them disappear,
+    // so nothing is orphaned on disk/blob storage.
     const stalePhotos = await connection.query<{ filename: string }>(
       `SELECT p.filename FROM photos p
        JOIN weddings w ON w.id = p.wedding_id
        WHERE w.owner_id IN (${stale})`,
     );
+    const staleDesigns = await connection.query<{
+      filename: string;
+      original_filename: string;
+    }>(
+      `SELECT d.filename, d.original_filename FROM design_assets d
+       JOIN weddings w ON w.id = d.wedding_id
+       WHERE w.owner_id IN (${stale})`,
+    );
+    const staleFinderMaps = await connection.query<{ map: string }>(
+      `SELECT settings->'finder'->>'map' AS map FROM weddings
+       WHERE owner_id IN (${stale}) AND settings->'finder'->>'map' IS NOT NULL`,
+    );
     for (const photo of stalePhotos.rows)
       await connection.query(
         "INSERT INTO pending_file_deletions(id,filename,reason) VALUES($1,$2,'demo_cleanup')",
         [id(), photo.filename],
+      );
+    for (const design of staleDesigns.rows) {
+      await connection.query(
+        "INSERT INTO pending_file_deletions(id,filename,reason) VALUES($1,$2,'demo_cleanup')",
+        [id(), design.filename],
+      );
+      await connection.query(
+        "INSERT INTO pending_file_deletions(id,filename,reason) VALUES($1,$2,'demo_cleanup')",
+        [id(), design.original_filename],
+      );
+    }
+    for (const finder of staleFinderMaps.rows)
+      await connection.query(
+        "INSERT INTO pending_file_deletions(id,filename,reason) VALUES($1,$2,'finder_map')",
+        [id(), finder.map],
       );
     await connection.query(
       `DELETE FROM pilot_feedback WHERE author_id IN (${stale})`,
@@ -100,6 +128,13 @@ export async function POST(req: NextRequest) {
     await connection.query(`DELETE FROM weddings WHERE owner_id IN (${stale})`);
     const demoAccounts = await connection.query(
       "DELETE FROM users WHERE is_demo AND created_at < now() - interval '7 days' RETURNING id",
+    );
+
+    // Contact enquiries have no account of their own and no resolution
+    // workflow, so a fixed retention window is the only practical limit —
+    // long enough for business follow-up, short of holding them forever.
+    const contactEnquiries = await connection.query(
+      "DELETE FROM contact_enquiries WHERE created_at < now() - interval '2 years' RETURNING id",
     );
 
     return {
@@ -112,7 +147,11 @@ export async function POST(req: NextRequest) {
       storySessions: storySessions.rows.length,
       rateLimits: limits.rows.length,
       demoAccounts: demoAccounts.rows.length,
-      queuedPhotoDeletions: stalePhotos.rows.length,
+      queuedFileDeletions:
+        stalePhotos.rows.length +
+        staleDesigns.rows.length * 2 +
+        staleFinderMaps.rows.length,
+      contactEnquiries: contactEnquiries.rows.length,
     };
   });
   const accountDeletions = await processDueAccountDeletions().catch(

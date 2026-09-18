@@ -27,7 +27,7 @@
   min-height: 44px;
   font-size: 11px;
   border-top: 2px solid transparent;
-  color: #74766a;
+  color: #6e7065;
 }
 .journey-navigation nav a[aria-current] {
   border-color: #65704d;
@@ -154,7 +154,7 @@
   font-size: 12px;
   line-height: 1.8;
   max-width: 30ch;
-  color: #737569;
+  color: #6e7065;
 }
 .momentum-attention article {
   padding: 16px 0;
@@ -208,12 +208,12 @@
 }
 .momentum-journey li p {
   font-size: 11px;
-  color: #74756c;
+  color: #6a6a62;
   margin: 4px 0 0;
 }
 .journey-state {
   font-size: 10px;
-  color: #777;
+  color: #6a6a6a;
 }
 .momentum-recent {
   margin: 40px 0;

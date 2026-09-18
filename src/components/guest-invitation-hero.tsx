@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import type { GuestData } from "@/lib/types";
 import { formatDate, getWorld } from "@/lib/worlds";
+import { guestFirstNamesLine } from "@/lib/guest-display";
 import GuestKeepsake from "./guest-keepsake";
 import { weddingBotanical } from "@/lib/wedding-design";
 import {
@@ -192,7 +193,7 @@ export default function GuestInvitationHero({
       <div className="guest-hero-footer">
         <span className="hero-personal-note">
           {locale === "en" ? "A place here, just for " : "Un lugar aquí para "}
-          {data.guests.map((guest) => guest.name.split(" ")[0]).join(" & ")}.
+          {guestFirstNamesLine(data.guests, locale)}.
         </span>
         <a
           href="#story"

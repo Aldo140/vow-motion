@@ -3,6 +3,7 @@ import WeddingPhoto from "./wedding-photo";
 
 import { CalendarBlankIcon, MapPinIcon } from "@phosphor-icons/react";
 import type { GuestData } from "@/lib/types";
+import { isPlaceholderGuestName } from "@/lib/momentum";
 import { eventTime, formatDate } from "@/lib/worlds";
 import { Arrow, Modal } from "./ui";
 
@@ -56,7 +57,11 @@ export default function GuestWeddingPass({
           {data.guests.map((guest) => (
             <div key={guest.id}>
               <strong>
-                {guest.name}
+                {guest.is_plus_one && isPlaceholderGuestName(guest.name)
+                  ? locale === "en"
+                    ? "Your guest"
+                    : "Tu invitado"
+                  : guest.name}
                 {guest.is_child && (
                   <em className="day-pass-child-tag">
                     {locale === "en" ? " · Child" : " · Niño/a"}

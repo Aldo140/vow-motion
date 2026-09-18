@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Brand } from "@/components/ui";
+import { operatorProfile } from "@/lib/operator";
 export const metadata = { title: "Privacy information" };
 export default function Page() {
+  const operator = operatorProfile();
   return (
     <main id="main" className="legal">
       <Brand />
@@ -11,6 +13,46 @@ export default function Page() {
         application’s implemented data handling; it is not a claim of legal
         certification.
       </p>
+      <h2>Who operates this deployment</h2>
+      {operator.configured ? (
+        <p>
+          This deployment is operated by {operator.legalName}
+          {operator.address ? `, ${operator.address}` : ""}, under{" "}
+          {operator.jurisdiction} law. For privacy questions, requests, or a
+          data breach report, contact{" "}
+          <a href={`mailto:${operator.privacyContact}`}>
+            {operator.privacyContact}
+          </a>
+          .
+          {operator.privacyPolicyUrl && (
+            <>
+              {" "}
+              The operator&rsquo;s full privacy policy is at{" "}
+              <a href={operator.privacyPolicyUrl}>
+                {operator.privacyPolicyUrl}
+              </a>
+              .
+            </>
+          )}
+          {operator.termsUrl && (
+            <>
+              {" "}
+              Terms of service:{" "}
+              <a href={operator.termsUrl}>{operator.termsUrl}</a>.
+            </>
+          )}
+        </p>
+      ) : (
+        <p>
+          <strong>
+            The operator running this deployment has not yet published their
+            legal identity, jurisdiction, or a privacy contact here.
+          </strong>{" "}
+          Nothing below should be read as satisfying that requirement. See{" "}
+          <code>docs/LEGAL-CHECKLIST.md</code> for what the operator needs to
+          confirm and configure before accepting real guest data.
+        </p>
+      )}
       <h2>Information in your wedding</h2>
       <p>
         The hosts manage guest names, contact details, invitation access, event
@@ -29,8 +71,10 @@ export default function Page() {
       <p>
         When you use our contact form, we store the details you submit and
         forward your enquiry to the Vow Motion team by email so we can reply.
-        Contact enquiries do not sign you up for marketing. For questions about
-        an enquiry or to request its removal, email jorti104@mtroyal.ca.
+        Contact enquiries do not sign you up for marketing, and are kept for
+        up to two years. For questions about an enquiry or to request its
+        removal, email{" "}
+        {operator.privacyContact || "jorti104@mtroyal.ca"}.
       </p>
       <h2>Photos</h2>
       <p>
@@ -57,9 +101,9 @@ export default function Page() {
       </p>
       <h2>Before a public launch</h2>
       <p>
-        The deployment operator must publish their legal identity, contact
-        information, retention policy, and provider disclosures for the
-        environment they operate.
+        {operator.configured
+          ? "Legal identity and a privacy contact are published above. The operator should still confirm actual provider regions and subprocessors, a written breach procedure, and jurisdiction-specific consent requirements (see docs/LEGAL-CHECKLIST.md) before treating this as a compliant public service."
+          : "The deployment operator must publish their legal identity, contact information, retention policy, and provider disclosures for the environment they operate. None of that has been configured yet."}
       </p>
       <Link href="/">← Back to Vow Motion</Link>
     </main>

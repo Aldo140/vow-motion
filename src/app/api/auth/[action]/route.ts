@@ -2,6 +2,7 @@ import { randomInt } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import QRCode from "qrcode";
 import { db, rows, transaction } from "@/lib/db";
 import {
   currentUser,
@@ -23,6 +24,17 @@ import {
   scheduleAccountDeletion,
 } from "@/lib/account-deletion";
 import { exportAccountData } from "@/lib/account-export";
+import {
+  beginMfaSetup,
+  confirmMfaSetup,
+  createLoginChallenge,
+  disableMfa,
+  hasRecentReauth,
+  markRecentReauth,
+  mfaStatus,
+  resolveLoginChallenge,
+  verifyMfaCode,
+} from "@/lib/mfa";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,11 +50,17 @@ async function handler(request: NextRequest, context: Context) {
       return json({
         user,
         deletion: user ? await pendingDeletion(user.id) : null,
+        mfa: user ? await mfaStatus(user.id) : null,
       });
     }
     if (action === "export" && request.method === "GET") {
       const user = await requireUser();
       await rateLimit("account-export:" + user.id, 5);
+      if (!(await hasRecentReauth(user.id)))
+        throw new HttpError(
+          401,
+          "Confirm your password to export your data.",
+        );
       const payload = await exportAccountData(user.id);
       return new NextResponse(JSON.stringify(payload, null, 2), {
         headers: {
@@ -275,7 +293,10 @@ async function handler(request: NextRequest, context: Context) {
           "Demo workspaces clear themselves automatically; there is nothing to delete.",
         );
       const input = z
-        .object({ password: z.string().min(1).max(200) })
+        .object({
+          password: z.string().min(1).max(200),
+          code: z.string().max(20).optional(),
+        })
         .parse(await readJson(request, 4_000));
       const stored = (
         await rows<{ password_hash: string }>(
@@ -285,12 +306,93 @@ async function handler(request: NextRequest, context: Context) {
       )[0];
       if (!stored || !passwordMatches(input.password, stored.password_hash))
         throw new HttpError(401, "That password is incorrect.");
+      if ((await mfaStatus(user.id)).enabled) {
+        if (!input.code || !(await verifyMfaCode(user.id, input.code)))
+          throw new HttpError(
+            401,
+            "Enter your current two-factor code to confirm this.",
+          );
+      }
       const deletion = await scheduleAccountDeletion(user.id);
       return json({ ok: true, deletion });
     }
     if (action === "deletion-cancel") {
       const user = await requireUser();
       await cancelAccountDeletion(user.id);
+      return json({ ok: true });
+    }
+    if (action === "reauth") {
+      const user = await requireUser();
+      await rateLimit("reauth:" + user.id, 10);
+      const input = z
+        .object({
+          password: z.string().min(1).max(200),
+          code: z.string().max(20).optional(),
+        })
+        .parse(await readJson(request, 4_000));
+      const stored = (
+        await rows<{ password_hash: string }>(
+          "SELECT password_hash FROM users WHERE id=$1",
+          [user.id],
+        )
+      )[0];
+      if (!stored || !passwordMatches(input.password, stored.password_hash))
+        throw new HttpError(401, "That password is incorrect.");
+      if ((await mfaStatus(user.id)).enabled) {
+        if (!input.code || !(await verifyMfaCode(user.id, input.code)))
+          throw new HttpError(401, "Enter your current two-factor code.");
+      }
+      await markRecentReauth(user.id);
+      return json({ ok: true });
+    }
+    if (action === "mfa-setup") {
+      const user = await requireUser();
+      await rateLimit("mfa-setup:" + user.id, 10);
+      const { secret, otpauth_url } = await beginMfaSetup(user.id, user.email);
+      const qr = await QRCode.toDataURL(otpauth_url, { margin: 2 });
+      return json({ secret, otpauth_url, qr });
+    }
+    if (action === "mfa-confirm") {
+      const user = await requireUser();
+      await rateLimit("mfa-confirm:" + user.id, 10);
+      const input = z
+        .object({ code: z.string().regex(/^\d{6}$/) })
+        .parse(await readJson(request, 4_000));
+      const { backupCodes } = await confirmMfaSetup(user.id, input.code);
+      return json({ ok: true, backupCodes });
+    }
+    if (action === "mfa-disable") {
+      const user = await requireUser();
+      await rateLimit("mfa-disable:" + user.id, 10);
+      const input = z
+        .object({
+          password: z.string().min(1).max(200),
+          code: z.string().max(20),
+        })
+        .parse(await readJson(request, 4_000));
+      const stored = (
+        await rows<{ password_hash: string }>(
+          "SELECT password_hash FROM users WHERE id=$1",
+          [user.id],
+        )
+      )[0];
+      if (!stored || !passwordMatches(input.password, stored.password_hash))
+        throw new HttpError(401, "That password is incorrect.");
+      if (!(await verifyMfaCode(user.id, input.code)))
+        throw new HttpError(401, "That code is incorrect.");
+      await disableMfa(user.id);
+      return json({ ok: true });
+    }
+    if (action === "mfa-login-verify") {
+      await rateLimit(
+        "mfa-login:" + request.headers.get("x-forwarded-for"),
+        20,
+      );
+      const input = z
+        .object({ challenge: z.uuid(), code: z.string().max(20) })
+        .parse(await readJson(request, 4_000));
+      const userId = await resolveLoginChallenge(input.challenge, input.code);
+      await session(userId);
       return json({ ok: true });
     }
     if (action !== "register" && action !== "login")
@@ -333,6 +435,10 @@ async function handler(request: NextRequest, context: Context) {
     )[0];
     if (!user || !passwordMatches(input.password, user.password_hash))
       throw new HttpError(401, "Email or password is incorrect.");
+    if ((await mfaStatus(user.id)).enabled) {
+      const challenge = await createLoginChallenge(user.id);
+      return json({ ok: true, mfaRequired: true, challenge });
+    }
     await session(user.id);
     return json({ ok: true });
   } catch (error) {

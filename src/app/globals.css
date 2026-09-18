@@ -624,7 +624,7 @@ input[type="radio"] {
 /* A world still borrowing the house photography is set a shade back, so the
    three finished ones lead without the other three being hidden. */
 .world-tabs button.world-tab-partial[aria-selected="false"] {
-  color: color-mix(in srgb, var(--muted) 70%, transparent);
+  color: color-mix(in srgb, var(--muted) 92%, transparent);
 }
 .world-tabs button.world-tab-partial[aria-selected="false"] span {
   font-style: italic;
@@ -1054,6 +1054,7 @@ input[type="radio"] {
 .studio-sidebar nav a small {
   margin-left: auto;
   background: oklch(86% 0.027 113);
+  color: #58564f;
   padding: 1px 6px;
   font-size: 9px;
   border-radius: 3px;
@@ -2329,6 +2330,8 @@ td:last-child {
   max-width: 290px;
 }
 .privacy-centre-actions { display: flex; flex-direction: column; align-items: start; gap: 14px; }
+.backup-codes-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; padding: 18px; background: var(--olive-light); list-style: none; }
+.backup-codes-list code { font-size: 13px; letter-spacing: 0.04em; }
 .inline-form {
   display: flex;
   gap: 10px;

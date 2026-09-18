@@ -164,7 +164,7 @@
 .ledger-title small {
   font-size: 8px;
   letter-spacing: 0.13em;
-  color: #6b786b;
+  color: #657165;
 }
 .ledger-title h3 {
   font: 31px/1.2 var(--serif);
@@ -200,7 +200,7 @@
   display: block;
   font-size: 10px;
   margin-top: 9px;
-  color: #697765;
+  color: #647160;
 }
 .ledger-table > div {
   display: grid;
@@ -214,7 +214,7 @@
 .ledger-table .ledger-column-labels {
   font-size: 7px;
   letter-spacing: 0.1em;
-  color: #7a8373;
+  color: #686f62;
   padding-block: 15px;
 }
 .ledger-table > div > span:first-child {
@@ -262,7 +262,7 @@
   display: block;
   font-size: 10px;
   margin-top: 5px;
-  color: #697765;
+  color: #647160;
 }
 .studio-story-bottom {
   display: flex;
@@ -532,7 +532,7 @@
     grid-column: 2;
     grid-row: 2;
     font-size: 9px;
-    color: #697765;
+    color: #647160;
   }
   .ledger-table > div:not(.ledger-column-labels) > span:last-child::before {
     content: "Meals: ";

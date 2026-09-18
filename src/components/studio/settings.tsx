@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import type { Wedding } from "@/lib/types";
 import { useDraft } from "./use-draft";
 import { DraftStatus } from "./draft-status";
+import { MfaSettings } from "./mfa-settings";
 import { PrivacyCentre } from "./privacy-centre";
 
 export function SettingsManager({
@@ -336,6 +337,7 @@ export function SettingsManager({
                 ))}
             </div>
           </section>
+          {data.role === "owner" && <MfaSettings notify={notify} />}
           {data.role === "owner" && <PrivacyCentre data={data} notify={notify} />}
         </>
       )}

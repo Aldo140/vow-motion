@@ -3,6 +3,7 @@ import { identityStyle, weddingIdentity } from "@/lib/identity";
 import type { GuestData } from "@/lib/types";
 import { weddingBotanical } from "@/lib/wedding-design";
 import { eventTime, formatDate, getWorld } from "@/lib/worlds";
+import { guestFirstNamesLine } from "@/lib/guest-display";
 import { useGSAP } from "@gsap/react";
 import {
   CalendarBlankIcon,
@@ -519,9 +520,7 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
                 <div className="story-letter">
                   <span className="story-letter-label">
                     {locale === "en" ? "Dearest " : "Con cariño, para "}
-                    {data.guests
-                      .map((guest) => guest.name.split(" ")[0])
-                      .join(" & ")}
+                    {guestFirstNamesLine(data.guests, locale)}
                     ,
                   </span>
                   <span className="story-monogram">

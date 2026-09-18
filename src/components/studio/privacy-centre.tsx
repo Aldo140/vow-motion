@@ -4,6 +4,7 @@ import type { StudioData } from "@/lib/types";
 import { useEffect, useState } from "react";
 
 type Deletion = { id: string; requested_at: string; scheduled_for: string } | null;
+type Mfa = { enabled: boolean } | null;
 
 export function PrivacyCentre({
   data,
@@ -13,9 +14,12 @@ export function PrivacyCentre({
   notify: (text: string, tone?: "success" | "error") => void;
 }) {
   const [deletion, setDeletion] = useState<Deletion>(null);
+  const [mfa, setMfa] = useState<Mfa>(null);
   const [loaded, setLoaded] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   // This panel only renders when the viewer owns the open wedding, so its
@@ -27,8 +31,9 @@ export function PrivacyCentre({
 
   useEffect(() => {
     api("/api/auth/me")
-      .then((result: { deletion: Deletion }) => {
+      .then((result: { deletion: Deletion; mfa: Mfa }) => {
         setDeletion(result.deletion);
+        setMfa(result.mfa);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
@@ -47,6 +52,14 @@ export function PrivacyCentre({
     }
   };
 
+  const closeModals = () => {
+    setConfirming(false);
+    setExporting(false);
+    setPassword("");
+    setCode("");
+    setError("");
+  };
+
   return (
     <section className="settings-extra" aria-label="Privacy centre">
       <div>
@@ -57,12 +70,12 @@ export function PrivacyCentre({
         </p>
       </div>
       <div className="privacy-centre-actions">
-        <a
+        <button
           className="button outline small"
-          href={"/api/auth/export"}
+          onClick={() => setExporting(true)}
         >
           Export all your data
-        </a>
+        </button>
         {loaded && deletion && (
           <Notice error>
             Your account is scheduled for deletion on{" "}
@@ -85,15 +98,50 @@ export function PrivacyCentre({
           </button>
         )}
       </div>
+      {exporting && (
+        <Modal title="Confirm your password" onClose={closeModals}>
+          <p>
+            Confirm your password{mfa?.enabled ? " and a current code" : ""}{" "}
+            before downloading everything stored for your weddings.
+          </p>
+          {error && <Notice error>{error}</Notice>}
+          <Field label="Password">
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </Field>
+          {mfa?.enabled && (
+            <Field label="Current 6-digit code, or a backup code">
+              <input value={code} onChange={(e) => setCode(e.target.value)} />
+            </Field>
+          )}
+          <button
+            className="button primary"
+            disabled={busy || !password || (mfa?.enabled && !code)}
+            onClick={async () => {
+              setBusy(true);
+              setError("");
+              try {
+                await api("/api/auth/reauth", "POST", { password, code });
+                window.location.href = "/api/auth/export";
+                closeModals();
+              } catch (e) {
+                setError((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? "Confirming…" : "Confirm and download"}
+          </button>
+        </Modal>
+      )}
       {confirming && (
-        <Modal
-          title="Delete your account"
-          onClose={() => {
-            setConfirming(false);
-            setPassword("");
-            setError("");
-          }}
-        >
+        <Modal title="Delete your account" onClose={closeModals}>
           <p>
             This permanently deletes every wedding you own ({ownedCount} in
             this account), their guests, replies, photos, and messages, after
@@ -110,6 +158,11 @@ export function PrivacyCentre({
               required
             />
           </Field>
+          {mfa?.enabled && (
+            <Field label="Current 6-digit code, or a backup code">
+              <input value={code} onChange={(e) => setCode(e.target.value)} />
+            </Field>
+          )}
           <div className="campaign-actions">
             <button
               type="button"
@@ -121,7 +174,7 @@ export function PrivacyCentre({
             <button
               type="button"
               className="button primary"
-              disabled={busy || !password}
+              disabled={busy || !password || (mfa?.enabled && !code)}
               onClick={async () => {
                 setBusy(true);
                 setError("");
@@ -129,11 +182,10 @@ export function PrivacyCentre({
                   const result = (await api(
                     "/api/auth/deletion-request",
                     "POST",
-                    { password },
+                    { password, code },
                   )) as { deletion: Deletion };
                   setDeletion(result.deletion);
-                  setConfirming(false);
-                  setPassword("");
+                  closeModals();
                   notify(
                     "Deletion scheduled. You can cancel it any time before it completes.",
                   );

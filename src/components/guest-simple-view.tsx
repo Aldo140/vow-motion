@@ -2,6 +2,7 @@
 import type { GuestData } from "@/lib/types";
 import { eventTime, formatDate } from "@/lib/worlds";
 import { CalendarBlankIcon, MapPinIcon } from "@phosphor-icons/react";
+import { isPlaceholderGuestName } from "@/lib/momentum";
 import Link from "next/link";
 import { useMemo } from "react";
 import { CheckIcon } from "@phosphor-icons/react";
@@ -70,10 +71,18 @@ export default function GuestSimpleView({
           <p className="simple-addressed-to">
             {locale === "en" ? "Reserved for " : "Reservado para "}
             {data.guests
-              .map(
-                (g) =>
-                  g.name + (g.is_child ? (locale === "en" ? " (child)" : " (niño/a)") : ""),
-              )
+              .map((g) => {
+                const name =
+                  g.is_plus_one && isPlaceholderGuestName(g.name)
+                    ? locale === "en"
+                      ? "your guest"
+                      : "tu invitado"
+                    : g.name;
+                return (
+                  name +
+                  (g.is_child ? (locale === "en" ? " (child)" : " (niño/a)") : "")
+                );
+              })
               .join(", ")}
           </p>
           <GuestCountdown
