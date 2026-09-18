@@ -1,12 +1,21 @@
 "use client";
 import { PageHeading, type PanelProps } from "@/components/studio/shared";
-import { Arrow, Field, Modal, Notice, Submit } from "@/components/ui";
+import { Arrow, Field, Modal, Notice, Submit, api } from "@/components/ui";
 import { LockSimpleIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function CollaboratorsManager({ data, mutate, notify }: PanelProps) {
   const [add, setAdd] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [role, setRole] = useState("partner"),
+    [mfaEnabled, setMfaEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!add) return;
+    api("/api/auth/me")
+      .then((me) => setMfaEnabled(Boolean((me as { mfa?: { enabled: boolean } }).mfa?.enabled)))
+      .catch(() => {});
+  }, [add]);
   return (
     <>
       <PageHeading
@@ -88,6 +97,7 @@ export function CollaboratorsManager({ data, mutate, notify }: PanelProps) {
                   Object.fromEntries(new FormData(e.currentTarget)),
                 );
                 setAdd(false);
+                setRole("partner");
                 notify("Collaborator access added.");
               } catch (e) {
                 setError((e as Error).message);
@@ -98,12 +108,37 @@ export function CollaboratorsManager({ data, mutate, notify }: PanelProps) {
               <input type="email" name="email" required />
             </Field>
             <Field label="Role">
-              <select name="role">
+              <select
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
                 <option value="partner">Partner</option>
                 <option value="planner">Planner</option>
                 <option value="viewer">Viewer</option>
               </select>
             </Field>
+            {role === "partner" && (
+              <>
+                <p className="muted-copy">
+                  Partner access is nearly co-ownership — confirm it&rsquo;s
+                  you.
+                </p>
+                <Field label="Confirm your password">
+                  <input
+                    type="password"
+                    name="password"
+                    autoComplete="current-password"
+                    required
+                  />
+                </Field>
+                {mfaEnabled && (
+                  <Field label="Current 6-digit code, or a backup code">
+                    <input name="code" />
+                  </Field>
+                )}
+              </>
+            )}
             <Submit>
               Add collaborator
               <Arrow />

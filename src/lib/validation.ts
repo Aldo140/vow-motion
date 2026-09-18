@@ -99,6 +99,8 @@ export const schemas = {
   collaborators: z.object({
     email: z.email(),
     role: z.enum(["partner", "planner", "viewer"]),
+    password: z.string().min(1).max(200).optional(),
+    code: z.string().max(20).optional(),
   }),
   domains: z.object({
     hostname: z

@@ -990,7 +990,33 @@ async function handler(request: NextRequest, context: Context) {
         }
         if (method === "POST") {
           const schema = schemas[action as keyof typeof schemas];
-          const fields = schema.parse(await body());
+          let fields: Record<string, unknown> = schema.parse(await body());
+          // A "partner" collaborator is a near co-owner (can manage other
+          // collaborators, domains and publishing) — granting it is treated
+          // like transfer-ownership above, not like a routine invite.
+          if (action === "collaborators" && fields.role === "partner") {
+            const { password, code, ...rest } = fields as {
+              password?: string;
+              code?: string;
+            };
+            fields = rest;
+            await rateLimit("grant-partner:" + user.id, 5);
+            const stored = (
+              await rows<{ password_hash: string }>(
+                "SELECT password_hash FROM users WHERE id=$1",
+                [user.id],
+              )
+            )[0];
+            if (!password || !stored || !(await passwordMatches(password, stored.password_hash)))
+              throw new HttpError(401, "Enter your password to confirm this.");
+            if ((await mfaStatus(user.id)).enabled) {
+              if (!code || !(await verifyMfaCode(user.id, code)))
+                throw new HttpError(401, "Enter your current two-factor code to confirm this.");
+            }
+          } else if (action === "collaborators") {
+            const { email, role } = fields as { email: string; role: string };
+            fields = { email, role };
+          }
           const keys = Object.keys(fields),
             values = Object.values(fields).map((v) =>
               Array.isArray(v) ? JSON.stringify(v) : v,
