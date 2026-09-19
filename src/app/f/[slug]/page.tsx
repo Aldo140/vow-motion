@@ -30,7 +30,6 @@ export default async function Page({
       locale={data.wedding.locale === "es" ? "es" : "en"}
       config={data.config}
       events={data.events as never[]}
-      palette={world.palette}
       separator={world.separator}
       world={world.id}
       mood={world.mood}

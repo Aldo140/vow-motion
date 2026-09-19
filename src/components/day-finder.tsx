@@ -170,7 +170,6 @@ export default function DayFinder({
   locale,
   config,
   events,
-  palette,
   separator,
   world,
   mood,
@@ -182,7 +181,6 @@ export default function DayFinder({
   locale: "en" | "es";
   config: FinderConfig;
   events: Event[];
-  palette: string[];
   separator: string;
   world: World;
   mood: string;
@@ -375,14 +373,7 @@ export default function DayFinder({
   return (
     <main
       id="main"
-      className="finder"
-      style={
-        {
-          "--f-bg": palette[0] || "#f4f0e4",
-          "--f-ink": palette[1] || "#33352c",
-          "--f-accent": palette[2] || palette[1] || "#40553a",
-        } as React.CSSProperties
-      }
+      className={`finder guest-experience world-${world}`}
     >
       <div className="finder-orbs" aria-hidden="true">
         <span className="finder-orb finder-orb-1" />
@@ -401,7 +392,6 @@ export default function DayFinder({
           className="finder-cover-img"
           ref={coverImgRef}
         />
-        <div className="finder-cover-tint" aria-hidden="true" />
         <div className="finder-cover-scrim" aria-hidden="true" />
         <button
           className="finder-lang finder-lang-float"
@@ -591,28 +581,16 @@ export default function DayFinder({
             </div>
             {laterList.length > 0 && (
               <div className="finder-later-wrap">
-                <span className="finder-monogram-divider" aria-hidden="true">
-                  <i />
-                  <GuestCrest
-                    names={names}
-                    world={world}
-                    monogram={monogram}
-                    size={26}
-                  />
-                  <i />
-                </span>
                 <p className="finder-later-heading">{t.comingUp}</p>
                 <ol className="finder-later">
                   {laterList.map((e) => {
                     const MomentIcon = momentIcon(e.title);
                     return (
                       <li key={e.id}>
-                        <span className="finder-later-rail">
-                          <i className="finder-later-icon" aria-hidden="true">
-                            <MomentIcon size={13} weight="duotone" />
-                          </i>
-                          <span className="finder-later-time">{e.time}</span>
-                        </span>
+                        <i className="finder-later-icon" aria-hidden="true">
+                          <MomentIcon size={12} weight="duotone" />
+                        </i>
+                        <span className="finder-later-time">{e.time}</span>
                         <span className="finder-later-title">{e.title}</span>
                         <a
                           className="finder-later-venue"

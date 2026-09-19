@@ -1,6 +1,16 @@
-/* Day-of table finder — /f/<slug>. Phone-first, one job, tinted by the world's
-   palette. Kept small: guests open this on venue wifi. */
-
+/* Day-of table finder — /f/<slug>. Guests open this on venue wifi, so it
+   stays light — but it draws its colour, contrast and display type from the
+   exact same system the full invitation uses (.guest-experience.world-*,
+   globals.css), not a separate bespoke palette. Those variables are
+   deliberately curated per world for AA contrast; this page inherits that
+   guarantee instead of re-deriving its own from the wedding's decorative
+   accent swatch. */
+.finder.guest-experience {
+  --f-bg: var(--guest-bg);
+  --f-ink: var(--guest-ink);
+  --f-accent: var(--guest-accent);
+  --f-display: var(--guest-display, "Italiana", Georgia, serif);
+}
 .finder {
   position: relative;
   min-height: 100dvh;
@@ -105,16 +115,6 @@
   object-fit: cover;
   will-change: transform;
 }
-/* A duotone wash off the wedding's own accent colour — so the cover photo
-   reads as branded to this couple rather than a generic travel shot, using
-   only the palette already chosen for them, not a new asset. */
-.finder-cover-tint {
-  position: absolute;
-  inset: 0;
-  background: var(--f-accent);
-  mix-blend-mode: color;
-  opacity: 0.4;
-}
 .finder-cover-scrim {
   position: absolute;
   inset: 0;
@@ -166,7 +166,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 2px;
-  font-family: "Italiana", var(--serif, Georgia, serif);
+  font-family: var(--f-display);
   line-height: 1;
   color: var(--f-ink);
 }
@@ -226,7 +226,7 @@
   opacity: 0.7;
 }
 .finder-cover-content h1 {
-  font-family: "Italiana", var(--serif, Georgia, serif);
+  font-family: var(--f-display);
   font-size: clamp(30px, 10vw, 46px);
   line-height: 1.1;
   font-weight: 400;
@@ -278,7 +278,7 @@
   background: color-mix(in srgb, var(--f-bg) 92%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid color-mix(in srgb, var(--f-ink) 10%, transparent);
-  font-family: "Italiana", var(--serif, Georgia, serif);
+  font-family: var(--f-display);
   font-size: 15px;
   color: var(--f-ink);
   transform: translateY(-100%);
@@ -338,7 +338,12 @@
   background: transparent;
   font-size: 16px; /* keeps iOS from zooming on focus */
   padding: 12px 0;
-  color: var(--f-ink);
+  /* This field's glass panel is intentionally a fixed near-white across
+     every world (see .finder-field above) so it stays legible bridging the
+     cover photo regardless of theme — so its text stays a fixed dark ink
+     too, rather than --f-ink, which is pale for the one dark ("notte")
+     world and would be nearly invisible here. */
+  color: #33352c;
   outline: none;
 }
 .finder-field button {
@@ -346,7 +351,7 @@
   padding: 12px 20px;
   border-radius: 6px;
   background: var(--f-accent, #40553a);
-  color: #fffdf8;
+  color: var(--f-bg, #fffdf8);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -370,7 +375,7 @@
   position: relative;
   margin-top: 28px;
   padding: 28px 24px;
-  background: #fffdf8;
+  background: var(--f-bg, #fffdf8);
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--f-ink) 12%, transparent);
@@ -538,7 +543,7 @@
   opacity: 0.6;
 }
 .finder-table > strong {
-  font-family: "Italiana", var(--serif, Georgia, serif);
+  font-family: var(--f-display);
   font-size: clamp(40px, 14vw, 58px);
   font-weight: 400;
   line-height: 1;
@@ -616,7 +621,7 @@
   font-style: normal;
   font-size: 10px;
   font-weight: 700;
-  color: #fffdf8;
+  color: var(--f-bg, #fffdf8);
   background: var(--f-accent);
 }
 /* A handful of tints off the wedding's own accent, cycling by position —
@@ -723,7 +728,7 @@
 .finder-next {
   position: relative;
   padding: 26px 22px 24px;
-  background: #fffdf8;
+  background: var(--f-bg, #fffdf8);
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--f-ink) 10%, transparent);
@@ -840,149 +845,122 @@
 }
 
 /* The rest of the evening, read at a glance rather than re-opened one event
-   at a time. */
+   at a time — modelled directly on the full invitation's own "order of the
+   day" programme (.order-of-day / .order-moments in guest-ceremony.css): a
+   single hairline rail runs the length of the evening, each moment marked
+   on it with a hollow ring, and the time reads as a solid, confident stamp
+   rather than a faint label. */
 .finder-later-wrap {
-  margin-top: 16px;
-}
-/* A small monogram breaks the hero card from the rest of the evening — the
-   same crest used on the cover, in miniature, rather than a plain gap. */
-.finder-monogram-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin: 4px 0 14px;
-  color: var(--f-accent);
-}
-.finder-monogram-divider i {
-  flex: 1;
-  max-width: 64px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--f-ink) 22%, transparent)
-  );
-}
-.finder-monogram-divider i:last-child {
-  background: linear-gradient(
-    270deg,
-    transparent,
-    color-mix(in srgb, var(--f-ink) 22%, transparent)
-  );
+  margin-top: 30px;
 }
 .finder-later-heading {
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  opacity: 0.6;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 400;
   text-align: center;
-  margin: 0 0 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid color-mix(in srgb, var(--f-ink) 14%, transparent);
+  opacity: 0.9;
+  margin: 0 0 22px;
 }
 .finder-later {
+  position: relative;
   list-style: none;
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 6px 0 4px 34px;
 }
-/* Each remaining moment is its own small ticket, not a row in a plain
-   list — matches the "printed stationery" feel .finder-next and
-   .finder-result already use, rather than a flat divided list. */
+.finder-later::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 6px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--f-ink) 22%, transparent) 8%,
+    color-mix(in srgb, var(--f-ink) 22%, transparent) 92%,
+    transparent
+  );
+}
+@media (prefers-reduced-motion: no-preference) {
+  .finder-later::before {
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .finder-reveal.is-visible .finder-later::before {
+    transform: scaleY(1);
+  }
+}
 .finder-later li {
   position: relative;
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 2px 14px;
-  padding: 14px 14px 14px 12px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--f-ink) 12%, transparent);
-  background: color-mix(in srgb, var(--f-accent) 4%, #fffdf8);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--f-ink) 6%, transparent);
-  font-size: 12px;
-  transition:
-    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.2s ease;
+  padding-bottom: 26px;
 }
-.finder-later li:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--f-ink) 10%, transparent);
+.finder-later li:last-child {
+  padding-bottom: 4px;
 }
 /* Each remaining moment settles in on its own beat once the schedule is
-   revealed — the same idea as .finder-result's line-by-line entrance,
-   so the evening's rest feels like it's unfolding rather than dumped in. */
+   revealed — the same idea as .finder-result's line-by-line entrance, so
+   the evening's rest feels like it's unfolding rather than dumped in. */
 @media (prefers-reduced-motion: no-preference) {
   .finder-reveal.is-visible .finder-later li {
     animation: finder-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
   .finder-reveal.is-visible .finder-later li:nth-child(1) {
-    animation-delay: 0.08s;
+    animation-delay: 0.15s;
   }
   .finder-reveal.is-visible .finder-later li:nth-child(2) {
-    animation-delay: 0.16s;
+    animation-delay: 0.28s;
   }
   .finder-reveal.is-visible .finder-later li:nth-child(3) {
-    animation-delay: 0.24s;
+    animation-delay: 0.4s;
   }
   .finder-reveal.is-visible .finder-later li:nth-child(n + 4) {
-    animation-delay: 0.32s;
+    animation-delay: 0.52s;
   }
 }
-/* A small date box — icon above, time below — rather than a bare icon on a
-   connecting rail, now that each moment is its own ticket rather than a
-   stop on a continuous line. */
-.finder-later-rail {
-  grid-column: 1;
-  grid-row: 1 / 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding-top: 2px;
-}
 .finder-later-icon {
+  position: absolute;
+  left: -34px;
+  top: 1px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  width: 23px;
+  height: 23px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--f-accent) 14%, transparent);
   color: var(--f-accent);
+  background: var(--f-bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--f-ink) 22%, transparent);
 }
-/* Text-bearing, so it stays ink-on-tinted-background rather than a solid
-   accent fill — a solid accent fill can't guarantee AA contrast against a
-   fixed text colour across every wedding's own palette (some worlds carry
-   a pale, desaturated accent), but this pairing inherits the same
-   ink-on-background contrast the rest of the page already relies on. */
+/* A solid, confident stamp — this pairing is the same one the full
+   invitation's own programme already uses for .order-time, safe because
+   --f-accent now comes from the curated guest-experience variable (always
+   dark enough against --f-bg for every world), not the wedding's paler
+   decorative palette swatch. */
 .finder-later-time {
-  width: fit-content;
-  padding: 2px 6px;
-  border-radius: 3px;
-  border: 1px solid color-mix(in srgb, var(--f-accent) 35%, transparent);
-  background: color-mix(in srgb, var(--f-accent) 12%, var(--f-bg));
-  color: var(--f-ink);
-  font-variant-numeric: tabular-nums;
-  font-size: 9px;
+  display: inline-block;
+  margin-bottom: 7px;
+  padding: 3px 9px;
+  font-size: 10px;
   font-weight: 600;
-  white-space: nowrap;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--f-bg);
+  background: var(--f-accent);
 }
 .finder-later-title {
-  grid-column: 2;
-  grid-row: 1;
-  font-family: var(--serif, Georgia, serif);
-  font-size: 16px;
+  display: block;
+  font-family: var(--f-display);
+  font-size: 18px;
+  margin-bottom: 4px;
 }
 .finder-later-venue {
-  grid-column: 2;
-  grid-row: 2;
+  display: block;
   font-family: var(--serif, Georgia, serif);
   font-style: italic;
-  font-size: 12px;
+  font-size: 13px;
   opacity: 0.75;
   color: inherit;
   text-underline-offset: 3px;
@@ -1059,7 +1037,7 @@
   padding: 12px;
   font: inherit;
   font-size: 15px;
-  background: #fffdf8;
+  background: var(--f-bg, #fffdf8);
   color: var(--f-ink);
   resize: vertical;
 }
@@ -1068,7 +1046,7 @@
   padding: 11px 26px;
   border-radius: 6px;
   background: var(--f-accent);
-  color: #fffdf8;
+  color: var(--f-bg, #fffdf8);
   font-size: 12px;
   font-weight: 600;
   min-height: 44px;
@@ -1087,6 +1065,40 @@
   font-size: 10px;
   line-height: 1.7;
   opacity: 0.5;
+}
+
+/* Desktop is not just a wider phone: the cover photo becomes a fixed,
+   full-height panel the guest keeps in view (like a printed programme's own
+   cover), with the search and schedule reading down a column beside it,
+   rather than the mobile page's stacked, scroll-past cover. */
+@media (min-width: 900px) {
+  .finder {
+    display: grid;
+    grid-template-columns: minmax(320px, 36%) 1fr;
+    min-height: 100vh;
+  }
+  .finder-cover {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .finder-sticky {
+    display: none;
+  }
+  .finder-inner {
+    grid-column: 2;
+    max-width: 560px;
+    margin: 0;
+    padding: 72px 64px 64px;
+  }
+  .finder-search {
+    margin-top: 0;
+  }
+  .finder-field {
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--f-ink) 10%, transparent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
