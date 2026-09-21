@@ -19,7 +19,7 @@ Three separate problems, in order of how much damage each is doing.
 (`prj_v4tcOdCNvdxqdYs5k6C3Lfs8qSKH`, team `aldos-projects-bbd0f155`) has three
 domains attached and all three are Vercel-issued:
 
-- `vow-motion.vercel.app`
+- `vowmotionweddings.com`
 - `vow-motion-aldos-projects-bbd0f155.vercel.app`
 - `vow-motion-git-main-aldos-projects-bbd0f155.vercel.app`
 
@@ -39,7 +39,7 @@ account, and every spam complaint lands on a domain shared with the whole
 university. Stop sending outreach from this address today, regardless of how long
 the rest of this setup takes.
 
-**The one link in every message points at `vow-motion.vercel.app`.** Free-hosting
+**The one link in every message points at `vowmotionweddings.com`.** Free-hosting
 subdomains have no independent domain reputation, are heavily used for phishing,
 and are a strong negative signal at Gmail and Outlook. Given the recipient list is
 overwhelmingly Gmail and Google Workspace, this is probably the single biggest
@@ -167,7 +167,7 @@ SPF, DKIM and DMARC are DNS records. Publishing them requires authority over a
 zone, which requires owning a domain. Every "free domain" alternative fails for a
 specific reason:
 
-- **`vow-motion.vercel.app`** — on the Public Suffix List, Vercel controls the
+- **`vowmotionweddings.com`** — on the Public Suffix List, Vercel controls the
   DNS, you cannot publish SPF/DKIM/DMARC under it. This is what you have now and
   it is why authentication is currently impossible.
 - **Free subdomain providers** (`js.org`, `eu.org` and similar) — you get a
@@ -522,7 +522,7 @@ undo most of this.
    day it arrives, checked before every batch. This is the manual chore most
    likely to be skipped and the one with the worst consequences if it is.
 
-3. **The link points at `vow-motion.vercel.app`.** Covered in section 1. Once
+3. **The link points at `vowmotionweddings.com`.** Covered in section 1. Once
    `vowmotion.ca` is live and serving the site, the link becomes
    `https://vowmotion.ca/planners` — which also matches
    `docs/PLANNER-OUTREACH.md`, where the stated goal is the planner page rather

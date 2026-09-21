@@ -112,7 +112,7 @@ guest RSVP.
 - **Hashtags:** put 3–5 on their own line at the very end, specific not broad —
   `#weddingplanner #weddingplanning #calgaryweddings #weddingtech` beats
   `#wedding #love #bride`.
-- **Link in bio:** point it at `vowmotion.ca` (or `vow-motion.vercel.app` until
+- **Link in bio:** point it at `vowmotion.ca` (or `vowmotionweddings.com` until
   the domain is live) — the `/planners` page for the planner posts, `/demo/riviera`
   for the couple-facing ones. Swap it when a post references it.
 - **First image:** post 1 or 2 first; a brand-new account posting a 6-slide

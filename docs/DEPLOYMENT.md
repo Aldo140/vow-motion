@@ -34,6 +34,6 @@ See LAUNCH-STATUS.md for product features that remain outside this release. The 
 
 ## Published release
 
-Public origin: https://vow-motion.vercel.app. Source: https://github.com/Aldo140/vow-motion, branch `main`. GitHub is connected to Vercel. Production uses Neon PostgreSQL and a private Blob store in the Washington, D.C. region. Preview deployment URLs retain Vercel authentication; the public production domain uses the application’s own account and invitation authorization.
+Public origin: https://vowmotionweddings.com. Source: https://github.com/Aldo140/vow-motion, branch `main`. GitHub is connected to Vercel. Production uses Neon PostgreSQL and a private Blob store in the Washington, D.C. region. Preview deployment URLs retain Vercel authentication; the public production domain uses the application’s own account and invitation authorization.
 
-Run the hosted smoke check with `RELEASE_URL=https://vow-motion.vercel.app node scripts/smoke-release.mjs`. It creates a fictional demo workspace, verifies a saved RSVP and private photo flow, and removes its test photo. Screenshots and the local result JSON are excluded from Git.
+Run the hosted smoke check with `RELEASE_URL=https://vowmotionweddings.com node scripts/smoke-release.mjs`. It creates a fictional demo workspace, verifies a saved RSVP and private photo flow, and removes its test photo. Screenshots and the local result JSON are excluded from Git.

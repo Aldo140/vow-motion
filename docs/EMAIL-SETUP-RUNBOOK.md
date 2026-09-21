@@ -1,11 +1,11 @@
 # Email setup — painfully detailed runbook
 
-> **PARKED — not the current plan.** This is the eventual upgrade (own domain,
-> professional `aldo@vowmotion.ca` sender, highest deliverability). It needs a
-> ~$13 domain purchase and dashboard work you decided is too much for right now.
-> Current sending runs on the free path in
-> [OUTREACH-SENDING.md](OUTREACH-SENDING.md). Come back to this doc when you want
-> the upgrade — nothing here expires.
+> **SUPERSEDED — kept for reference only.** This doc describes a Zoho-based
+> setup that was never actually used. The domain was bought
+> (`vowmotionweddings.com`, not `vowmotion.ca`) and the real setup — Cloudflare
+> Email Routing + Gmail "send mail as" + a Brevo SMTP relay — is documented in
+> [EMAIL-SENDING-SETUP.md](EMAIL-SENDING-SETUP.md), which reflects what is
+> actually live. Everything below this notice is historical.
 
 You do the parts that need a credit card, a login, or a click in a dashboard I
 cannot see. **I do everything else.** This document spells out your parts to the
@@ -286,7 +286,7 @@ The moment you send me **"domain bought"**, I:
 - Give you the 1–2 web DNS records to add in Cloudflare (A + CNAME — I will paste
   them in the same painfully-detailed style).
 - Set `APP_URL=https://vowmotion.ca` in Vercel and redeploy.
-- Change every `vow-motion.vercel.app` link in the outreach copy and docs to
+- Change every `vowmotionweddings.com` link in the outreach copy and docs to
   `https://vowmotion.ca`.
 - Keep the app's own email (invitations/RSVP) switched off until you have a real
   wedding — it needs a separate setup we do later, and nothing is sending now.

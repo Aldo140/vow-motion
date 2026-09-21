@@ -51,4 +51,4 @@ See [README validation instructions](../README.md#validation) to reproduce the c
 
 ## Review artifacts
 
-Desktop/mobile screenshots are saved in [artifacts/](../artifacts/). [RESEARCH.md](RESEARCH.md) records the primary-source product research; [ASSETS.md](ASSETS.md) records fictional image provenance. [LEGAL-CHECKLIST.md](LEGAL-CHECKLIST.md) tracks the identity/compliance facts only the operator can supply — code cannot complete that list. Build and test commands are in the [README](../README.md). The public release URL is https://vow-motion.vercel.app.
+Desktop/mobile screenshots are saved in [artifacts/](../artifacts/). [RESEARCH.md](RESEARCH.md) records the primary-source product research; [ASSETS.md](ASSETS.md) records fictional image provenance. [LEGAL-CHECKLIST.md](LEGAL-CHECKLIST.md) tracks the identity/compliance facts only the operator can supply — code cannot complete that list. Build and test commands are in the [README](../README.md). The public release URL is https://vowmotionweddings.com.

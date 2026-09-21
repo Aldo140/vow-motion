@@ -115,7 +115,7 @@ You want:
    - `INSTAGRAM_ACCOUNT_ID` = the Instagram user ID
    - `INSTAGRAM_ACCESS_TOKEN` = the long-lived token
 3. **Deployments → latest → ⋯ → Redeploy.**
-4. When it's READY: open **`https://vow-motion.vercel.app/admin/content`**. The
+4. When it's READY: open **`https://vowmotionweddings.com/admin/content`**. The
    "not connected" banner is gone. Schedule a post; the worker publishes it on
    its next run.
 

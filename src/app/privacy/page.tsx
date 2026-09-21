@@ -74,7 +74,7 @@ export default function Page() {
         Contact enquiries do not sign you up for marketing, and are kept for
         up to two years. For questions about an enquiry or to request its
         removal, email{" "}
-        {operator.privacyContact || "jorti104@mtroyal.ca"}.
+        {operator.privacyContact || "aldo@vowmotionweddings.com"}.
       </p>
       <h2>Photos</h2>
       <p>

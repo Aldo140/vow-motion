@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const contactEmail = "jorti104@mtroyal.ca";
+export const contactEmail = "aldo@vowmotionweddings.com";
 export const contactSchema = z.object({
   requestId: z.string().uuid(),
   role: z.enum(["couple", "planner"]),

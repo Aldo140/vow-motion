@@ -18,7 +18,7 @@ it was the pattern:
 | --- | --- |
 | 50–200 sent in a day | 5 → 15/day, ramped, spaced across hours |
 | One subject line reused across all 50 | 4 subjects × 3 body shapes, rotated |
-| `vow-motion.vercel.app` link in every message | **no link in the first email** — link goes in the reply |
+| `vowmotionweddings.com` link in every message | **no link in the first email** — link goes in the reply |
 | "just let me know" opt-out, no address | real footer: postal address + reply-to-unsubscribe |
 | Role addresses, unverified, 3.6% bounce | MX-checked, role addresses dropped, bounces suppressed |
 | Re-hitting people already emailed | new prospects only until copy for a re-approach exists |

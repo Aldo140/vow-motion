@@ -17,14 +17,14 @@ Prioritize a short household walkthrough with Maren and feedback from Sheena. Ca
 The goal of every message here is one thing: get a planner to watch a ten-minute
 walkthrough. Not to explain the product, and not to sell a subscription.
 
-The demo lives at `https://vow-motion.vercel.app/planners` (planner argument, not
-the couple pitch) and `https://vow-motion.vercel.app/demo/riviera` (a working
-guest example). **On the current free path
-([OUTREACH-SENDING.md](OUTREACH-SENDING.md)) that link does not go in the first
-cold email** — a free-host subdomain is a spam signal to Gmail, so the first
-email asks for a reply and the link is sent in the reply. Once the domain is
-live ([EMAIL-SETUP-RUNBOOK.md](EMAIL-SETUP-RUNBOOK.md)) it becomes
-`https://vowmotion.ca/…` and can go in the first email again.
+The demo lives at `https://vowmotionweddings.com/planners` (planner argument, not
+the couple pitch) and `https://vowmotionweddings.com/demo/riviera` (a working
+guest example). The domain and `aldo@vowmotionweddings.com` are now live and
+authenticated (see [EMAIL-SETUP-RUNBOOK.md](EMAIL-SETUP-RUNBOOK.md)) — a link in
+the first email is no longer the deliverability risk it was on the old free
+`vow-motion.vercel.app` subdomain. Still hold off using it in email 1 until the
+2-week mailbox warmup has finished, since a brand-new domain's sending
+reputation is the current limiting factor, not the link itself.
 
 ## What we can and cannot say yet
 
@@ -44,11 +44,12 @@ provenance is recorded in [ASSETS.md](ASSETS.md).
 
 ## Cold email
 
-Sent from `jorti104@mtroyal.ca` through the Gmail connector (Claude drafts and
-sends; see [OUTREACH-SENDING.md](OUTREACH-SENDING.md)). Plain text, no
-attachments, no images, **no hyperlink in the first email** — a personal mailbox
-with a free-host link in it is what tips Gmail into Junk. Keep it to what fits on
-a phone screen. One ask: a reply.
+Sent from `aldo@vowmotionweddings.com` (Gmail "send mail as" through a Brevo SMTP
+relay, authenticated with passing SPF/DKIM/DMARC — see
+[EMAIL-SETUP-RUNBOOK.md](EMAIL-SETUP-RUNBOOK.md)), not `jorti104@mtroyal.ca`.
+Plain text, no attachments, no images. Keep it to what fits on a phone screen.
+One ask: a reply. Real cold outreach does not start until the 2-week mailbox
+warmup is done — see the warmup log for status.
 
 ### Rules that changed from the old template
 
@@ -57,7 +58,7 @@ a phone screen. One ask: a reply.
    singular is truer and reads better.
 2. **No link in email 1.** Name the product and the demo in words; the call to
    action is "open to a quick look?". When they reply, *that* message carries
-   `https://vow-motion.vercel.app/demo/riviera`.
+   `https://vowmotionweddings.com/demo/riviera`.
 3. **A real opt-out and a mailing address in the footer.** CASL requires both;
    Gmail looks for both. At this volume (≤15/day, 1-to-1 style) a reply-based
    opt-out is acceptable. Fill in a real address — home, a Canada Post PO box, or
@@ -134,18 +135,47 @@ built to catch. Cycle through these:
 >
 > *(footer)*
 
+**Variant D — the binary ask (~65 words)**
+
+> Hi {{first_name}},
+>
+> I came across {{business}} and saw {{specific_detail}}.
+>
+> I build Vow Motion — private household invitations, RSVP by person and event,
+> seating/meal counts built straight from the replies.
+>
+> Want me to send a quick demo link? Just reply "yes" — no pitch, just a look.
+>
+> *(footer)*
+
 ### The reply (when they answer)
 
 Now the link is fine — an engaged thread has strong deliverability.
 
 > Thanks {{first_name}}. Here's the sample-guest demo — open a household
 > invitation and try the RSVP, nothing real is touched:
-> https://vow-motion.vercel.app/demo/riviera
+> https://vowmotionweddings.com/demo/riviera
 >
-> And the planner view: https://vow-motion.vercel.app/planners
+> And the planner view: https://vowmotionweddings.com/planners
 >
 > If it's a fit, I set the first wedding up with you and there's no cost for it.
 > Would a ten-minute call next week work?
+
+**Revised version with explicit next steps** (use either; this one removes
+ambiguity about what saying yes actually commits to):
+
+> Thanks {{first_name}} — here's what it looks like:
+>
+> Guest demo: https://vowmotionweddings.com/demo/riviera
+> Planner view: https://vowmotionweddings.com/planners
+>
+> If it looks useful, here's how the pilot works:
+> 1. We set up one real wedding together — no cost for that wedding
+> 2. Your guest list goes in once, guests RSVP through their own invitation
+> 3. You get the seating/meal/travel documents built straight from their replies
+> 4. If it's not for you, nothing owed, nothing to undo
+>
+> Worth a ten-minute call to set it up?
 
 Merge fields: `{{first_name}}` (use "there" if unknown — never send to a blank
 salutation and prefer a named contact over `info@`/`hello@`), `{{business}}`,
