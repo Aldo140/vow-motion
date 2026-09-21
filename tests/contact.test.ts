@@ -46,7 +46,7 @@ it("delivers only to the configured contact, with the sender and planner details
   expect((await POST(request(input))).status).toBe(200);
   expect(mocks.deliver).toHaveBeenCalledWith(
     expect.objectContaining({
-      to: "jorti104@mtroyal.ca",
+      to: "aldo@vowmotionweddings.com",
       body: expect.stringContaining("Reply to: planner@example.test"),
       demo: false,
     }),

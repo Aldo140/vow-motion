@@ -5,6 +5,7 @@ import {
   MapPinIcon,
   CalendarPlusIcon,
   NavigationArrowIcon,
+  PencilSimpleLineIcon,
 } from "@phosphor-icons/react";
 import type { FinderConfig } from "@/lib/finder";
 import type { World } from "@/lib/types";
@@ -64,6 +65,7 @@ const T = {
     startsIn: "starts in",
     dressCode: "Dress code",
     comingUp: "Then, later",
+    goodToKnow: "Good to know",
     addCalendar: "Add the schedule to your phone",
     directions: "Directions",
     share: "Share the night",
@@ -95,6 +97,7 @@ const T = {
     startsIn: "empieza en",
     dressCode: "Código de vestimenta",
     comingUp: "Más tarde",
+    goodToKnow: "Antes de ir",
     addCalendar: "Añade el horario a tu teléfono",
     directions: "Cómo llegar",
     share: "Comparte la noche",
@@ -625,9 +628,13 @@ export default function DayFinder({
 
         {notes && (
           <section className={"finder-notes " + reveal(notesVisible)} ref={notesRef}>
+            <p className="finder-notes-heading">{t.goodToKnow}</p>
             {notes.split("\n").filter(Boolean).map((line, i) => (
               <p key={i}>
-                <MapPinIcon size={13} /> {line}
+                <span className="finder-notes-icon" aria-hidden="true">
+                  <MapPinIcon size={12} weight="duotone" />
+                </span>
+                {line}
               </p>
             ))}
           </section>
@@ -700,6 +707,7 @@ function Guestbook({
         </form>
       ) : (
         <button className="finder-guestbook-open" onClick={() => setOpen(true)}>
+          <PencilSimpleLineIcon size={14} weight="bold" />
           {t.leaveNote}
         </button>
       )}
