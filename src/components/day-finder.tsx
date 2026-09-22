@@ -433,6 +433,13 @@ export default function DayFinder({
       </div>
 
       <div className="finder-inner">
+        <GuestCrest
+          names={names}
+          world={world}
+          monogram={monogram}
+          size={520}
+          className="finder-watermark"
+        />
         <form className="finder-search" onSubmit={find}>
           <label htmlFor="finder-q">{t.prompt}</label>
           <div className="finder-field">

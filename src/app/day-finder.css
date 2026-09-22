@@ -1108,16 +1108,53 @@
     display: none;
   }
   .finder-inner {
+    position: relative;
     grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
     max-width: 560px;
     margin: 0;
-    padding: 72px 64px 64px;
+    padding: 72px 64px;
+    overflow: hidden;
   }
   .finder-search {
     margin-top: 0;
   }
   .finder-field {
     box-shadow: 0 8px 20px color-mix(in srgb, var(--f-ink) 10%, transparent);
+  }
+  /* A short schedule (one event, no "later" list) used to leave a bare void
+     below the card on wide screens — this fills that space with the
+     couple's own crest instead of empty page, so the room never reads as
+     broken regardless of how much the couple has filled in. */
+  .finder-watermark {
+    position: absolute;
+    right: -60px;
+    bottom: -60px;
+    z-index: -1;
+    color: var(--f-accent);
+    opacity: 0.05;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .finder-watermark {
+      animation: finder-watermark-drift 50s linear infinite;
+    }
+  }
+  @keyframes finder-watermark-drift {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+@media (max-width: 899px) {
+  .finder-watermark {
+    display: none;
   }
 }
 
