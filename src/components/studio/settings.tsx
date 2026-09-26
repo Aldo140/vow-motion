@@ -263,8 +263,9 @@ export function SettingsManager({
             <div>
               <h2>A name of your own.</h2>
               <p className="muted-copy">
-                Connect a custom domain when deployed. DNS verification and SSL
-                are managed through your hosting provider.
+                Save a preferred address for your launch checklist. This
+                release does not verify DNS, connect it to your wedding, or
+                issue SSL yet.
               </p>
             </div>
             <div>
@@ -300,7 +301,7 @@ export function SettingsManager({
                   required
                 />
                 <button className="button outline">
-                  Add domain
+                  Save preferred domain
                   <PlusIcon size={16} />
                 </button>
               </form>

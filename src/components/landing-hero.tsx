@@ -140,16 +140,14 @@ export default function LandingHero() {
         }}
       >
         <div className="hero-ambient" aria-hidden="true">
-          {moods.map((item, index) => (
-            <img
-              key={item.id}
-              src={item.background}
-              alt=""
-              className={index === selected ? "is-active" : ""}
-              fetchPriority={index === 0 ? "high" : "auto"}
-              loading={index === 0 ? "eager" : "lazy"}
-            />
-          ))}
+          <img
+            key={mood.id}
+            src={mood.background}
+            alt=""
+            className="is-active"
+            fetchPriority="high"
+            loading="eager"
+          />
         </div>
         <div className="hero-atmosphere" aria-hidden="true" />
         <div className="hero-copy-depth">

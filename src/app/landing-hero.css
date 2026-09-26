@@ -36,10 +36,18 @@
   height: 100%;
   object-position: 70% 60%;
   opacity: 0;
-  transition: opacity 650ms ease;
+  animation: hero-backdrop-arrive 650ms ease both;
 }
 .hero-ambient img.is-active {
   opacity: 1;
+}
+@keyframes hero-backdrop-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .hero-atmosphere {
   position: absolute;
@@ -944,6 +952,7 @@
   .suite-wax-seal,
   .hero-mood-options button {
     transition: none;
+    animation: none;
   }
   .marketing .collection-image {
     animation: none;
