@@ -26,6 +26,10 @@ export function RsvpManager({ data, mutate, notify }: PanelProps) {
   const visible = data.guests.filter((g) =>
     matchesGuestFilter(g, filter, health),
   );
+  // Pending guests whose household has no live link yet: not late, just not asked.
+  const uninvited = data.guests.filter(
+    (g) => g.status === "pending" && !health.invited.has(g.household_id),
+  ).length;
   const [add, setAdd] = useState(false),
     [error, setError] = useState("");
   return (
@@ -61,6 +65,15 @@ export function RsvpManager({ data, mutate, notify }: PanelProps) {
           {health.attending.length} attending ·{" "}
           {data.guests.filter((g) => g.status === "declined").length} declined ·{" "}
           {health.awaiting.length} invited guests awaiting a reply
+          {uninvited > 0 && (
+            <>
+              {" "}
+              ·{" "}
+              <Link href={`/studio/invitations?wid=${data.wedding.id}`}>
+                {uninvited} not yet sent an invitation
+              </Link>
+            </>
+          )}
         </p>
         {health.awaiting.length > 0 && (
           <Link

@@ -7,11 +7,13 @@ test("the hero seal reveals an accessible invitation and the selected mood opens
   const seal = page.getByRole("button", {
     name: "Break the seal to open the sample invitation",
   });
-  await expect(page.getByRole("link", { name: "Step inside" })).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Step inside", exact: true }),
+  ).toHaveCount(0);
   await expect(seal).toBeEnabled();
   await seal.focus();
   await page.keyboard.press("Enter");
-  const visit = page.getByRole("link", { name: "Step inside" });
+  const visit = page.getByRole("link", { name: "Step inside", exact: true });
   await expect(visit).toBeFocused();
   await page
     .getByRole("group", { name: "Invitation mood" })
@@ -55,7 +57,7 @@ test("hero scroll depth respects reduced motion and touch controls remain usable
         name: "Break the seal to open the sample invitation",
       })
       .click();
-    const link = page.getByRole("link", { name: "Step inside" });
+    const link = page.getByRole("link", { name: "Step inside", exact: true });
     await expect(link).toBeFocused();
     expect(
       await link.evaluate((el) => {

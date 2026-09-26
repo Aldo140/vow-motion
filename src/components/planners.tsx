@@ -5,7 +5,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import MarketingNavigation from "./marketing-navigation";
 import { FirstSteps, OfferQuestions } from "./marketing-offer";
-import { Brand, Arrow, DemoButton } from "./ui";
+import { Arrow, DemoButton } from "./ui";
+import MarketingFooter from "./marketing-footer";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 // A route handler that opens a demo household invitation, not a page, so it is
@@ -492,13 +493,7 @@ export default function Planners() {
           </DemoButton>
         </section>
       </main>
-      <footer className="marketing-footer">
-        <Brand />
-        <span>Made for the moments that bring us together.</span>
-        <a href="/privacy">Privacy</a>
-        <a href="/contact">Contact</a>
-        <span>© {new Date().getFullYear()} Vow Motion</span>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

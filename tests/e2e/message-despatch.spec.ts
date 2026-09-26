@@ -161,7 +161,7 @@ test("the RSVP reminder previews and sends one private link per household", asyn
   await expect(preview).toContainText("Open your private invitation");
   await expect(preview).not.toContainText("{{household}}");
   await page.getByRole("button", { name: "Save draft" }).click();
-  const card = page.locator(".message-card").filter({ hasText: "A little reminder for {{household}}" });
+  const card = page.locator(".message-card").filter({ hasText: "A little reminder for each household" });
   await card.getByRole("button", { name: "Preview send" }).click();
   await expect(card).toContainText(`${householdCount} delivered`);
 });

@@ -44,16 +44,42 @@ export function MomentumLink({
   );
 }
 
-export function JourneyNavigation({ data }: { data: StudioData }) {
+export function JourneyNavigation({
+  data,
+  section = "",
+}: {
+  data: StudioData;
+  section?: string;
+}) {
   const model = weddingMomentum(data);
   return (
-    <div className="journey-navigation">
+    // On a phone, the full ledger belongs on the overview; every other page
+    // keeps a one-line meter so the work itself starts above the fold.
+    <div
+      className={
+        "journey-navigation" + (section ? " journey-navigation-compact" : "")
+      }
+    >
       <Link className="journey-current" href={`/studio?wid=${data.wedding.id}`}>
         <span className="eyebrow">YOUR WEDDING JOURNEY</span>
         <strong>
           {model.currentChapter.number.toString().padStart(2, "0")} /{" "}
           {model.currentChapter.title}
         </strong>
+        <span className="journey-meter" aria-hidden="true">
+          {model.chapters.map((c) => (
+            <i
+              key={c.id}
+              className={
+                c.complete
+                  ? "done"
+                  : c.id === model.currentChapter.id
+                    ? "now"
+                    : undefined
+              }
+            />
+          ))}
+        </span>
       </Link>
       <nav aria-label="Wedding chapters">
         {model.chapters.map((c) => (

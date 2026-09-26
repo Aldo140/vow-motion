@@ -86,7 +86,10 @@ test("a world's voice carries into Spanish and into the sealed opening", async (
   await expect(page.locator(".opening-dedication")).toHaveText(
     "The car is waiting.",
   );
-  await page.locator(".gate-top button").click();
+  await page
+    .locator(".gate-top")
+    .getByRole("button", { name: "Ver en español" })
+    .click();
   await expect(page.locator(".opening-dedication")).toHaveText(
     "El coche está esperando.",
   );

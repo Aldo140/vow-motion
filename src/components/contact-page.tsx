@@ -3,8 +3,9 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useHydrated } from "./use-hydrated";
 import MarketingNavigation from "./marketing-navigation";
-import { Arrow, Brand } from "./ui";
+import { Arrow } from "./ui";
 import { contactEmail } from "@/lib/contact";
+import MarketingFooter from "./marketing-footer";
 
 export default function ContactPage({ canSend }: { canSend: boolean }) {
   const ready = useHydrated();
@@ -361,12 +362,7 @@ export default function ContactPage({ canSend }: { canSend: boolean }) {
           )}
         </section>
       </main>
-      <footer className="marketing-footer">
-        <Brand />
-        <span>A beautiful day starts with a conversation.</span>
-        <a href="/privacy">Privacy</a>
-        <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
-      </footer>
+      <MarketingFooter line="A beautiful day starts with a conversation." />
     </div>
   );
 }

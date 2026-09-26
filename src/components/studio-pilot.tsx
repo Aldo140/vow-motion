@@ -75,11 +75,12 @@ export function SetupManager(props: PanelProps) {
           {steps.map((s, i) => (
             <button
               key={s.id}
-              className="button outline small"
+              className={"setup-step" + (s.done ? " done" : "")}
               aria-current={i === index ? "step" : undefined}
               onClick={() => setIndex(i)}
             >
-              {s.done ? "✓" : i + 1} {s.title}
+              <span className="setup-step-mark">{s.done ? "✓" : i + 1}</span>{" "}
+              {s.title}
             </button>
           ))}
         </nav>

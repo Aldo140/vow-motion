@@ -53,9 +53,9 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(simpleKey);
+      // Reduced motion stills the invitation; it does not take the design away.
+      // The simpler view stays one tap away for anyone who wants it.
       if (saved) setSimple(saved === "yes");
-      else if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-        setSimple(true);
     } catch {}
   }, [simpleKey]);
   const chooseSimple = (value: boolean) => {
@@ -124,8 +124,10 @@ export default function GuestExperience({ initial }: { initial: GuestData }) {
     }
   }, [opened, opening]);
   useEffect(() => {
+    // The Studio's design preview has no household behind it to record a visit for.
+    if (data.token === "design-preview") return;
     fetch(url).catch(() => {});
-  }, [url]);
+  }, [url, data.token]);
   useGSAP(
     () => {
       if (!opened) return;

@@ -135,6 +135,9 @@ export function UploadModal({
             ref={fileInput}
             type="file"
             name="file"
+            aria-label={
+              locale === "en" ? "Choose your photos" : "Elige tus fotos"
+            }
             accept="image/jpeg,image/png,image/webp"
             multiple
             required

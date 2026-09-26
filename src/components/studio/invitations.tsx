@@ -328,10 +328,12 @@ export function Invitations(props: PanelProps) {
                     </small>
                     <small className="invite-delivery-line">
                       {household.email || "Email needed"} ·{" "}
-                      {deliveryLabel(
-                        household.dispatch?.status,
-                        household.dispatch?.opened_at,
-                      )}
+                      <span>
+                        {deliveryLabel(
+                          household.dispatch?.status,
+                          household.dispatch?.opened_at,
+                        )}
+                      </span>
                     </small>
                     {household.dispatch?.error && (
                       <small className="invite-delivery-error">

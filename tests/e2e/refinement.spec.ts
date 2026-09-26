@@ -7,9 +7,7 @@ test("couples edit venue times, review message audiences, and navigate without a
   const weddings = await (await page.request.get("/api/weddings")).json();
   const wid = weddings[0].id;
   await page.goto(`/studio?wid=${wid}`);
-  await expect(
-    page.getByRole("region", { name: "Planning priorities" }),
-  ).toBeVisible();
+  await expect(page.locator(".momentum-command")).toBeVisible();
   await page.screenshot({
     path: "artifacts/refined-overview.png",
     fullPage: true,
@@ -80,8 +78,9 @@ test("couples edit venue times, review message audiences, and navigate without a
   await expect(page.locator(".audience-preview strong")).toHaveText(
     `${expected} ${expected === 1 ? "guest" : "guests"} can receive this email`,
   );
+  // Signed by the couple through the merge field, filled per send.
   expect(await page.getByLabel("Your message").inputValue()).toContain(
-    data.wedding.names,
+    "{{couple}}",
   );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
@@ -97,7 +96,7 @@ test("couples edit venue times, review message audiences, and navigate without a
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(
     page.getByRole("heading", {
-      name: `A little reminder · ${data.wedding.names}`,
+      name: `A little reminder for each household · ${data.wedding.names}`,
     }),
   ).toBeVisible();
 });

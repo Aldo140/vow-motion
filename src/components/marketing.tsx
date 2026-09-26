@@ -11,8 +11,9 @@ import PlannerAtelier from "./planner-atelier";
 import StudioStory from "./studio-story";
 import { useGSAP } from "@gsap/react";
 import { CheckIcon } from "@phosphor-icons/react";
-import { Arrow, Brand } from "./ui";
+import { Arrow } from "./ui";
 import { worlds } from "@/lib/worlds";
+import MarketingFooter from "./marketing-footer";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 // The finished worlds lead, and the rest say what they are still waiting for.
 // Six tabs that all promise the same thing would be the lie worth avoiding.
@@ -367,13 +368,7 @@ export default function Marketing() {
           </a>
         </section>
       </main>
-      <footer className="marketing-footer">
-        <Brand />
-        <span>Made for the moments that bring us together.</span>
-        <a href="/privacy">Privacy</a>
-        <a href="/contact">Contact</a>
-        <span>© {new Date().getFullYear()} Vow Motion</span>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

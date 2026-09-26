@@ -12,7 +12,7 @@ test("contact is discoverable and the form adapts for couples and planners", asy
   ).toBeVisible();
   await expect(page.locator(".contact-direct a")).toHaveAttribute(
     "href",
-    "mailto:jorti104@mtroyal.ca",
+    "mailto:aldo@vowmotionweddings.com",
   );
   await page.getByRole("radio", { name: /We’re getting married/ }).check();
   await expect(page.getByLabel("Wedding date", { exact: false })).toBeVisible();

@@ -12,6 +12,7 @@ import {
 import {
   CollaboratorsManager,
   ExperienceManager,
+  GuestQuestions,
   MessagesManager,
   PhotosManager,
   SeatingManager,
@@ -21,6 +22,7 @@ import {
 import { Insights } from "@/components/studio/insights";
 import { Invitations } from "@/components/studio/invitations";
 import { Overview } from "@/components/studio/overview";
+import type { PanelProps } from "@/components/studio/shared";
 import {
   ArmchairIcon,
   CalendarBlankIcon,
@@ -36,12 +38,22 @@ import {
   UserPlusIcon,
   UsersIcon,
 } from "@phosphor-icons/react";
+// The design and the answers guests look for belong to the same page: the
+// invitation is what guests hold, and the answers live inside it.
+function ExperiencePage(props: PanelProps) {
+  return (
+    <>
+      <ExperienceManager {...props} />
+      <GuestQuestions {...props} />
+    </>
+  );
+}
 export const navigation = [
   ["Overview", "", HouseIcon, Overview],
   ["Wedding setup", "setup", CheckSquareIcon, SetupManager],
   ["Guest list", "guests", UsersIcon, GuestManager],
   ["Events", "events", CalendarBlankIcon, EventsManager],
-  ["Your experience", "experience", SwatchesIcon, ExperienceManager],
+  ["Your experience", "experience", SwatchesIcon, ExperiencePage],
   ["Invitations", "invitations", EnvelopeSimpleIcon, Invitations],
   ["RSVPs", "rsvps", CheckSquareIcon, RsvpManager],
   ["Messages", "messages", ChatCircleTextIcon, MessagesManager],

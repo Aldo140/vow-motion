@@ -621,3 +621,45 @@
     transform: none;
   }
 }
+
+/* The seven chapters, as a thread. Only drawn where the ledger is folded away. */
+.journey-meter {
+  display: none;
+}
+@media (max-width: 640px) {
+  .journey-navigation-compact {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+  .journey-navigation-compact nav {
+    display: none;
+  }
+  .journey-navigation-compact .journey-current {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px 14px;
+    margin-bottom: 0;
+  }
+  .journey-navigation-compact .journey-current .eyebrow {
+    grid-column: 1 / -1;
+  }
+  .journey-navigation-compact .journey-meter {
+    display: flex;
+    gap: 3px;
+  }
+  .journey-meter i {
+    width: 12px;
+    height: 3px;
+    border-radius: 2px;
+    background: #d9d9cd;
+    transition: background 0.4s ease;
+  }
+  .journey-meter i.done {
+    background: #9aa283;
+  }
+  .journey-meter i.now {
+    width: 20px;
+    background: #4e5a35;
+  }
+}

@@ -439,8 +439,8 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
                       {state.label}
                     </span>
                   </div>
-                  <h2>{m.subject}</h2>
-                  <p>{m.body}</p>
+                  <h2>{readable(m.subject, data.wedding.names)}</h2>
+                  <p>{readable(m.body, data.wedding.names)}</p>
                   {m.scheduled_at && (
                     <small>
                       {scheduledAhead ? "Due" : "Was due"}{" "}
@@ -829,4 +829,13 @@ export function MessagesManager({ data, mutate, notify }: PanelProps) {
       )}
     </>
   );
+}
+
+/** The post room shows a draft as a household would read it, not as merge codes. */
+function readable(text: string, couple: string) {
+  return text
+    .replaceAll("{{couple}}", couple)
+    .replaceAll("{{household}}", "each household")
+    .replaceAll("{{guest}}", "each guest")
+    .replaceAll("{{invitation_link}}", "their private invitation link");
 }

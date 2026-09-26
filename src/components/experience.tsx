@@ -12,8 +12,9 @@ import MarketingNavigation from "./marketing-navigation";
 import BrandExplainer from "./composition/explainer";
 import BrandAd from "./composition/ad";
 import type { CompositionHandle } from "./composition/runtime";
-import { Brand, Arrow, DemoButton } from "./ui";
+import { Arrow, DemoButton } from "./ui";
 import { worlds } from "@/lib/worlds";
+import MarketingFooter from "./marketing-footer";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -577,13 +578,7 @@ export default function Experience() {
         </section>
       </main>
 
-      <footer className="marketing-footer">
-        <Brand />
-        <span>Made for the moments that bring us together.</span>
-        <a href="/privacy">Privacy</a>
-        <a href="/contact">Contact</a>
-        <span>© {new Date().getFullYear()} Vow Motion</span>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

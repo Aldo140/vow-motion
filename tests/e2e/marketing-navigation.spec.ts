@@ -117,7 +117,10 @@ test("menu destinations, short screens, reduced motion and desktop resizing rema
     await menu.getByRole("link", { name: "For planners", exact: true }).tap();
     await expect(page).toHaveURL(/\/planners$/);
     await expect(
-      page.getByRole("heading", { level: 1, name: /worth remembering twice/ }),
+      page.getByRole("heading", {
+        level: 1,
+        name: /Keep the system you run on/,
+      }),
     ).toBeVisible();
     await page.goto("/");
     expect(

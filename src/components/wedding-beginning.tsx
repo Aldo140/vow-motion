@@ -4,6 +4,7 @@ import { Arrow, Brand, Field, Notice, Submit, api } from "./ui";
 import { TimezoneField } from "./timezone-field";
 import { formatDate, getWorld, worlds } from "@/lib/worlds";
 import { trackMomentum } from "@/lib/momentum-telemetry-client";
+import { venueTimezone } from "@/lib/planning-assist";
 import Link from "next/link";
 
 export function WeddingBeginning() {
@@ -15,11 +16,25 @@ export function WeddingBeginning() {
     [world, setWorld] = useState("riviera"),
     [weddingId, setWeddingId] = useState(""),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [zoneChosen, setZoneChosen] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
   }, [step]);
+  // Start from where the couple is, then follow the venue as they type it,
+  // until they choose a timezone themselves.
+  useEffect(() => {
+    try {
+      const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (device) setTimezone(device);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    if (zoneChosen) return;
+    const suggestion = venueTimezone(location);
+    if (suggestion) setTimezone(suggestion.zone);
+  }, [location, zoneChosen]);
   const selected = getWorld(world);
   const titles = [
     "First, the two of you.",
@@ -141,7 +156,10 @@ export function WeddingBeginning() {
                     label="Wedding timezone"
                     location={location}
                     value={timezone}
-                    onChange={setTimezone}
+                    onChange={(zone) => {
+                      setZoneChosen(true);
+                      setTimezone(zone);
+                    }}
                   />
                 </>
               )}

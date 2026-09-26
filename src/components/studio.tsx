@@ -240,7 +240,7 @@ export default function Studio({
           </div>
         )}
         <main id="main" className="studio-main">
-          <JourneyNavigation data={data} />
+          <JourneyNavigation data={data} section={section} />
           <MomentumObserver key={data.wedding.id} data={data} section={section} />
           {error && <Notice error>{error}</Notice>}
           {data.role === "viewer" && (

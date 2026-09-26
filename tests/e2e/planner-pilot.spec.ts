@@ -315,10 +315,9 @@ test("guided setup saves reviews and feedback from the active screen", async ({
     .locator(".design-editor")
     .screenshot({ path: testInfo.outputPath("identity-mobile.png") });
   await page.goto(`/studio?wid=${wid}`);
-  await expect(
-    page.getByRole("region", { name: "Your action list" }),
-  ).toBeVisible();
+  // The overview's next action is the Studio's action list.
+  await expect(page.locator(".momentum-command")).toBeVisible();
   await page
-    .getByRole("region", { name: "Your action list" })
+    .locator(".momentum-command")
     .screenshot({ path: testInfo.outputPath("actions-mobile.png") });
 });

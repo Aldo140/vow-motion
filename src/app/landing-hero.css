@@ -949,3 +949,33 @@
     animation: none;
   }
 }
+
+/* On laptop widths the seal's "Open your invitation" tag drops into the gap
+   between the mood heading and the mood swatches, which is narrower than the
+   tag. Let the swatches speak for the mood there and rest the tag under the
+   envelope's near corner, clear of every control. */
+@media (min-width: 1101px) and (max-width: 1599px) {
+  .hero-mood-heading {
+    display: none;
+  }
+  .hero-mood-picker {
+    justify-content: flex-end;
+  }
+  .suite-seal-hint {
+    left: 26%;
+  }
+}
+/* The picker's box is wider than its swatches; its empty reach must never
+   swallow a tap meant for the envelope beneath it. */
+.hero-mood-picker {
+  pointer-events: none;
+}
+.hero-mood-picker > * {
+  pointer-events: auto;
+}
+.hero-mood-picker > .hero-mood-options {
+  pointer-events: none;
+}
+.hero-mood-options > * {
+  pointer-events: auto;
+}
