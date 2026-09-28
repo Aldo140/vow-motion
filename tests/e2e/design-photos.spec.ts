@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures";
 test("personal photos stay in drafts until publication and remain wedding-scoped", async ({
   page,
   playwright,
-}) => {
+}, testInfo) => {
   const registered = await page.request.post("/api/auth/register", {
     data: {
       email: `design-${Date.now()}@example.test`,
@@ -57,7 +57,7 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
   ).json();
   expect(studio.wedding.settings.media).toBeUndefined();
   const guest = await playwright.request.newContext({
-    baseURL: "http://localhost:3000",
+    baseURL: testInfo.project.use.baseURL,
   });
   expect(
     (
@@ -97,13 +97,22 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
     page.getByRole("heading", { name: "Make it feel like you." }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Photos", exact: true }).click();
+  await page.getByRole("button", { name: /A phone/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Opening background" }),
+  ).toBeVisible();
+  await expect(page.locator(".spot-mock.mock-phone .spot-tag")).toHaveText(
+    "Using your main photo",
+  );
   await page
-    .getByRole("button", { name: "Check your invitation", exact: true })
+    .getByRole("button", { name: "Skip, use my main photo", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Use original artwork" }),
+    page.getByRole("heading", { name: "Main invitation photo" }),
   ).toBeVisible();
-  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole("button", { name: "Use original instead" }),
+  ).toBeVisible();
   await page.screenshot({
     path: "artifacts/design-photos-mobile.png",
     fullPage: true,
@@ -135,17 +144,30 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`/studio/experience?wid=${wedding}`);
   await page.getByRole("button", { name: "Photos", exact: true }).click();
+  await page.getByRole("button", { name: /A computer/ }).click();
+  await expect(page.locator(".spot-mock.mock-computer")).toBeVisible();
   await page.screenshot({
     path: "artifacts/guided-photos-desktop.png",
     fullPage: true,
   });
   await page
-    .locator(".photo-library-pick")
-    .first()
-    .dragTo(page.locator('[data-placement="details"]'));
-  await expect(page.locator(".photo-workspace-feedback")).toContainText(
-    "Placed in little details",
-  );
+    .getByRole("button", { name: "Skip, use my main photo", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Next: your story photo", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Skip, keep the original", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Little details" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Use one I already added", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Use our-photo.webp", exact: true })
+    .click();
   await expect
     .poll(
       async () =>
@@ -153,14 +175,25 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
           ?.asset,
     )
     .toBe(asset.id);
-  await page.getByRole("button", { name: "Use original artwork" }).click();
+  // Clicking the photo in the drawing sets what stays in view on computers.
+  await page
+    .locator(".spot-mock .spot-tile-wide img")
+    .click({ position: { x: 3, y: 3 } });
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get(endpoint)).json()).draft.media.details
+          ?.worlds?.riviera,
+    )
+    .toBeTruthy();
+  await page.getByRole("button", { name: "Use original instead" }).click();
   await expect
     .poll(
       async () =>
         (await (await page.request.get(endpoint)).json()).draft.media.details,
     )
     .toBeUndefined();
-  await page.getByRole("button", { name: "Undo photo change" }).click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect
     .poll(
       async () =>
@@ -169,17 +202,16 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
     )
     .toBe(asset.id);
   await page.setViewportSize({ width: 320, height: 844 });
+  await page.getByRole("button", { name: "Phone", exact: true }).click();
+  await expect(page.locator(".spot-mock.mock-phone")).toBeVisible();
   await page
-    .getByRole("button", { name: "Choose another photo", exact: true })
+    .getByRole("button", { name: "Next: travel postcard", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Choose our-photo.webp", exact: true })
+    .getByRole("button", { name: "Use one I already added", exact: true })
     .click();
-  await expect(page.locator(".photo-selection-bar")).toContainText(
-    "Choose a place below",
-  );
   await page
-    .getByRole("button", { name: "Place photo in your venue", exact: true })
+    .getByRole("button", { name: "Use our-photo.webp", exact: true })
     .click();
   await expect
     .poll(
@@ -188,8 +220,6 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
           ?.asset,
     )
     .toBe(asset.id);
-  await page.getByRole("button", { name: "Looks good", exact: true }).click();
-  await expect(page.locator(".photo-check-panel")).toBeHidden();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -199,6 +229,10 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
     path: "artifacts/guided-photos-mobile.png",
     fullPage: true,
   });
+  await page.getByRole("button", { name: "Finish", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: /places have your photos/ }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Preview my invitation", exact: true }).click();
   await expect(page.locator('iframe[title="Your draft invitation"]')).toBeVisible();
   await page.goto("/studio/experience?wid=" + wedding);
@@ -269,6 +303,10 @@ test("personal photos stay in drafts until publication and remain wedding-scoped
       });
       await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(`/design-preview?wedding=${wedding}`);
+      await expect(page.locator(".gate-background")).toHaveAttribute(
+        "data-personal-photo",
+        "true",
+      );
       await page
         .getByRole("button", { name: /Open your invitation|Break the seal/ })
         .click();

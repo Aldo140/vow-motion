@@ -1,0 +1,723 @@
+/* Guided photos: one question, then one place at a time, previewed on the
+   device the couple is holding before anything is uploaded. */
+.photo-guide {
+  --guide-green: #2d4a3e;
+  --guide-sage: #e8eee6;
+  --guide-paper: #f7f5ee;
+  max-width: 980px;
+  margin: 8px 0 32px;
+  scroll-margin-top: 24px;
+}
+.photo-guide h2 {
+  font: 34px/1.15 var(--serif);
+  margin: 10px 0 12px;
+  outline: none;
+}
+.photo-guide > p,
+.photo-guide-where {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 620px;
+  margin: 0 0 20px;
+}
+
+/* Welcome */
+.photo-guide-question {
+  border: 0;
+  padding: 0;
+  margin: 28px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 260px));
+  gap: 14px;
+}
+.photo-guide-question legend {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 14px;
+  padding: 0;
+}
+.photo-guide-choice {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  text-align: left;
+  padding: 20px;
+  min-height: 150px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease);
+}
+.photo-guide-choice:hover,
+.photo-guide-choice:focus-visible,
+.photo-guide-choice[aria-pressed="true"] {
+  border-color: var(--guide-green);
+  background: var(--guide-sage);
+}
+.photo-guide-choice strong {
+  font-size: 16px;
+}
+.photo-guide-choice small {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.photo-guide-choice em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--guide-green);
+  font-weight: 600;
+}
+.photo-guide-icon {
+  display: block;
+  border: 2px solid var(--guide-green);
+  margin-bottom: 6px;
+}
+.photo-guide-icon.icon-phone {
+  width: 20px;
+  height: 34px;
+  border-radius: 5px;
+}
+.photo-guide-icon.icon-computer {
+  width: 40px;
+  height: 26px;
+  border-radius: 3px;
+  box-shadow: 0 5px 0 -2px var(--guide-green);
+}
+.photo-guide-ready {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  max-width: 620px;
+}
+.photo-guide-ready h3 {
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  margin: 0 0 12px;
+}
+.photo-guide-ready ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.photo-guide-ready li small {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.photo-guide-ready p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 14px 0 0;
+}
+.photo-guide-note {
+  font-size: 12px;
+  line-height: 1.7;
+  border: 1px dashed #9aa59c;
+  border-radius: 8px;
+  background: var(--guide-paper);
+  padding: 12px 14px;
+  margin: 14px 0;
+}
+
+/* Step header */
+.photo-guide-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.photo-guide-back {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--guide-green);
+  cursor: pointer;
+  padding: 6px 0;
+}
+.photo-guide-back::before {
+  content: "← ";
+}
+.photo-guide-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  flex: 1;
+}
+.photo-guide-progress ol {
+  display: flex;
+  gap: 5px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.photo-guide-progress li {
+  width: 22px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.photo-guide-progress li[data-state="done"] {
+  background: #8fa393;
+}
+.photo-guide-progress li[data-state="now"] {
+  background: var(--guide-green);
+}
+.photo-guide-device {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+}
+.photo-guide-device button {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--muted);
+}
+.photo-guide-device button[aria-pressed="true"] {
+  background: var(--guide-green);
+  color: #fff;
+}
+
+.photo-guide-title {
+  margin-bottom: 18px;
+}
+.photo-guide-title h2 {
+  margin-bottom: 0;
+}
+
+/* Step body: preview beside the advice */
+.photo-guide-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 36px;
+  align-items: start;
+}
+.photo-guide-priority {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--ink);
+}
+.photo-guide-priority.priority-essential {
+  background: var(--guide-green);
+  color: #fff;
+}
+.photo-guide-priority.priority-recommended {
+  background: var(--guide-sage);
+  color: var(--guide-green);
+}
+.photo-guide-advice {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: grid;
+  gap: 10px;
+}
+.photo-guide-advice li {
+  font-size: 13px;
+  line-height: 1.65;
+  padding: 12px 14px 12px 40px;
+  border-radius: 10px;
+  position: relative;
+}
+.photo-guide-advice b {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.photo-guide-advice li::before {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  font-weight: 700;
+}
+.advice-best {
+  background: var(--guide-sage);
+}
+.advice-best::before {
+  content: "✓";
+  color: var(--guide-green);
+}
+.advice-avoid {
+  background: #f6efe6;
+}
+.advice-avoid::before {
+  content: "✕";
+  color: #9a5b3c;
+}
+.photo-guide-skip {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.photo-guide-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.photo-guide-upload {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.photo-guide-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 0;
+}
+.photo-guide-upload[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.photo-guide-upload:focus-within {
+  outline: 2px solid var(--guide-green);
+  outline-offset: 2px;
+}
+.photo-guide-toggle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+.photo-guide-uploading {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--guide-paper);
+}
+.photo-guide-uploading progress {
+  width: 100%;
+  accent-color: var(--guide-green);
+}
+.photo-guide-uploading button {
+  justify-self: start;
+}
+.photo-guide-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.photo-guide-picker button {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  cursor: pointer;
+  background: var(--guide-paper);
+}
+.photo-guide-picker button:hover,
+.photo-guide-picker button:focus-visible {
+  border-color: var(--guide-green);
+}
+.photo-guide-picker img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-guide-error {
+  color: #9a3b2c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.photo-guide-undo {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--guide-green);
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 12px;
+  cursor: pointer;
+}
+.photo-guide-status {
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 1em;
+  margin: 12px 0 0;
+}
+.photo-guide-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+  padding-top: 20px;
+}
+.photo-guide-nav small {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  flex: 1;
+  min-width: 200px;
+}
+
+/* The device drawing */
+.spot-mock {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.spot-mock figcaption {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+.spot-tag {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--guide-green);
+}
+.mock-device {
+  background: #1f2522;
+  box-shadow: 0 18px 40px -22px rgb(0 0 0 / 0.45);
+}
+.mock-phone .mock-device {
+  width: min(250px, 100%);
+  aspect-ratio: 9 / 18.5;
+  padding: 9px;
+  border-radius: 34px;
+}
+.mock-computer .mock-device {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 16 / 10.5;
+  padding: 10px;
+  border-radius: 12px 12px 4px 4px;
+  position: relative;
+  margin-bottom: 14px;
+}
+.mock-computer .mock-device::after {
+  content: "";
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: -14px;
+  height: 14px;
+  background: #cfd2cc;
+  border-radius: 0 0 10px 10px;
+}
+.mock-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f4f1e8;
+  display: flex;
+  flex-direction: column;
+  gap: 8%;
+  padding: 10% 8%;
+}
+.mock-phone .mock-screen {
+  border-radius: 26px;
+  gap: 5%;
+  padding: 16% 9% 10%;
+}
+.mock-computer .mock-screen {
+  border-radius: 3px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6%;
+  padding: 6% 7%;
+}
+.mock-lines {
+  display: grid;
+  gap: 7px;
+  flex: 1;
+  align-content: center;
+  min-width: 0;
+}
+.mock-lines i {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: #d9d4c6;
+}
+.mock-lines i:nth-child(3n + 2) {
+  width: 82%;
+}
+.mock-lines i:nth-child(3n) {
+  width: 64%;
+}
+.mock-heading i:first-child {
+  height: 12px;
+  width: 70%;
+  background: #b9b19d;
+}
+.mock-phone .mock-lines {
+  flex: 0 0 auto;
+}
+
+/* The highlighted place */
+.spot-target {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #e5e0d2;
+  outline: 3px solid #d9a441;
+  outline-offset: 2px;
+  animation: spot-pulse 2.4s var(--ease) infinite;
+}
+.spot-target img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.spot-mock[data-clickable] .spot-target img {
+  cursor: crosshair;
+}
+@keyframes spot-pulse {
+  50% {
+    outline-color: rgb(217 164 65 / 0.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spot-target {
+    animation: none;
+  }
+}
+.spot-full {
+  position: absolute;
+  inset: 0;
+  outline-offset: -4px;
+}
+.spot-full img {
+  filter: brightness(0.45) saturate(0.8);
+}
+.mock-envelope {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 62%;
+  aspect-ratio: 1.45;
+  background: #efe7d6;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.35);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.mock-phone .mock-envelope {
+  width: 78%;
+}
+.mock-envelope i {
+  position: absolute;
+  inset: 0 0 45%;
+  background: #e2d7c1;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.spot-hero {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 2px;
+}
+.mock-computer .spot-hero {
+  width: 52%;
+  aspect-ratio: 1.2;
+}
+.spot-print {
+  width: 66%;
+  aspect-ratio: 4 / 5;
+  align-self: center;
+  border: 5px solid #fff;
+  rotate: -2deg;
+}
+.mock-computer .spot-print {
+  width: 34%;
+  aspect-ratio: 3 / 4;
+}
+.spot-tiles {
+  display: flex;
+  gap: 7%;
+  align-items: flex-end;
+  justify-content: center;
+}
+.mock-computer.mock-details .mock-screen {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7%;
+}
+.spot-tiles .spot-target {
+  border: 3px solid #fff;
+}
+.spot-tile-wide {
+  width: 36%;
+  aspect-ratio: 1.65;
+}
+.spot-tile-square {
+  width: 22%;
+  aspect-ratio: 1;
+}
+.spot-tile-tall {
+  width: 20%;
+  aspect-ratio: 3 / 4;
+}
+.mock-computer .spot-tiles {
+  gap: 5%;
+}
+.spot-postcard {
+  width: 90%;
+  aspect-ratio: 1.1;
+  align-self: center;
+  border: 5px solid #fff;
+  rotate: 2deg;
+}
+.mock-computer .spot-postcard {
+  width: 50%;
+  aspect-ratio: 1.35;
+}
+
+/* Summary */
+.photo-guide-overview {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 26px;
+  display: grid;
+  gap: 10px;
+  max-width: 620px;
+}
+.photo-guide-overview li {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.photo-guide-overview strong {
+  display: block;
+  font-size: 14px;
+}
+.photo-guide-overview small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.photo-guide-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  object-position: var(--photo-position, 50% 50%);
+  border-radius: 6px;
+  display: block;
+}
+.photo-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.photo-guide-library {
+  margin-top: 28px;
+  max-width: 620px;
+  font-size: 13px;
+}
+.photo-guide-library summary {
+  cursor: pointer;
+  color: var(--guide-green);
+}
+.photo-guide-library ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.photo-guide-library li {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+.photo-guide-library img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.photo-guide-library span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.photo-guide-library button {
+  border: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* Phones: preview first, advice below, one column, thumb-sized controls. */
+@media (max-width: 760px) {
+  .photo-guide h2 {
+    font-size: 28px;
+  }
+  .photo-guide-question {
+    grid-template-columns: 1fr;
+  }
+  .photo-guide-choice {
+    min-height: 0;
+  }
+  .photo-guide-body {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .mock-phone .mock-device {
+    width: min(210px, 70vw);
+  }
+  .photo-guide-secondary .button,
+  .photo-guide-nav .button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .photo-guide-progress {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

@@ -100,7 +100,7 @@ export default function GuestSealGate({
     <main id="main" ref={root} className="invitation-gate sealed-opening">
       <WeddingPhoto
         className="gate-background"
-        placement="invitation"
+        placement="opening"
         alt=""
         fetchPriority="high"
       />

@@ -5,9 +5,13 @@ import { getWorld } from "./worlds";
 import type { Wedding } from "./types";
 
 export const placements = {
+  opening: {
+    name: "Opening background",
+    uses: "Behind the envelope or seal, before the invitation opens",
+  },
   invitation: {
     name: "Your invitation",
-    uses: "Both openings, main invitation and wedding pass",
+    uses: "Main invitation, envelope print and wedding pass",
   },
   story: { name: "Your story", uses: "Story photograph and memories accent" },
   venue: { name: "Your venue", uses: "Travel postcard" },
@@ -30,6 +34,7 @@ export const photoPlacementSchema = z.object({
   phoneWorlds: z.record(z.string(), cropSchema).optional(),
 });
 export const mediaSchema = z.object({
+  opening: photoPlacementSchema.optional(),
   invitation: photoPlacementSchema.optional(),
   story: photoPlacementSchema.optional(),
   venue: photoPlacementSchema.optional(),
@@ -94,15 +99,26 @@ export function resolveWeddingMedia(
   token?: string,
 ) {
   const defaults = {
+    opening: getWorld(wedding.world).image,
     invitation: getWorld(wedding.world).image,
     venue: getWorld(wedding.world).image,
     story: "/images/wedding-evening.webp",
     details: "/images/wedding-details.webp",
   };
-  const item = mediaSchema.catch({}).parse(wedding.settings.media ?? {})[
-    placement
-  ];
-  const crop = item?.worlds[wedding.world] ?? item?.crop;
+  const media = mediaSchema.catch({}).parse(wedding.settings.media ?? {});
+  // The opening background borrows the invitation photo until the couple
+  // chooses one of its own, which is how every opening looked before it had a
+  // place of its own.
+  const item =
+    media[placement] ??
+    (placement === "opening" ? media.invitation : undefined);
+  const framing = item?.worlds[wedding.world] ?? item?.crop;
+  const phoneFraming = item?.phoneWorlds?.[wedding.world] ?? item?.phone;
+  // A background has no paper to sit on, so it always fills the screen even
+  // when the photo it borrows is mounted whole elsewhere.
+  const fill = <T extends { fit: string }>(frame: T | undefined) =>
+    frame && placement === "opening" ? { ...frame, fit: "cover" as const } : frame;
+  const crop = fill(framing);
   return {
     src: item
       ? `/api/design/assets/${item.asset}?wedding=${encodeURIComponent(wedding.id)}${token ? `&token=${encodeURIComponent(token)}` : ""}`
@@ -110,7 +126,7 @@ export function resolveWeddingMedia(
     fallback: defaults[placement],
     personal: Boolean(item),
     crop,
-    phone: item?.phoneWorlds?.[wedding.world] ?? item?.phone ?? crop,
+    phone: fill(phoneFraming) ?? crop,
   };
 }
 

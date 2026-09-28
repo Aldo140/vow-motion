@@ -27,6 +27,7 @@ import "./product-story.css";
 import "./marketing-depth.css";
 import "./guest-finishing.css";
 import "./design-editor.css";
+import "./photo-guide.css";
 import "./planner-atelier.css";
 import "./studio-story.css";
 import "./studio-post-room.css";

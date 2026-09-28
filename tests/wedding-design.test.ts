@@ -98,4 +98,39 @@ describe("design draft collaboration", () => {
       resolveWeddingMedia({ ...wedding, settings: {} }, "invitation").src,
     ).toBe("/images/riviera.webp");
   });
+  it("lets the opening background borrow the invitation photo until it has its own", () => {
+    const design = structuredClone(base);
+    const blank = withDesign({ id: "w", settings: {} } as Wedding, design);
+    expect(resolveWeddingMedia(blank, "opening")).toMatchObject({
+      src: "/images/riviera.webp",
+      personal: false,
+    });
+    design.media.invitation = {
+      asset: "10000000-0000-4000-8000-000000000001",
+      crop: { x: 20, y: 30, fit: "cover" },
+      worlds: {},
+    };
+    const borrowed = withDesign({ id: "w", settings: {} } as Wedding, design);
+    expect(resolveWeddingMedia(borrowed, "opening").src).toBe(
+      resolveWeddingMedia(borrowed, "invitation").src,
+    );
+    expect(resolveWeddingMedia(borrowed, "opening").crop?.x).toBe(20);
+    design.media.invitation.crop.fit = "contain";
+    const mounted = withDesign({ id: "w", settings: {} } as Wedding, design);
+    expect(resolveWeddingMedia(mounted, "invitation").crop?.fit).toBe("contain");
+    expect(resolveWeddingMedia(mounted, "opening").crop?.fit).toBe("cover");
+    expect(resolveWeddingMedia(mounted, "opening").phone?.fit).toBe("cover");
+    design.media.opening = {
+      asset: "10000000-0000-4000-8000-000000000002",
+      crop: { x: 50, y: 50, fit: "cover" },
+      worlds: {},
+    };
+    const own = withDesign({ id: "w", settings: {} } as Wedding, design);
+    expect(resolveWeddingMedia(own, "opening").src).toContain(
+      "10000000-0000-4000-8000-000000000002",
+    );
+    expect(resolveWeddingMedia(own, "invitation").src).toContain(
+      "10000000-0000-4000-8000-000000000001",
+    );
+  });
 });

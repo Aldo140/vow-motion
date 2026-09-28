@@ -93,7 +93,7 @@ export default function GuestInvitationGate({
     <main id="main" ref={root} className="invitation-gate crafted-opening">
       <WeddingPhoto
         className="gate-background"
-        placement="invitation"
+        placement="opening"
         alt=""
         fetchPriority="high"
       />

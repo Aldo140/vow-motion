@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import {
   placements,
   resolveWeddingMedia,
@@ -10,35 +10,165 @@ import {
 import type { Wedding } from "@/lib/types";
 import { preparePhoto } from "@/lib/prepare-photo";
 import WeddingPhoto from "../wedding-photo";
-import { photoGuidance, suggestedPhotoFit } from "@/lib/photo-guidance";
+import {
+  photoFitNote,
+  photoGuidance,
+  photoSteps,
+  priorityLabel,
+  suggestedPhotoFit,
+} from "@/lib/photo-guidance";
 
+type Device = "phone" | "computer";
+type Crop = { x: number; y: number; fit: "cover" | "contain" };
 type Upload = {
-  id: string;
-  file: File;
+  target: Placement;
+  name: string;
   progress: number;
   status: string;
   error?: string;
 };
-function UploadThumbnail({ file }: { file: File }) {
-  const [url, setUrl] = useState("");
-  useEffect(() => {
-    const next = URL.createObjectURL(file);
-    setUrl(next);
-    return () => URL.revokeObjectURL(next);
-  }, [file]);
-  return url ? (
-    <img
-      src={url}
-      alt="Selected photo"
-      width={48}
-      height={48}
-      style={{ objectFit: "cover" }}
-      onError={(event) => {
-        event.currentTarget.style.visibility = "hidden";
-      }}
-    />
-  ) : null;
+const DEVICE_KEY = "vow-photo-device";
+const ACCEPT = "image/jpeg,image/png,image/webp";
+
+function guessDevice(): Device {
+  if (typeof window === "undefined") return "computer";
+  return window.matchMedia("(max-width: 720px), (pointer: coarse)").matches
+    ? "phone"
+    : "computer";
 }
+
+/** Where a click lands inside the visible photo, as a focus point in percent. */
+function focusFromClick(
+  event: MouseEvent<HTMLImageElement>,
+  frame: Crop,
+): Pick<Crop, "x" | "y"> {
+  const image = event.currentTarget;
+  const rect = image.getBoundingClientRect();
+  const scale = (frame.fit === "contain" ? Math.min : Math.max)(
+    rect.width / image.naturalWidth,
+    rect.height / image.naturalHeight,
+  );
+  const width = image.naturalWidth * scale,
+    height = image.naturalHeight * scale;
+  const left = ((rect.width - width) * frame.x) / 100;
+  const top = ((rect.height - height) * frame.y) / 100;
+  const clamp = (value: number) =>
+    Math.max(0, Math.min(100, Math.round(value * 100)));
+  return {
+    x: clamp((event.clientX - rect.left - left) / width),
+    y: clamp((event.clientY - rect.top - top) / height),
+  };
+}
+
+/**
+ * A simplified drawing of the invitation on the chosen device, with the place
+ * this photo fills highlighted and framed exactly as guests will see it.
+ */
+function SpotMock({
+  wedding,
+  placement,
+  device,
+  tag,
+  onFocus,
+}: {
+  wedding: Omit<Wedding, "owner_id">;
+  placement: Placement;
+  device: Device;
+  tag: string;
+  onFocus?: (point: Pick<Crop, "x" | "y">) => void;
+}) {
+  const media = resolveWeddingMedia(wedding, placement);
+  const frame: Crop = {
+    x: 50,
+    y: 50,
+    fit: "cover",
+    ...(device === "phone" ? media.phone : media.crop),
+  };
+  const spot = (shape: string) => (
+    <div className={`spot-target ${shape}`}>
+      <img
+        src={media.src}
+        alt=""
+        draggable={false}
+        style={{
+          objectFit: frame.fit,
+          objectPosition: `${frame.x}% ${frame.y}%`,
+        }}
+        onClick={
+          onFocus ? (event) => onFocus(focusFromClick(event, frame)) : undefined
+        }
+        onError={(event) => {
+          if (event.currentTarget.getAttribute("src") !== media.fallback)
+            event.currentTarget.src = media.fallback;
+        }}
+      />
+    </div>
+  );
+  const lines = (count: number, className = "") => (
+    <div className={`mock-lines ${className}`} aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <i key={i} />
+      ))}
+    </div>
+  );
+  const screens: Record<Placement, React.ReactNode> = {
+    opening: (
+      <>
+        {spot("spot-full")}
+        <div className="mock-envelope" aria-hidden="true">
+          <i />
+        </div>
+      </>
+    ),
+    invitation: (
+      <>
+        {lines(4, "mock-heading")}
+        {spot("spot-hero")}
+      </>
+    ),
+    story: (
+      <>
+        {spot("spot-print")}
+        {lines(6)}
+      </>
+    ),
+    details: (
+      <>
+        {lines(2, "mock-heading")}
+        <div className="spot-tiles">
+          {spot("spot-tile-wide")}
+          {spot("spot-tile-square")}
+          {spot("spot-tile-tall")}
+        </div>
+        {lines(3)}
+      </>
+    ),
+    venue: (
+      <>
+        {spot("spot-postcard")}
+        {lines(5)}
+      </>
+    ),
+  };
+  return (
+    <figure
+      className={`spot-mock mock-${device} mock-${placement}`}
+      data-clickable={Boolean(onFocus) || undefined}
+    >
+      <div className="mock-device">
+        <div className="mock-screen">{screens[placement]}</div>
+      </div>
+      <figcaption>
+        <span className="spot-tag">{tag}</span>
+        {onFocus &&
+          (device === "phone"
+            ? "Tap the photo to choose what stays in view."
+            : "Click the photo to choose what stays in view.")}
+      </figcaption>
+    </figure>
+  );
+}
+
 export function DesignPhotos({
   wedding,
   design,
@@ -62,86 +192,141 @@ export function DesignPhotos({
   selectedPlacement?: Placement;
   onReview: () => void;
 }) {
-  const [placement, setPlacement] = useState<Placement>("invitation");
-  const [uploads, setUploads] = useState<Upload[]>([]);
-  const [error, setError] = useState("");
+  const [device, setDevice] = useState<Device | null>(null);
+  const [suggested, setSuggested] = useState<Device>("computer");
+  // -1 is the welcome screen; photoSteps.length is the summary.
+  const [step, setStep] = useState(-1);
+  const [upload, setUpload] = useState<Upload | null>(null);
+  const [picking, setPicking] = useState(false);
   const [undo, setUndo] = useState<WeddingDesign["media"] | null>(null);
-  const [phone, setPhone] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const request = useRef<XMLHttpRequest | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const root = useRef<HTMLElement>(null);
+  const assetRef = useRef(assets);
+  assetRef.current = assets;
+  const designRef = useRef(design);
+  designRef.current = design;
+  const endpoint = `/api/design/assets?wedding=${encodeURIComponent(wedding.id)}`;
+  const assetSrc = (id: string) => endpoint.replace("?", `/${id}?`);
+
   useEffect(() => {
-    if (selectedPlacement) setPlacement(selectedPlacement);
-  }, [selectedPlacement]);
-  const requests = useRef(new Map<string, XMLHttpRequest>());
-  const active = useRef(new Set<string>());
-  const mounted = useRef(true);
+    setSuggested(guessDevice());
+    try {
+      const saved = localStorage.getItem(DEVICE_KEY);
+      if (saved === "phone" || saved === "computer") setDevice(saved);
+    } catch {}
+  }, []);
   useEffect(() => {
-    mounted.current = true;
-    const pending = requests.current;
     const warn = (event: BeforeUnloadEvent) => {
-      if (active.current.size) event.preventDefault();
+      if (request.current) event.preventDefault();
     };
     window.addEventListener("beforeunload", warn);
     return () => {
-      mounted.current = false;
-      pending.forEach((request) => request.abort());
       window.removeEventListener("beforeunload", warn);
+      request.current?.abort();
     };
   }, []);
-  const assetRef = useRef(assets);
-  assetRef.current = assets;
-  const current = design.media[placement];
-  const crop = (phone
-    ? (current?.phoneWorlds?.[design.world] ?? current?.phone)
-    : current?.worlds[design.world]) ??
-    current?.crop ?? { x: 50, y: 50, fit: "cover" as const };
-  const setCrop = (next: typeof crop) => {
+  const go = (next: number) => {
+    setStep(next);
+    setPicking(false);
+    setError("");
+    setUndo(null);
+    requestAnimationFrame(() => {
+      root.current?.scrollIntoView({ block: "start", behavior: "auto" });
+      heading.current?.focus({ preventScroll: true });
+    });
+  };
+  // "Change photo" in the live preview jumps straight to that place's step.
+  useEffect(() => {
+    if (!selectedPlacement) return;
+    setDevice((current) => current ?? guessDevice());
+    setStep(photoSteps.indexOf(selectedPlacement));
+    setPicking(false);
+  }, [selectedPlacement]);
+  const chooseDevice = (next: Device) => {
+    setDevice(next);
+    try {
+      localStorage.setItem(DEVICE_KEY, next);
+    } catch {}
+  };
+
+  const place = (asset: DesignAsset, target: Placement) => {
+    const current = designRef.current;
+    setUndo(current.media);
+    update({
+      ...current,
+      media: {
+        ...current.media,
+        [target]: {
+          asset: asset.id,
+          crop: { x: 50, y: 50, fit: suggestedPhotoFit(asset, target) },
+          worlds: {},
+        },
+      },
+    });
+    setPicking(false);
+    setFeedback(
+      `${photoGuidance[target].title}: your photo is in place. Guests still see the current design until you apply it.`,
+    );
+  };
+  const restore = (target: Placement) => {
+    setUndo(design.media);
+    const media = { ...design.media };
+    delete media[target];
+    update({ ...design, media });
+    setFeedback(`${photoGuidance[target].title}: original artwork restored.`);
+  };
+  const setFrame = (target: Placement, next: Crop) => {
+    const current = design.media[target];
     if (!current) return;
     update({
       ...design,
       media: {
         ...design.media,
-        [placement]: phone
-          ? {
-              ...current,
-              phoneWorlds: { ...current.phoneWorlds, [design.world]: next },
-            }
-          : {
-              ...current,
-              crop: next,
-              worlds: { ...current.worlds, [design.world]: next },
-            },
+        [target]:
+          device === "phone"
+            ? {
+                ...current,
+                phoneWorlds: { ...current.phoneWorlds, [design.world]: next },
+              }
+            : {
+                ...current,
+                crop: next,
+                worlds: { ...current.worlds, [design.world]: next },
+              },
       },
     });
   };
-  const endpoint = `/api/design/assets?wedding=${encodeURIComponent(wedding.id)}`;
-  const patchUpload = (id: string, patch: Partial<Upload>) =>
-    setUploads((rows) =>
-      rows.map((row) => (row.id === id ? { ...row, ...patch } : row)),
-    );
-  const upload = async (row: Upload) => {
-    active.current.add(row.id);
+
+  const send = async (file: File, target: Placement) => {
+    setError("");
+    setUpload({ target, name: file.name, progress: 0, status: "Preparing" });
     onUploading(true);
-    patchUpload(row.id, { status: "Preparing", error: undefined, progress: 0 });
     try {
-      if (/\.(heic|heif)$/i.test(row.file.name))
+      if (/\.(heic|heif)$/i.test(file.name))
         throw new Error(
-          "Export this iPhone photo as a JPEG, then choose it again.",
+          "This is an iPhone HEIC photo. Export it as a JPEG, then choose it again.",
         );
-      if (row.file.size > 40_000_000)
+      if (file.size > 40_000_000)
         throw new Error("Choose a photo under 40 MB.");
-      const file = await preparePhoto(row.file);
-      if (!active.current.has(row.id)) return;
+      const prepared = await preparePhoto(file);
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", prepared);
       const asset = await new Promise<DesignAsset>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        requests.current.set(row.id, xhr);
+        request.current = xhr;
         xhr.open("POST", endpoint);
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable)
-            patchUpload(row.id, {
-              status: e.loaded === e.total ? "Processing" : "Uploading",
-              progress: Math.round((e.loaded / e.total) * 100),
-            });
+            setUpload((row) =>
+              row && {
+                ...row,
+                status: e.loaded === e.total ? "Finishing" : "Uploading",
+                progress: Math.round((e.loaded / e.total) * 100),
+              },
+            );
         };
         xhr.onload = () => {
           try {
@@ -149,114 +334,36 @@ export function DesignPhotos({
             if (xhr.status >= 200 && xhr.status < 300) resolve(data);
             else reject(new Error(data.error));
           } catch {
-            reject(new Error("Upload did not finish. Please retry."));
+            reject(new Error("The upload did not finish. Please try again."));
           }
         };
         xhr.onerror = () =>
-          reject(new Error("Connection lost. Retry when you are back online."));
-        xhr.onabort = () =>
-          reject(
-            new Error("Upload interrupted. Retry or choose another photo."),
-          );
+          reject(new Error("Connection lost. Try again when you are online."));
+        xhr.onabort = () => reject(new Error("Upload cancelled."));
         xhr.send(form);
       });
-      const next = [
-        asset,
-        ...assetRef.current.filter((a) => a.id !== asset.id),
-      ];
+      const next = [asset, ...assetRef.current.filter((a) => a.id !== asset.id)];
       assetRef.current = next;
       setAssets(next);
-      patchUpload(row.id, { status: "Ready", progress: 100 });
+      setUpload(null);
+      place(asset, target);
     } catch (e) {
-      patchUpload(row.id, {
-        status: "Needs attention",
-        error: (e as Error).message,
-      });
+      setUpload(null);
+      setError((e as Error).message);
     } finally {
-      requests.current.delete(row.id);
-      active.current.delete(row.id);
-      onUploading(active.current.size > 0);
+      request.current = null;
+      onUploading(false);
     }
   };
-  const add = async (files: FileList | File[]) => {
-    const rows = Array.from(files)
-      .slice(0, 50)
-      .map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        progress: 0,
-        status: "Waiting",
-      }));
-    setUploads((previous) => [...previous, ...rows]);
-    rows.forEach((row) => active.current.add(row.id));
-    onUploading(true);
-    // Sequential transport avoids exhausting mobile memory on large batches.
-    for (const row of rows) {
-      if (!mounted.current) break;
-      if (active.current.has(row.id)) await upload(row);
-    }
-  };
-  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
-  const [draggedAsset, setDraggedAsset] = useState<string | null>(null);
-  const [dropTarget, setDropTarget] = useState<Placement | null>(null);
-  const [checking, setChecking] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const destinations = useRef<HTMLDivElement>(null);
-  const library = useRef<HTMLDivElement>(null);
-  const checkPanel = useRef<HTMLDivElement>(null);
-  const selected = assets.find((asset) => asset.id === selectedAsset);
-  useEffect(() => {
-    if (selectedPlacement) setChecking(true);
-  }, [selectedPlacement]);
-  const reveal = (ref: { current: HTMLElement | null }) =>
-    requestAnimationFrame(() => {
-      ref.current?.scrollIntoView({ block: "start", behavior: "auto" });
-      ref.current?.focus({ preventScroll: true });
-    });
-  const selectPhoto = (asset: DesignAsset) => {
-    setSelectedAsset(asset.id);
-    setChecking(false);
-    setFeedback(`${asset.name} selected. Choose where it should appear below.`);
-    reveal(destinations);
-  };
-  const choose = (assetId: string, target: Placement) => {
-    if (disabled) return;
-    const asset = assets.find((item) => item.id === assetId);
-    if (!asset) {
-      setFeedback("Choose a ready photo from your library first.");
-      return;
-    }
-    const fit = suggestedPhotoFit(asset, target);
-    setUndo(design.media);
-    update({
-      ...design,
-      media: {
-        ...design.media,
-        [target]: { asset: assetId, crop: { x: 50, y: 50, fit }, worlds: {} },
-      },
-    });
-    setPlacement(target);
-    setPhone(false);
-    setSelectedAsset(null);
-    setDraggedAsset(null);
-    setDropTarget(null);
-    setChecking(true);
-    setFeedback(
-      `Placed in ${placements[target].name.toLowerCase()}. ${fit === "contain" ? "We kept the whole photo in a paper mount. " : "Check the framing below. "}This is a draft; guests still see the current design.`,
-    );
-    reveal(checkPanel);
-  };
+
   const removeAsset = async (asset: DesignAsset) => {
-    if (
-      Object.values(design.media).some((photo) => photo?.asset === asset.id)
-    ) {
+    if (Object.values(design.media).some((p) => p?.asset === asset.id)) {
       setError(
-        "This photo is in your draft. Restore the original artwork in those places before deleting it.",
+        "This photo is still used in your invitation. Swap it out first, then delete it.",
       );
       return;
     }
-    if (!confirm(`Delete ${asset.name} from this wedding's photo library?`))
-      return;
+    if (!confirm(`Delete ${asset.name} from this wedding's photos?`)) return;
     try {
       const response = await fetch(
         `/api/design/assets/${asset.id}?wedding=${encodeURIComponent(wedding.id)}`,
@@ -265,594 +372,394 @@ export function DesignPhotos({
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
       setAssets(assetRef.current.filter((item) => item.id !== asset.id));
-      if (selectedAsset === asset.id) setSelectedAsset(null);
-      setFeedback("Photo removed from your library.");
+      setFeedback("Photo deleted.");
       setError("");
     } catch (e) {
       setError((e as Error).message);
     }
   };
-  const count = Object.values(design.media).filter(Boolean).length;
-  return (
-    <section className="photo-workspace">
-      <header className="photo-workspace-heading">
-        <span className="eyebrow">MAKE ROOM FOR YOUR MEMORIES</span>
-        <h2>Your photos, in the right places.</h2>
+
+  const tagFor = (target: Placement) =>
+    design.media[target]
+      ? "Your photo"
+      : target === "opening" && design.media.invitation
+        ? "Using your main photo"
+        : "Original artwork";
+  const personalized = photoSteps.filter((p) => design.media[p]).length;
+
+  const uploadButton = (target: Placement, label: string, primary: boolean) => (
+    <label
+      className={`button ${primary ? "primary" : "outline"} photo-guide-upload`}
+      aria-disabled={disabled || Boolean(upload) || undefined}
+    >
+      {label}
+      <input
+        type="file"
+        accept={ACCEPT}
+        disabled={disabled || Boolean(upload)}
+        aria-label={label}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void send(file, target);
+          e.target.value = "";
+        }}
+      />
+    </label>
+  );
+
+  const deviceSwitch = device && (
+    <div className="photo-guide-device" role="group" aria-label="Preview on">
+      {(["phone", "computer"] as Device[]).map((option) => (
+        <button
+          key={option}
+          type="button"
+          aria-pressed={device === option}
+          onClick={() => chooseDevice(option)}
+        >
+          {option === "phone" ? "Phone" : "Computer"}
+        </button>
+      ))}
+    </div>
+  );
+
+  // Welcome: one question, and what to have ready.
+  if (step < 0 || !device)
+    return (
+      <section ref={root} className="photo-guide photo-guide-welcome">
+        <span className="eyebrow">YOUR PHOTOS</span>
+        <h2 ref={heading} tabIndex={-1}>
+          Add your photos in a few easy steps.
+        </h2>
         <p>
-          Gather your favourites, then choose where they belong. One photo is
-          enough. Every other place can keep its original artwork.
+          We&apos;ll show you exactly where each photo goes before you add it.
+          Skip any step and that place keeps its original artwork.
         </p>
-      </header>
-      <ol className="photo-journey" aria-label="How to personalize your photos">
-        <li aria-current={!assets.length ? "step" : undefined}>
-          <b>1</b>
-          <span>
-            Gather your photos<small>One library for this wedding</small>
-          </span>
-        </li>
-        <li aria-current={assets.length && !checking ? "step" : undefined}>
-          <b>2</b>
-          <span>
-            Choose their places<small>Drag a photo, or tap to choose</small>
-          </span>
-        </li>
-        <li aria-current={checking ? "step" : undefined}>
-          <b>3</b>
-          <span>
-            Check the invitation<small>Preview before guests see it</small>
-          </span>
-        </li>
-      </ol>
-      <div className="photo-arrangement-workbench">
-        <div ref={library} tabIndex={-1} className="photo-library-panel">
-          <div className="photo-panel-title">
-            <span>01 / YOUR LIBRARY</span>
-            <h3>Start with your favourites.</h3>
-            <p>
-              Photos for {wedding.names}. Upload them together; decide where
-              each goes afterward.
-            </p>
-          </div>
-          {disabled && disabledNote && (
-            <p className="design-dropzone-disabled-note">{disabledNote}</p>
-          )}
-          {!disabled && (
-            <label
-              className="design-dropzone"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                void add(e.dataTransfer.files);
+        <fieldset className="photo-guide-question">
+          <legend>What are you using right now?</legend>
+          {(["phone", "computer"] as Device[]).map((option) => (
+            <button
+              key={option}
+              type="button"
+              className="photo-guide-choice"
+              aria-pressed={device === option}
+              onClick={() => {
+                chooseDevice(option);
+                go(0);
               }}
             >
-              <b>Add your photos</b>
-              <p>
-                Choose files or drop them here. JPG, PNG or WebP. Large photos
-                are prepared automatically; keep your original files on your
-                device.
-              </p>
+              <span className={`photo-guide-icon icon-${option}`} aria-hidden="true" />
+              <strong>{option === "phone" ? "A phone" : "A computer"}</strong>
               <small>
-                Keep this page open until uploads say Ready. If you leave,
-                completed photos stay saved; unfinished files need selecting
-                again.
+                {option === "phone"
+                  ? "Pick photos from your camera roll."
+                  : "Choose files or drag them in."}
               </small>
-              <input
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => {
-                  if (e.target.files) void add(e.target.files);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          )}
-          <div aria-live="polite">
-            {uploads.map((row) => (
-              <div className="design-upload-item" key={row.id}>
-                <UploadThumbnail file={row.file} />
-                <span>
-                  {row.file.name}: {row.error || row.status}
-                </span>
-                {["Uploading", "Processing"].includes(row.status) && (
-                  <progress max={100} value={row.progress} />
-                )}
-                {row.error && (
-                  <>
-                    <button onClick={() => void upload(row)}>Retry</button>
-                    <label>
-                      Choose another
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const replacement = { ...row, file };
-                            patchUpload(row.id, { file });
-                            void upload(replacement);
-                          }
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                  </>
-                )}
-                {active.current.has(row.id) && (
-                  <button
-                    onClick={() => {
-                      active.current.delete(row.id);
-                      requests.current.get(row.id)?.abort();
-                      patchUpload(row.id, { status: "Cancelled" });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
+              {suggested === option && <em>Looks like you&apos;re on one</em>}
+            </button>
+          ))}
+        </fieldset>
+        <div className="photo-guide-ready">
+          <h3>Good to have ready</h3>
+          <ol>
+            {photoSteps.map((target) => (
+              <li key={target}>
+                <span>{photoGuidance[target].ready}</span>
+                <small>{priorityLabel[photoGuidance[target].priority]}</small>
+              </li>
             ))}
-          </div>
-          {error && <p role="alert">{error}</p>}
-
-          {!!assets.length && (
-            <p className="photo-library-hint">
-              {disabled
-                ? "Your wedding’s saved photos."
-                : "Drag a photo onto a place, or select it and choose a place."}
-            </p>
-          )}
-          <div className="photo-library-grid">
-            {assets.map((asset) => {
-              const uses = (Object.keys(placements) as Placement[]).filter(
-                (role) => design.media[role]?.asset === asset.id,
-              );
-              return (
-                <article
-                  key={asset.id}
-                  data-selected={selectedAsset === asset.id}
-                >
-                  <button
-                    type="button"
-                    disabled={disabled}
-                    className="photo-library-pick"
-                    aria-pressed={selectedAsset === asset.id}
-                    aria-label={`Choose ${asset.name}`}
-                    draggable={!disabled}
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData(
-                        "application/x-vow-photo",
-                        asset.id,
-                      );
-                      event.dataTransfer.effectAllowed = "copy";
-                      setDraggedAsset(asset.id);
-                      setSelectedAsset(asset.id);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedAsset(null);
-                      setDropTarget(null);
-                    }}
-                    onClick={() => selectPhoto(asset)}
-                  >
-                    <img
-                      src={`${endpoint.replace("?", `/${asset.id}?`)}`}
-                      alt=""
-                      loading="lazy"
-                      draggable={false}
-                    />
-                    <span>
-                      {selectedAsset === asset.id
-                        ? "Selected · choose a place"
-                        : "Choose this photo"}
-                    </span>
-                  </button>
-                  <small className="photo-filename" title={asset.name}>
-                    {asset.name}
-                  </small>
-                  <small className="photo-use-label">
-                    {uses.map((role) => placements[role].name).join(" · ") ||
-                      "Not placed yet"}
-                  </small>
-                  {Math.min(asset.width, asset.height) < 600 && (
-                    <small className="photo-quality-note">
-                      Small image: a larger copy will look sharper.
-                    </small>
-                  )}
-                  {!disabled && (
-                    <details className="photo-file-options">
-                      <summary>Photo options</summary>
-                      <button
-                        type="button"
-                        onClick={() => void removeAsset(asset)}
-                      >
-                        Delete from library
-                      </button>
-                    </details>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-          {!assets.length && (
-            <div className="photo-library-empty">
-              <p>A photo of you together is a lovely place to start.</p>
-              <small>
-                No photos ready? Your invitation already has a complete set of
-                artwork.
-              </small>
-            </div>
-          )}
+          </ol>
+          <p>One photo of the two of you is enough to make it feel like yours.</p>
         </div>
-        <div
-          className="photo-destinations-panel"
-          ref={destinations}
-          tabIndex={-1}
-        >
-          <div className="photo-panel-title">
-            <span>02 / WHERE THEY GO</span>
-            <h3>A place for each kind of memory.</h3>
-            <p>
-              {count
-                ? `${count} of 4 places personalized. The others keep their original artwork.`
-                : "All four places already have artwork. Personalize any of them, or leave them as they are."}
-            </p>
-          </div>
-          {selected && (
-            <div className="photo-selection-bar" role="status">
-              <img
-                src={`${endpoint.replace("?", `/${selected.id}?`)}`}
+        {disabled && disabledNote && (
+          <p className="photo-guide-note">{disabledNote}</p>
+        )}
+      </section>
+    );
+
+  // Summary: every place at a glance, each one step away.
+  if (step >= photoSteps.length)
+    return (
+      <section ref={root} className="photo-guide photo-guide-summary">
+        <span className="eyebrow">ALL SET</span>
+        <h2 ref={heading} tabIndex={-1}>
+          {personalized
+            ? `${personalized} of ${photoSteps.length} places have your photos.`
+            : "Your invitation keeps its original artwork."}
+        </h2>
+        <p>
+          The rest keep their original artwork. Preview the whole invitation
+          next; nothing changes for guests until you apply it.
+        </p>
+        <ul className="photo-guide-overview">
+          {photoSteps.map((target, index) => (
+            <li key={target}>
+              <WeddingPhoto
+                wedding={wedding}
+                placement={target}
                 alt=""
+                className="photo-guide-thumb"
               />
               <span>
-                <b>Photo selected</b>Choose a place below.
+                <strong>{photoGuidance[target].title}</strong>
+                <small>{tagFor(target)}</small>
               </span>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedAsset(null);
-                  setFeedback(
-                    "Selection cleared. Your invitation has not changed.",
-                  );
-                }}
+                className="button outline small"
+                onClick={() => go(index)}
+              >
+                {design.media[target] ? "Change" : "Add"}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="photo-guide-actions">
+          <button type="button" className="button primary" onClick={onReview}>
+            Preview my invitation
+          </button>
+          <button
+            type="button"
+            className="button outline"
+            onClick={() => go(0)}
+          >
+            Go through the steps again
+          </button>
+        </div>
+        {!!assets.length && !disabled && (
+          <details className="photo-guide-library">
+            <summary>Manage uploaded photos ({assets.length})</summary>
+            <ul>
+              {assets.map((asset) => (
+                <li key={asset.id}>
+                  <img src={assetSrc(asset.id)} alt="" loading="lazy" />
+                  <span>{asset.name}</span>
+                  <button type="button" onClick={() => void removeAsset(asset)}>
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+        {error && <p role="alert">{error}</p>}
+        <p className="photo-guide-status" role="status" aria-live="polite">
+          {feedback}
+        </p>
+      </section>
+    );
+
+  const target = photoSteps[step];
+  const guide = photoGuidance[target];
+  const current = design.media[target];
+  const currentAsset = assets.find((asset) => asset.id === current?.asset);
+  // Phones fall back to the shared framing until they are given their own.
+  const desktopFrame = current?.worlds[design.world] ?? current?.crop;
+  const frame: Crop = {
+    x: 50,
+    y: 50,
+    fit: "cover",
+    ...(device === "phone"
+      ? (current?.phoneWorlds?.[design.world] ??
+        current?.phone ??
+        desktopFrame)
+      : desktopFrame),
+  };
+  const note = currentAsset ? photoFitNote(currentAsset, target) : null;
+  const uploadingHere = upload?.target === target;
+  const nextTitle =
+    step + 1 < photoSteps.length
+      ? photoGuidance[photoSteps[step + 1]].title.toLowerCase()
+      : null;
+
+  return (
+    <section ref={root} className={`photo-guide photo-guide-step device-${device}`}>
+      <header className="photo-guide-top">
+        <button type="button" className="photo-guide-back" onClick={() => go(step - 1)}>
+          Back
+        </button>
+        <div
+          className="photo-guide-progress"
+          role="progressbar"
+          aria-label="Photo steps"
+          aria-valuemin={1}
+          aria-valuemax={photoSteps.length}
+          aria-valuenow={step + 1}
+        >
+          <span>
+            Step {step + 1} of {photoSteps.length}
+          </span>
+          <ol aria-hidden="true">
+            {photoSteps.map((p, i) => (
+              <li key={p} data-state={i < step ? "done" : i === step ? "now" : undefined} />
+            ))}
+          </ol>
+        </div>
+        {deviceSwitch}
+      </header>
+      <div className="photo-guide-title">
+        <span className={`photo-guide-priority priority-${guide.priority}`}>
+          {priorityLabel[guide.priority]}
+        </span>
+        <h2 ref={heading} tabIndex={-1}>
+          {guide.title}
+        </h2>
+      </div>
+      <div className="photo-guide-body">
+        <SpotMock
+          wedding={wedding}
+          placement={target}
+          device={device}
+          tag={tagFor(target)}
+          onFocus={
+            current && !disabled
+              ? (point) => setFrame(target, { ...frame, ...point })
+              : undefined
+          }
+        />
+        <div className="photo-guide-copy">
+          <p className="photo-guide-where">{guide.where}</p>
+          <ul className="photo-guide-advice">
+            <li className="advice-best">
+              <b>Works best</b>
+              {guide.best}
+            </li>
+            <li className="advice-avoid">
+              <b>Avoid</b>
+              {guide.avoid}
+            </li>
+          </ul>
+
+          {uploadingHere ? (
+            <div className="photo-guide-uploading" role="status">
+              <span>
+                {upload.status} {upload.name}
+              </span>
+              <progress max={100} value={upload.progress} />
+              <button
+                type="button"
+                className="button outline small"
+                onClick={() => request.current?.abort()}
               >
                 Cancel
               </button>
             </div>
-          )}
-          <div className="photo-destination-grid">
-            {(Object.keys(placements) as Placement[]).map((role, index) => {
-              const chosen = assets.find(
-                (asset) => asset.id === design.media[role]?.asset,
-              );
-              const candidate = assets.find(
-                (asset) => asset.id === (draggedAsset ?? selectedAsset),
-              );
-              return (
-                <article
-                  key={role}
-                  className={`photo-destination ${dropTarget === role ? "drop-ready" : ""}`}
-                  data-placement={role}
-                  onDragOver={(event) => {
-                    if (disabled) return;
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = "copy";
-                    setDropTarget(role);
-                  }}
-                  onDragLeave={(event) => {
-                    if (
-                      !event.currentTarget.contains(
-                        event.relatedTarget as Node | null,
-                      )
-                    )
-                      setDropTarget(null);
-                  }}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    setDropTarget(null);
-                    if (disabled) return;
-                    const photo = event.dataTransfer.getData(
-                      "application/x-vow-photo",
-                    );
-                    if (photo) choose(photo, role);
-                    else {
-                      setFeedback(
-                        "Add files to your library first, then choose where they go.",
-                      );
-                      reveal(library);
+          ) : current ? (
+            <div className="photo-guide-placed">
+              {note && <p className="photo-guide-note">{note}</p>}
+              {target !== "opening" && !disabled && (
+                <label className="photo-guide-toggle">
+                  <input
+                    type="checkbox"
+                    checked={frame.fit === "contain"}
+                    onChange={(e) =>
+                      setFrame(target, {
+                        ...frame,
+                        fit: e.target.checked ? "contain" : "cover",
+                      })
                     }
-                  }}
-                >
-                  <div
-                    className={`photo-destination-preview photo-place-${role}`}
+                  />
+                  Show the whole photo, with a paper border
+                </label>
+              )}
+              {!disabled && (
+                <div className="photo-guide-secondary">
+                  {uploadButton(target, "Replace photo", false)}
+                  <button
+                    type="button"
+                    className="button outline"
+                    onClick={() => restore(target)}
                   >
-                    <WeddingPhoto
-                      wedding={wedding}
-                      placement={role}
-                      alt={`${placements[role].name} preview`}
-                    />
-                    <span>{chosen ? "Your photo" : "Original artwork"}</span>
-                  </div>
-                  <div className="photo-destination-copy">
-                    <small>{String(index + 1).padStart(2, "0")}</small>
-                    <h4>{placements[role].name}</h4>
-                    <p>{photoGuidance[role].idea}</p>
-                    <small>{photoGuidance[role].shape}</small>
-                    <p className="photo-appears">
-                      <b>Appears in</b>
-                      {photoGuidance[role].where}
-                    </p>
-                    {candidate && (
-                      <p className="photo-fit-hint">
-                        {suggestedPhotoFit(candidate, role) === "contain"
-                          ? "We’ll show the whole photo in a paper mount."
-                          : "We’ll fit it to the frame. You can adjust it next."}
-                      </p>
-                    )}
+                    {target === "opening" ? "Use my main photo instead" : "Use original instead"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="photo-guide-empty">
+              <p className="photo-guide-skip">{guide.skip}</p>
+              {disabled ? (
+                disabledNote && <p className="photo-guide-note">{disabledNote}</p>
+              ) : (
+                <div className="photo-guide-secondary">
+                  {uploadButton(
+                    target,
+                    device === "phone" ? "Choose from my photos" : "Upload a photo",
+                    guide.priority === "essential",
+                  )}
+                  {!!assets.length && (
                     <button
                       type="button"
-                      className="button outline small"
-                      disabled={disabled}
-                      onClick={() => {
-                        if (selectedAsset) choose(selectedAsset, role);
-                        else {
-                          setPlacement(role);
-                          setPhone(false);
-                          setChecking(true);
-                          setFeedback(
-                            `Checking ${placements[role].name.toLowerCase()}. Choose a library photo to replace it, or keep this artwork.`,
-                          );
-                          reveal(checkPanel);
-                        }
-                      }}
+                      className="button outline"
+                      aria-expanded={picking}
+                      onClick={() => setPicking((open) => !open)}
                     >
-                      {selectedAsset
-                        ? `Place photo in ${placements[role].name.toLowerCase()}`
-                        : `Check ${placements[role].name.toLowerCase()}`}
+                      Use one I already added
                     </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-      <div
-        className="photo-workspace-feedback"
-        role="status"
-        aria-live="polite"
-      >
-        {feedback ||
-          "Your photos stay in your draft until you review and apply the design."}
-      </div>
-      <div
-        ref={checkPanel}
-        tabIndex={-1}
-        className="photo-check-panel"
-        hidden={!checking}
-      >
-        <div className="photo-panel-title">
-          <span>03 / CHECK YOUR PHOTO</span>
-          <h3>{placements[placement].name}</h3>
-          <p>
-            {placements[placement].uses}.{" "}
-            {current
-              ? "Here is how your photo is framed. Adjust only if you need to."
-              : "This is the original artwork. You can keep it or choose a photo from your library."}
-          </p>
-        </div>
-        <div className="design-framing">
-          <div className="design-frame-previews">
-            {["Phone", "Desktop"].map((label, index) => {
-              const resolved = resolveWeddingMedia(wedding, placement);
-              const frame = index === 0 ? resolved.phone : resolved.crop;
-              return (
-                <figure key={label}>
-                  <img
-                    src={resolved.src}
-                    alt={`${label} framing preview`}
-                    style={{
-                      objectFit: frame?.fit ?? "cover",
-                      objectPosition: `${frame?.x ?? 50}% ${frame?.y ?? 50}%`,
-                    }}
-                    onClick={(e) => {
-                      if (disabled || !current) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const image = e.currentTarget;
-                      const fit = frame?.fit ?? "cover";
-                      const scale = (fit === "contain" ? Math.min : Math.max)(
-                        rect.width / image.naturalWidth,
-                        rect.height / image.naturalHeight,
-                      );
-                      const width = image.naturalWidth * scale,
-                        height = image.naturalHeight * scale;
-                      const left =
-                        ((rect.width - width) * (frame?.x ?? 50)) / 100;
-                      const top =
-                        ((rect.height - height) * (frame?.y ?? 50)) / 100;
-                      const next = {
-                        ...(frame ?? crop),
-                        x: Math.max(
-                          0,
-                          Math.min(
-                            100,
-                            Math.round(
-                              ((e.clientX - rect.left - left) / width) * 100,
-                            ),
-                          ),
-                        ),
-                        y: Math.max(
-                          0,
-                          Math.min(
-                            100,
-                            Math.round(
-                              ((e.clientY - rect.top - top) / height) * 100,
-                            ),
-                          ),
-                        ),
-                      };
-                      update({
-                        ...design,
-                        media: {
-                          ...design.media,
-                          [placement]:
-                            index === 0
-                              ? {
-                                  ...current,
-                                  phoneWorlds: {
-                                    ...current.phoneWorlds,
-                                    [design.world]: next,
-                                  },
-                                }
-                              : {
-                                  ...current,
-                                  crop: next,
-                                  worlds: {
-                                    ...current.worlds,
-                                    [design.world]: next,
-                                  },
-                                },
-                        },
-                      });
-                    }}
-                  />
-                  <figcaption>{label}</figcaption>
-                </figure>
-              );
-            })}
-          </div>
-          {current && !disabled && (
-            <details>
-              <summary>Adjust framing</summary>
-              <p>
-                Keep this part in frame. Tap a preview or use the controls
-                below.
-              </p>
-              <label>
-                Adjust
-                <select
-                  value={phone ? "phone" : "desktop"}
-                  onChange={(e) => setPhone(e.target.value === "phone")}
-                >
-                  <option value="desktop">Desktop and default framing</option>
-                  <option value="phone">Phone framing</option>
-                </select>
-              </label>
-              <label>
-                Left to right
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={crop.x}
-                  onChange={(e) =>
-                    setCrop({ ...crop, x: Number(e.target.value) })
-                  }
-                />
-              </label>
-              <label>
-                Top to bottom
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={crop.y}
-                  onChange={(e) =>
-                    setCrop({ ...crop, y: Number(e.target.value) })
-                  }
-                />
-              </label>
-              <label>
-                Photo fit
-                <select
-                  value={crop.fit}
-                  onChange={(e) =>
-                    setCrop({
-                      ...crop,
-                      fit: e.target.value as "cover" | "contain",
-                    })
-                  }
-                >
-                  <option value="cover">Fill the frame</option>
-                  <option value="contain">Show whole photo</option>
-                </select>
-              </label>
-              <button
-                className="button outline small"
-                onClick={() => setCrop({ x: 50, y: 50, fit: "cover" })}
-              >
-                Reset framing
-              </button>
-            </details>
+                  )}
+                </div>
+              )}
+            </div>
           )}
-          {current && !disabled && (
-            <button
-              className="button outline small"
-              onClick={() => {
-                setUndo(design.media);
-                const media = { ...design.media };
-                delete media[placement];
-                update({ ...design, media });
-                setFeedback(
-                  `Original artwork restored in ${placements[placement].name.toLowerCase()}. You can undo this change.`,
-                );
-              }}
-            >
-              Use original artwork
-            </button>
+
+          {picking && !disabled && (
+            <div className="photo-guide-picker" role="group" aria-label="Photos you already added">
+              {assets.map((asset) => (
+                <button
+                  key={asset.id}
+                  type="button"
+                  aria-label={`Use ${asset.name}`}
+                  onClick={() => place(asset, target)}
+                >
+                  <img src={assetSrc(asset.id)} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          )}
+          {error && (
+            <p className="photo-guide-error" role="alert">
+              {error}
+            </p>
           )}
           {undo && !disabled && (
             <button
-              className="button outline small"
+              type="button"
+              className="photo-guide-undo"
               onClick={() => {
                 update({ ...design, media: undo });
                 setUndo(null);
-                setFeedback(
-                  "Photo change undone. Check the restored preview below.",
-                );
+                setFeedback("Change undone.");
               }}
             >
-              Undo photo change
+              Undo
             </button>
           )}
-        </div>
-
-        <div className="photo-check-actions">
-          <button
-            type="button"
-            className="button outline"
-            onClick={() => {
-              setSelectedAsset(null);
-              reveal(library);
-            }}
-          >
-            Choose another photo
-          </button>
-          <button
-            type="button"
-            className="button primary"
-            onClick={() => {
-              setChecking(false);
-              setFeedback(
-                `${placements[placement].name} checked. You can personalize another place or preview your invitation.`,
-              );
-              reveal(destinations);
-            }}
-          >
-            Looks good
-          </button>
-        </div>
-      </div>
-      <div className="photo-finish">
-        <div>
-          <h3>Ready to see it all together?</h3>
-          <p>
-            Preview your full invitation. You’ll choose when to apply the
-            changes.
+          <p className="photo-guide-status" role="status" aria-live="polite">
+            {feedback}
           </p>
         </div>
-        <button type="button" className="button primary" onClick={onReview}>
-          Preview my invitation
-        </button>
       </div>
+      <footer className="photo-guide-nav">
+        <button
+          type="button"
+          className="button primary"
+          disabled={uploadingHere}
+          onClick={() => go(step + 1)}
+        >
+          {current
+            ? nextTitle
+              ? `Next: ${nextTitle}`
+              : "Finish"
+            : nextTitle
+              ? target === "opening"
+                ? "Skip, use my main photo"
+                : "Skip, keep the original"
+              : "Skip and finish"}
+        </button>
+        <small>
+          {placements[target].uses}. Guests see it on phones and computers; this
+          preview shows {device === "phone" ? "a phone" : "a computer"}.
+        </small>
+      </footer>
     </section>
   );
 }
