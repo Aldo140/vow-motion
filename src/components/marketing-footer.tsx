@@ -11,6 +11,9 @@ export default function MarketingFooter({
       <Brand />
       <span>{line}</span>
       <nav aria-label="Footer">
+        <a href="/digital-wedding-invitations">Invitations</a>
+        <a href="/wedding-rsvp">RSVPs</a>
+        <a href="/guides">Guides</a>
         <a href="/planners">For planners</a>
         <a href="/experience">The film</a>
         <a href="/contact">Contact</a>

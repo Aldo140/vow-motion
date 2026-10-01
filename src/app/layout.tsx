@@ -38,6 +38,7 @@ import "./day-finder.css";
 import "./experience.css";
 import "./studio-momentum.css";
 import "./guest-botanical.css";
+import "./content.css";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {

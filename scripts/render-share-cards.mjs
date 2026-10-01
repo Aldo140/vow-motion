@@ -48,6 +48,52 @@ const cards = [
     line1: "Make room",
     line2: "for your people.",
   },
+  {
+    file: "guides",
+    photo: "public/images/notte.webp",
+    kicker: "Guides",
+    line1: "Invitations and replies,",
+    line2: "thoughtfully done.",
+    size: 58,
+  },
+  {
+    file: "invitations",
+    photo: "public/images/invitation-silk.webp",
+    kicker: "Digital wedding invitations",
+    line1: "An invitation<br>worth opening.",
+    line2: "Sent with a link.",
+    size: 56,
+  },
+  {
+    file: "rsvp",
+    photo: "public/images/wedding-details.webp",
+    kicker: "Online wedding RSVP",
+    line1: "Every reply, in one place.",
+    line2: "Nobody chased twice.",
+    size: 58,
+  },
+  {
+    file: "wording",
+    photo: "public/images/hero-maison.webp",
+    kicker: "Guide · Invitations",
+    line1: "Invitation wording,",
+    line2: "with examples.",
+    size: 56,
+  },
+  {
+    file: "deadline",
+    photo: "public/images/wedding-evening.webp",
+    kicker: "Guide · Replies",
+    line1: "When should wedding",
+    line2: "RSVPs be due?",
+  },
+  {
+    file: "compare",
+    photo: "public/images/garden.webp",
+    kicker: "Guide · Invitations",
+    line1: "Digital vs paper",
+    line2: "wedding invitations.",
+  },
 ];
 
 const html = (c) => `<!doctype html><html><head><meta charset="utf-8"><style>

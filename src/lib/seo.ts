@@ -9,7 +9,18 @@ export const siteUrl = (
 export const siteName = "Vow Motion";
 
 /** Link-preview cards rendered by scripts/render-share-cards.mjs. */
-export type ShareCard = "home" | "planners" | "experience" | "contact" | "start";
+export type ShareCard =
+  | "home"
+  | "planners"
+  | "experience"
+  | "contact"
+  | "start"
+  | "guides"
+  | "invitations"
+  | "rsvp"
+  | "wording"
+  | "deadline"
+  | "compare";
 
 /**
  * Metadata for an indexable marketing page. Next merges metadata shallowly, so
@@ -90,4 +101,51 @@ export function siteJsonLd() {
       },
     ],
   }).replace(/</g, "\\u003c");
+}
+
+/** Escape a structured-data object for an inline <script>. */
+export function jsonLd(data: object) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+export type Crumb = { name: string; path: string };
+
+export function breadcrumbLd(crumbs: Crumb[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((crumb, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: crumb.name,
+      item: siteUrl + (crumb.path === "/" ? "" : crumb.path),
+    })),
+  };
+}
+
+export function articleLd({
+  title,
+  description,
+  path,
+  image,
+  updated,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  image: string;
+  updated: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    image: siteUrl + image,
+    datePublished: updated,
+    dateModified: updated,
+    mainEntityOfPage: siteUrl + path,
+    author: { "@id": `${siteUrl}/#organization` },
+    publisher: { "@id": `${siteUrl}/#organization` },
+  };
 }
