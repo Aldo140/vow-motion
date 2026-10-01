@@ -76,6 +76,6 @@ export const config = {
   matcher: [
     // Skip static assets and image optimization, which the CSP header does
     // not meaningfully protect and which are the highest-traffic requests.
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|icons/|og.jpg|manifest.webmanifest).*)",
   ],
 };

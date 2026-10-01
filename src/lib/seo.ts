@@ -70,7 +70,7 @@ export function siteJsonLd() {
         "@id": `${siteUrl}/#organization`,
         name: siteName,
         url: siteUrl,
-        logo: `${siteUrl}/icon.svg`,
+        logo: `${siteUrl}/icons/icon-512.png`,
         email: contactEmail,
       },
       {

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { siteUrl } from "@/lib/seo";
 import "@fontsource/manrope/400.css";
 import "@fontsource/manrope/500.css";
@@ -56,6 +56,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
 };
+export const viewport: Viewport = { themeColor: "#454a36" };
 export default function RootLayout({
   children,
 }: {

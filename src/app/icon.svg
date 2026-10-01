@@ -1,1 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" fill="#454a36"/><text x="96" y="119" text-anchor="middle" font-family="Georgia,serif" font-size="70" fill="#f8f7f3">VM</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="116" fill="#454a36"/><path d="M104 132 H186 L256 290 L326 132 H408 L292 392 H220 Z" fill="#f8f7f3"/><circle cx="256" cy="160" r="32" fill="none" stroke="#d9c79e" stroke-width="19"/></svg>
