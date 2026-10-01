@@ -7,6 +7,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "A forty-second look at Vow Motion in motion — the private invitation opening, the household reply, the wedding pass, and the same wedding drawn in six worlds.",
   path: "/experience",
+  card: "experience",
   shareTitle: "Vow Motion — the film",
   shareDescription: "Your story, in motion.",
 });

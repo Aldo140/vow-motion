@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Planning your wedding or looking after someone else’s? Get in touch with the small team behind Vow Motion.",
   path: "/contact",
+  card: "contact",
   shareTitle: "Let’s talk · Vow Motion",
 });
 export default async function Page() {

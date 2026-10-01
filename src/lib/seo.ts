@@ -8,12 +8,8 @@ export const siteUrl = (
 
 export const siteName = "Vow Motion";
 
-const shareImage = {
-  url: "/og.jpg",
-  width: 1200,
-  height: 630,
-  alt: "A lakeside Italian villa framed by cypress trees at golden hour",
-};
+/** Link-preview cards rendered by scripts/render-share-cards.mjs. */
+export type ShareCard = "home" | "planners" | "experience" | "contact" | "start";
 
 /**
  * Metadata for an indexable marketing page. Next merges metadata shallowly, so
@@ -27,13 +23,21 @@ export function pageMetadata({
   path,
   shareTitle,
   shareDescription,
+  card = "home",
 }: {
   title: string | { absolute: string };
   description: string;
   path: string;
   shareTitle?: string;
   shareDescription?: string;
+  card?: ShareCard;
 }): Metadata {
+  const image = {
+    url: `/og/${card}.jpg`,
+    width: 1200,
+    height: 630,
+    alt: ogTitleAlt(title),
+  };
   const ogTitle =
     shareTitle ??
     (typeof title === "string" ? `${title} · ${siteName}` : title.absolute);
@@ -49,15 +53,19 @@ export function pageMetadata({
       url: path,
       title: ogTitle,
       description: ogDescription,
-      images: [shareImage],
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: ogTitle,
       description: ogDescription,
-      images: [shareImage.url],
+      images: [image.url],
     },
   };
+}
+
+function ogTitleAlt(title: string | { absolute: string }) {
+  return `${siteName}: ${typeof title === "string" ? title : title.absolute}`;
 }
 
 /** Organization + WebSite structured data, rendered once on the homepage. */

@@ -7,6 +7,7 @@ export const metadata = pageMetadata({
   description:
     "Start your wedding on Vow Motion: choose a design, add your events and guest list, and send digital invitations with household RSVPs. No card required.",
   path: "/start",
+  card: "start",
 });
 export const dynamic = "force-dynamic";
 export default async function Page() {

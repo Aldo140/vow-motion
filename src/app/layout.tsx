@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: "Vow Motion",
     title: "Vow Motion",
     description: "Your entire wedding. Beautifully shared.",
-    images: [{ url: "/og.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/og/home.jpg", width: 1200, height: 630 }],
   },
   manifest: "/manifest.webmanifest",
 };

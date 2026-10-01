@@ -6,6 +6,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Import the guest list, run the invitation and household RSVPs, and export the kitchen sheet, shuttle manifest and place cards your suppliers need.",
   path: "/planners",
+  card: "planners",
   shareTitle: "For wedding planners · Vow Motion",
   shareDescription:
     "Keep the system you run on. Add the part guests hold: invitations, household replies and day-of exports.",
