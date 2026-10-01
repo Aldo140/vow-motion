@@ -53,7 +53,6 @@ export const metadata: Metadata = {
     description: "Your entire wedding. Beautifully shared.",
     images: [{ url: "/og.jpg", width: 1200, height: 630 }],
   },
-  robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
 };
 export const viewport: Viewport = { themeColor: "#454a36" };

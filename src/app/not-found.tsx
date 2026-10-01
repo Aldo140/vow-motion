@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/components/ui";
+export const metadata = { title: "Page not found" };
 export default function NotFound() {
   return (
     <main id="main" className="error-page">

@@ -119,6 +119,12 @@
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 }
+/* The dot stays 7px; the touch target around it does not. */
+.xp-scrub-tick::before {
+  content: "";
+  position: absolute;
+  inset: -11px;
+}
 .xp-scrub-tick:hover,
 .xp-scrub-tick:focus-visible {
   background: var(--olive);
