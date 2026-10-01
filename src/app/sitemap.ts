@@ -1,10 +1,7 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/seo";
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ["", "/planners", "/experience", "/contact", "/privacy"].map((p) => ({
-    url: (process.env.APP_URL || "http://localhost:3000") + p,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority:
-      p === "" ? 1 : p === "/planners" || p === "/experience" ? 0.8 : 0.3,
-  }));
+  return ["/", "/planners", "/experience", "/start", "/contact", "/privacy"].map(
+    (p) => ({ url: siteUrl + (p === "/" ? "" : p) }),
+  );
 }

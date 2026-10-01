@@ -1,5 +1,9 @@
 import AuthForm from "@/components/auth-form";
 import { enableStrictCsp } from "@/lib/csp-nonce";
+export const metadata = {
+  title: "Sign in",
+  robots: { index: false, follow: true },
+};
 export default async function Page({
   searchParams,
 }: {

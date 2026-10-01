@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import Planners from "@/components/planners";
-export const metadata: Metadata = {
-  title: "For wedding planners",
+import { pageMetadata } from "@/lib/seo";
+export const metadata: Metadata = pageMetadata({
+  title: "Guest list & RSVP software for wedding planners",
   description:
-    "Keep the planning system you already run on. Vow Motion is the guest-facing layer around it: import the guest list, run the invitation and replies, and export the kitchen sheet, shuttle manifest and place cards your suppliers need.",
-};
+    "Import the guest list, run the invitation and household RSVPs, and export the kitchen sheet, shuttle manifest and place cards your suppliers need.",
+  path: "/planners",
+  shareTitle: "For wedding planners · Vow Motion",
+  shareDescription:
+    "Keep the system you run on. Add the part guests hold: invitations, household replies and day-of exports.",
+});
 export default function Page() {
   return <Planners />;
 }

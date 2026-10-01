@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/seo";
 import "@fontsource/manrope/400.css";
 import "@fontsource/manrope/500.css";
 import "@fontsource/manrope/600.css";
@@ -38,7 +39,7 @@ import "./experience.css";
 import "./studio-momentum.css";
 import "./guest-botanical.css";
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Vow Motion — Your entire wedding. Beautifully shared.",
     template: "%s · Vow Motion",
@@ -46,9 +47,11 @@ export const metadata: Metadata = {
   description:
     "An invitation worth opening. A wedding worth experiencing. Beautiful digital invitations, personal RSVPs, and every guest detail in one place.",
   openGraph: {
+    type: "website",
+    siteName: "Vow Motion",
     title: "Vow Motion",
     description: "Your entire wedding. Beautifully shared.",
-    images: ["/images/riviera.webp"],
+    images: [{ url: "/og.jpg", width: 1200, height: 630 }],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",

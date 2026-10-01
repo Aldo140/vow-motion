@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { Brand } from "@/components/ui";
 import { operatorProfile } from "@/lib/operator";
-export const metadata = { title: "Privacy information" };
+import { pageMetadata } from "@/lib/seo";
+export const metadata = pageMetadata({
+  title: "Privacy information",
+  description:
+    "How Vow Motion handles the details in your wedding: guest information, messages and consent, photos, storage, and how to access, correct or delete your data.",
+  path: "/privacy",
+});
 export default function Page() {
   const operator = operatorProfile();
   return (
