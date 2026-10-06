@@ -19,7 +19,17 @@ export default function MarketingFooter({
         <a href="/contact">Contact</a>
         <a href="/privacy">Privacy</a>
       </nav>
-      <span>© {new Date().getFullYear()} Vow Motion</span>
+      <span>
+        © {new Date().getFullYear()} Vow Motion ·{" "}
+        <a
+          className="marketing-footer__credit"
+          href="https://arctoslaunchpad.com/calgary-web-design"
+          target="_blank"
+          rel="noopener"
+        >
+          Managed by Arctos Launchpad
+        </a>
+      </span>
     </footer>
   );
 }
