@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { contactEmail } from "./contact";
 
-/** The canonical public origin. www is primary; the bare domain 308s to it. */
+/**
+ * The canonical public origin. www is primary; the bare domain 308s to it, so
+ * an APP_URL set to the bare domain would point every canonical tag and
+ * sitemap entry at a redirect. Pin the production host to www either way.
+ */
 export const siteUrl = (
   process.env.APP_URL || "https://www.vowmotionweddings.com"
-).replace(/\/+$/, "");
+)
+  .replace(/\/+$/, "")
+  .replace(/^https?:\/\/vowmotionweddings\.com$/, "https://www.vowmotionweddings.com");
 
 export const siteName = "Vow Motion";
 
