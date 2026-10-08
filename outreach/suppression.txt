@@ -36,3 +36,4 @@ hello@modernlove.events # immediate bounce batch 14
 info@luxcielevents.com # immediate bounce batch 14
 832-544-0858events@theluxeparty.com # malformed extraction and bounce batch 14
 homeaboutservicesinquirehello@detaileddreamsevents.com # malformed extraction and bounce batch 14
+hello@smallbutperfect.ca # unsubscribe reply 2026-09-28
