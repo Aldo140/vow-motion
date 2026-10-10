@@ -53,7 +53,8 @@ warmup is done — see the warmup log for status.
 
 ### Rules that changed from the old template
 
-1. **"I build Vow Motion." Not "part of the small team building Vow Motion."**
+1. **Sender: Arctos, the marketing company Vow Motion works with (owner decision 2026-10-10).** Outreach goes out from aldo@arctoslaunchpad.com; write "I work with Vow Motion" and sign "Aldo Ortiz · Arctos, marketing for Vow Motion". Keep it to that — no further explanation of the relationship.
+   (Earlier rule: "I build Vow Motion." Not "part of the small team building Vow Motion.")
    There is no team; the plural is also a worn cold-email tell. First person
    singular is truer and reads better.
 2. **No link in email 1.** Name the product and the demo in words; the call to
@@ -68,7 +69,7 @@ warmup is done — see the warmup log for status.
 
 ```
 —
-Aldo Ortiz · Vow Motion
+Aldo Ortiz · Arctos, marketing for Vow Motion
 2011 Ulster Rd NW, Calgary, AB  T2N 4C4
 Prefer no more emails from me? Reply "unsubscribe" and I'll take you off.
 ```
@@ -94,7 +95,7 @@ built to catch. Cycle through these:
 >
 > I came across {{business}} and saw {{specific_detail}}.
 >
-> I build Vow Motion — the guest-facing side of a wedding. Each household opens
+> I work with Vow Motion — the guest-facing side of a wedding. Each household opens
 > one private invitation to only their events, RSVPs by person, and every reply
 > becomes a working guest list: covers by meal with dietary notes, a shuttle
 > manifest from your own transport question, place cards with table and meal.
@@ -113,7 +114,7 @@ built to catch. Cycle through these:
 > list, the RSVPs, the seating chart and the travel notes live in four different
 > places.
 >
-> I build Vow Motion. It keeps them in one: guests RSVP through a private
+> I work with Vow Motion. It keeps them in one: guests RSVP through a private
 > household invitation, and the meal counts, dietary notes and seating stay
 > attached to the same list.
 >
@@ -125,7 +126,7 @@ built to catch. Cycle through these:
 
 > Hi {{first_name}},
 >
-> Quick one. I build Vow Motion — private household invitations, RSVP by person
+> Quick one. I work with Vow Motion — private household invitations, RSVP by person
 > and event, and the caterer and seating documents built from the replies.
 >
 > I'm looking for two or three planners to run one real wedding through it, set
@@ -141,7 +142,7 @@ built to catch. Cycle through these:
 >
 > I came across {{business}} and saw {{specific_detail}}.
 >
-> I build Vow Motion — private household invitations, RSVP by person and event,
+> I work with Vow Motion — private household invitations, RSVP by person and event,
 > seating/meal counts built straight from the replies.
 >
 > Want me to send a quick demo link? Just reply "yes" — no pitch, just a look.
